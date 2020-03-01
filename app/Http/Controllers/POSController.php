@@ -16,7 +16,7 @@ class POSController extends Controller
     }
 
     public function show(){
-        $products = Product::All();
+        $products = Product::orderBy('created_at','asc')->get();
         return view('pos',[
             'products' => $products
         ]);
