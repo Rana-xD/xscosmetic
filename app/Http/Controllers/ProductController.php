@@ -25,7 +25,8 @@ class ProductController extends Controller
         $data = [
             "product_code" => strval(rand(1000,9999)),
             "product_name" => $request->name,
-            "price" => (float)$request->price,
+            'category_id' => $request->category_id,
+            "price" => '0',
             "photo" => "TEXT"
         ];
 

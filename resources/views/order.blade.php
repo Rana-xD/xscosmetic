@@ -49,6 +49,8 @@
         <tr>
           <th scope="col">#</th>
           <th scope="col">ProductName</th>
+          <th scope="col">Size</th>
+          <th scope="col">Extra</th>
           <th scope="col">Quantity</th>
         </tr>
       </thead>
@@ -57,6 +59,8 @@
         <tr>
         <th scope="row">{{ ($index + 1) }}</th>
           <td>{{$item["product_name"]}}</td>
+          <td>{{$item["size"]}}</td>
+          <td>{{$item["extra"]}}</td>
           <td>{{$item["quantity"]}}</td>
         </tr>
         @endforeach
@@ -84,6 +88,8 @@
         <tr>
           <th scope="col">#</th>
           <th scope="col">ProductName</th>
+          <th scope="col">Size</th>
+          <th scope="col">Extra</th>
           <th scope="col">Quantity</th>
         </tr>
       </thead>
@@ -93,6 +99,8 @@
           <tr>
           <th scope="row">${i + 1}</th>
           <td>${item.product_name}</td>
+          <td>${item.size}</td>
+          <td>${item.extra}</td>
           <td>${item.quantity}</td>
           </tr>
         `).join('')}
@@ -107,7 +115,6 @@
   }        
 
   $('.complete-order').on('click',(e)=>{
-    e.preventDefault();
     let table = $(e.target).parents('.table-individual');
     
     let formData = {

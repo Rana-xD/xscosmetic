@@ -48,7 +48,7 @@
         let formData = new FormData();
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
         formData.append('name',$("#ProductName").val());
-        formData.append('price',$("#Price").val());
+        formData.append('category_id',$("#Category").val());
         $.ajax({
           url: '/product/add',
           type: "POST", 
@@ -112,8 +112,13 @@
              <input type="text" name="name" maxlength="100" Required class="form-control" id="ProductName" placeholder="ProductName">
            </div>
            <div class="form-group">
-             <label for="Price">Price</label>
-             <input type="number" step="any" Required name="price" class="form-control" id="Price" placeholder="Price">
+             <label for="Category">Category</label>
+          <select class="form-control" id="Category" name="filtertype">
+            @foreach (App\Category::all() as $category)
+            <option value="{{ $category->id }}">{{ $category->name }}</option>
+            @endforeach
+            
+         </select>
            </div>
       </div>
       <div class="modal-footer">
