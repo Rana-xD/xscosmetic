@@ -20,8 +20,11 @@
         <tr>
           <th scope="col">#</th>
           <th scope="col">ProductName</th>
+          <th scope="col">Size</th>
+          <th scope="col">Extra</th>
           <th scope="col">Quantity</th>
-          <th scope="col">Price</th>
+          <th scope="col">Total</th>
+          
         </tr>
       </thead>
       <tbody>
@@ -29,8 +32,10 @@
         <tr>
         <th scope="row">{{ ($index + 1) }}</th>
           <td>{{$item["product_name"]}}</td>
+          <td>{{$item["size"]}}</td>
+          <td>{{$item["extra"]}}</td>
           <td>{{$item["quantity"]}}</td>
-          <td>{{$item["price"]}}</td>
+          <td>{{$item["total"]}}</td>
         </tr>
         @endforeach
       </tbody>
