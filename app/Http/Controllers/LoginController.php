@@ -26,7 +26,7 @@ class LoginController extends Controller
             
             
         }
-        return "NO";
+        return back()->with('message','Incorrect Credentials ');
     }
 
     public function logout(){
