@@ -67,7 +67,7 @@
       </tbody>
     </table>
       <div>
-        <button class="btn btn-success complete-order">DONE</button>
+        <button class="btn btn-success complete-order" onclick="removeOrder(this);">DONE</button>
       </div>
     </div>
     @endforeach
@@ -100,22 +100,22 @@
           <th scope="row">${i + 1}</th>
           <td>${item.product_name}</td>
           <td>${item.size}</td>
-          <td>${item.extra}</td>
+          <td>${item.extra == null ? '' : item.extra}</td>
           <td>${item.quantity}</td>
           </tr>
         `).join('')}
       </tbody>
     </table>
     <div>
-      <a class="btn btn-success complete-order">DONE</a>
+      <a class="btn btn-success complete-order" onclick="removeOrder(this);">DONE</a>
     </div>
     </div>
       `
     $('.tables-content').prepend(data);
   }        
 
-  $('.complete-order').on('click',(e)=>{
-    let table = $(e.target).parents('.table-individual');
+  function removeOrder(e){
+    let table = $(e).parents('.table-individual');
     
     let formData = {
       "id" : $(table).find('#order-id').val()
@@ -133,7 +133,10 @@
             console.log(err);
           } 
         });
+  }
+  // $('.complete-order').on('click',(e)=>{
     
-  })
+    
+  // })
 </script>
 @endsection
