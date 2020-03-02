@@ -229,7 +229,7 @@ $(document).ready(function() {
      let data = [];
      let cards = $('#productList').children();
      for(let i=0; i < cards.length;i++){
-         let item = {product_name: $(cards[i]).find('.product-name').text(), quantity: $(cards[i]).find('.quantity').val(), size: $(cards[i]).find('.drinkSize').val(), extra: $(cards[i]).find('.extra').text(), total: $(cards[i]).find('.subtotal').text()};
+         let item = {product_name: $(cards[i]).find('.product-name').text(), quantity: $(cards[i]).find('.quantity').val(), size: $(cards[i]).find('.size').text(), extra: $(cards[i]).find('.extra').text(), total: $(cards[i]).find('.subtotal').text()};
          data.push(item);
       }
       if(data.length == 0)return;
