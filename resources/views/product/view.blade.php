@@ -9,7 +9,7 @@
       <table id="Table" class="table table-striped table-bordered" cellspacing="0" width="100%">
           <thead>
               <tr>
-                  <th class="hidden-xs">ProductCode</th>
+                  <th class="hidden-xs">ProductNo</th>
                   <th>ProductName</th>
                   <th>Price</th>
                   <th>Action</th>
@@ -20,7 +20,7 @@
               @foreach ( $products as $product)
               
               <tr>
-                 <td class="hidden-xs productcode">{{ $product->product_code }}</td>
+                 <td class="hidden-xs productcode">{{ $product->product_no }}</td>
                  <td>{{ $product->product_name }}</td>
                   <td  data-order="{{ $product->price }}">{{ $product->price }}$</td>
                  <td><div class="btn-group">
@@ -47,6 +47,7 @@
         e.preventDefault();
         let formData = new FormData();
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
+        formData.append('product_no',$("#ProductNo").val());
         formData.append('name',$("#ProductName").val());
         formData.append('category_id',$("#Category").val());
         $.ajax({
@@ -107,8 +108,12 @@
         <h4 class="modal-title" id="myModalLabel">AddProduct></h4>
       </div>
       <div class="modal-body">
+          <div class="form-group">
+            <label for="ProductName">Product No</label>
+            <input type="text" name="name" maxlength="100" Required class="form-control" id="ProductNo" placeholder="ProductNo">
+          </div>
            <div class="form-group">
-             <label for="ProductName">ProductName</label>
+             <label for="ProductName">Product Name</label>
              <input type="text" name="name" maxlength="100" Required class="form-control" id="ProductName" placeholder="ProductName">
            </div>
            <div class="form-group">

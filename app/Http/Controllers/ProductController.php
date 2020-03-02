@@ -23,7 +23,7 @@ class ProductController extends Controller
 
     public function store(Request $request){
         $data = [
-            "product_code" => strval(rand(1000,9999)),
+            "product_no" => $request->product_no,
             "product_name" => $request->name,
             'category_id' => $request->category_id,
             "price" => '0',

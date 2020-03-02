@@ -8,12 +8,12 @@
             <h3>Product</h3>
          </div>
          <div class="col-xs-2 table-header">
-            <h3>Size</h3>
+            <h3 class="text-left">Size</h3>
          </div>
-         <div class="col-xs-3 table-header nopadding">
+         <div class="col-xs-2 table-header nopadding">
             <h3 class="text-left">Quantity</h3>
          </div>
-         <div class="col-xs-2 table-header">
+         <div class="col-xs-3 table-header">
             <h3 class="text-left">Extra</h3>
          </div>
          <div class="col-xs-2 table-header nopadding">
@@ -41,7 +41,37 @@
          </div>
 
       </div>
-      <div class="col-md-6 right-side nopadding">  
+      <div class="col-md-1 right-side nopadding">              <!-- product list section -->
+               <div class="col-sm-12 col-xs-12 div">
+                     <a href="javascript:void(0)" class="size" data-id="S" style="display: block;">
+                        <div class="product color01 flat-box" data-id="S">
+                        <h3 id="proname" data-id="S">S</h3>
+                        </div>
+                     </a>
+               </div>
+               <div class="col-sm-12 col-xs-12 div">
+                  <a href="javascript:void(0)" class="size" id="M" data-id="S" style="display: block;">
+                  <div class="product color02 flat-box" data-id="M">
+                  <h3 id="proname" data-id="M">M</h3>
+                  </div>
+               </a>
+         </div>
+         <div class="col-sm-12 col-xs-12 div">
+            <a href="javascript:void(0)" class="size" data-id="L" style="display: block;">
+            <div class="product color03 flat-box" data-id="L">
+            <h3 id="proname" data-id="L">L</h3>
+            </div>
+         </a>
+         </div>
+         <div class="col-sm-12 col-xs-12 div">
+            <a href="javascript:void(0)" class="size" data-id="XL" style="display: block;">
+            <div class="product color04 flat-box" data-id="XL">
+            <h3 id="proname" data-id="XL">XL</h3>
+            </div>
+         </a>
+   </div>
+      </div>
+      <div class="col-md-5 right-side nopadding">  
          <div class="row row-horizon">
             <span class="categories selectedGat" id=""><i class="fa fa-home"></i></span>
                @foreach (App\Category::all() as $category)
@@ -55,7 +85,7 @@
                <div class="col-sm-3 col-xs-4 div">
                      <a href="javascript:void(0)" class="addPct" id="product-{{$product->product_code}}" data-id="{{ $product->id }}" style="display: block;">
                         <div class="product color06 flat-box" data-id="{{ $product->id }}">
-                        <h3 id="proname" data-id="{{ $product->id }}">{{ $product->product_name }} </h3>
+                        <h3 id="proname" data-id="{{ $product->id }}">{{ $product->product_no }}. {{ $product->product_name }} </h3>
                            <input type="hidden" id="idname-{{ $product->id }}"  name="name" value="{{$product->product_name}}" />
                            <input type="hidden" id="idprice-{{$product->id}}" name="price" value="{{$product->price}}" />
                            <input type="hidden" id="category" name="category" value="{{$product->category->id}}" />
@@ -84,7 +114,7 @@ $(document).ready(function() {
             return;
          }
          var qt = 1;
-         var price = categoryID == 1 ? 3.00 : 4.00
+         var price = 0
 
          let row = `<div class="col-xs-12 product-card">
                         <div class="panel panel-default product-details">
@@ -101,19 +131,14 @@ $(document).ready(function() {
                               <div class="col-xs-9 nopadding">
                                  <input type="hidden" class="category-id"  name="category-id" value="${categoryID}" />
                                  <input type="hidden" class="product-price"  name="product-price" value="${price}" />
-                                 <input type="hidden" class="extra-price"  name="product-price" value="0" />
+                                 <input type="hidden" class="extra-price"  name="extra-price" value="0" />
                                  <span class="textPD product-name"> ${name} </span>
                               </div>
                               </div>
-                              <div class="col-xs-2">
-                                 <select class="form-control drinkSize" name="drinkSize" onchange="changeSize(this);">
-                                       <option value="S">S</option>
-                                       <option value="M">M</option>
-                                       <option value="L">L</option>
-                                       <option value="XL">XL</option>
-                                 </select>
+                              <div class="col-xs-2 nopadding">
+                                 <span class="size textPD"></span>
                               </div>
-                              <div class="col-xs-3 nopadding productNum">
+                              <div class="col-xs-2 nopadding productNum">
                                  <a onclick="minusQuantity(this)">
                                     <span class="fa-stack fa-sm decbutton">
                                        <i class="fa fa-square fa-stack-2x light-grey"></i>
@@ -128,7 +153,7 @@ $(document).ready(function() {
                                  </span>
                               </a>
                            </div>
-                           <div class="col-xs-2 nopadding ">
+                           <div class="col-xs-3 nopadding ">
                               <span class="extra textPD"></span>
                             </div>
                          <div class="col-xs-2 nopadding ">
@@ -143,18 +168,10 @@ $(document).ready(function() {
          totalItem();
          totalCash();
          
+      });
+
    });
 
-});
-
-   function changeSize(e){
-      let card = $(e).parents('.product-card'),
-          size = $(e).val(),
-          categoriesID = $(card).find('.category-id').val();
-      let price = productPrice(size,categoriesID);
-      $(card).find('.product-price').val(price);
-      editQuantity(card);
-   }
 
    function productPrice(size,categoriesID){
       switch (size){
@@ -262,8 +279,9 @@ $(document).ready(function() {
   function addExtra(name){
      if($('#productList').children().length==0) return;
      let card = $('#productList').children().last();
-     $(card).find('.extra').text(name);
-     $(card).find('.extra-price').val(1.00)
+     $(card).find('.extra').append(`${name}, `);
+     let price = parseFloat($(card).find('.extra-price').val()) + 1.00;
+     $(card).find('.extra-price').val(price);
      editQuantity(card);
   }
 
@@ -300,7 +318,18 @@ $(document).ready(function() {
       });
    });
 
-  
+  $('.size').on('click',function(e){
+
+   if($('#productList').children().length==0) return;
+     let size = $(e.target).attr('data-id');
+     let card = $('#productList').children().last();
+     let categoriesID = $(card).find('.category-id').val();
+     $(card).find('.size').text(size);
+     let price = productPrice(size,categoriesID);
+     $(card).find('.product-price').val(price);
+     editQuantity(card);
+     
+  });
 
 </script>
 @endsection
