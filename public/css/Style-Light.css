@@ -404,6 +404,12 @@ div.dataTables_wrapper { clear: both; }
    color: #81909a;
 }
 
+.product-name {
+   clear: both;
+   display: inline-block;
+   width: 100%; 
+   cursor: pointer;
+}
 .product-details input[type="text"] {
    width: 2.1em;
    padding: 3px;

@@ -115,6 +115,12 @@ $(document).ready(function() {
          }
          var qt = 1;
          var price = 0
+         
+         let string = name.split(",");
+         let productName = '';
+         for(let i=0; i < string.length; i++){
+            productName += `<span class="textPD product-name" onclick="removeProduct(this)">${string[i]} </span> \n`
+         }
 
          let row = `<div class="col-xs-12 product-card">
                         <div class="panel panel-default product-details">
@@ -132,7 +138,10 @@ $(document).ready(function() {
                                  <input type="hidden" class="category-id"  name="category-id" value="${categoryID}" />
                                  <input type="hidden" class="product-price"  name="product-price" value="${price}" />
                                  <input type="hidden" class="extra-price"  name="extra-price" value="0" />
-                                 <span class="textPD product-name"> ${name} </span>
+                                 <input type="hidden" class="product-name-final"  name="product-name-final" value="" />
+                                 <div class="product-name-content">
+                                    
+                                 </div>
                               </div>
                               </div>
                               <div class="col-xs-2 nopadding">
@@ -162,7 +171,9 @@ $(document).ready(function() {
                         </div>
                      </div>
                   </div>`;
-         $('#productList').append(row);
+         let html = $.parseHTML(row);
+         $(html).find('.product-name-content').append(productName);
+         $('#productList').append(html);
          
 
          totalItem();
@@ -172,6 +183,15 @@ $(document).ready(function() {
 
    });
 
+   function totalProduct(html){
+      let card = $(html).find('.product-name-content').children();
+      let productName = '';
+      for(let i=0;i<card.length;i++){
+         card.length - i == 1 ? productName += `${$(card[i]).text()} `  : productName += `${$(card[i]).text()}, `;  
+      }
+      
+      $(html).find('.product-name-final').val(productName.trim());
+   }
 
    function productPrice(size,categoriesID){
       switch (size){
@@ -227,13 +247,16 @@ $(document).ready(function() {
 
   $('#Order').on('click',(e)=>{
      let data = [];
+     
      let cards = $('#productList').children();
+     
+
      for(let i=0; i < cards.length;i++){
-         let item = {product_name: $(cards[i]).find('.product-name').text(), quantity: $(cards[i]).find('.quantity').val(), size: $(cards[i]).find('.size').text(), extra: $(cards[i]).find('.extra').text(), total: $(cards[i]).find('.subtotal').text()};
+         totalProduct(cards[i]);
+         let item = {product_name: $(cards[i]).find('.product-name-final').val(), quantity: $(cards[i]).find('.quantity').val(), size: $(cards[i]).find('.size').text(), extra: $(cards[i]).find('.extra').text(), total: $(cards[i]).find('.subtotal').text()};
          data.push(item);
       }
       if(data.length == 0)return;
-
       let formData = {
          "data" : data
       };
@@ -296,7 +319,11 @@ $(document).ready(function() {
      
   }
 
-  
+  function removeProduct(e){
+     let self = $(e);
+     $(self).remove();
+     let html = $(e).parents('.product-card');
+  }
   
   $(".categories").on("click", function () {
 
@@ -330,6 +357,8 @@ $(document).ready(function() {
      editQuantity(card);
      
   });
+
+  
 
 </script>
 @endsection
