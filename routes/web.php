@@ -29,4 +29,7 @@ Route::get('/order','OrderController@show');
 Route::get('/order/update','OrderController@update');
 
 
-
+Route::get('/category','CategoryController@show');
+Route::post('/category/add','CategoryController@store');
+Route::get('/category/delete','CategoryController@destroy');
+Route::post('/category/update','CategoryController@update');

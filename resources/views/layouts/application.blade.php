@@ -71,8 +71,16 @@
                @if (Auth::user()->role == "ADMIN")
                <ul class="nav navbar-nav">
                   <li class="flat-box"><a href="/pos"><i class="fa fa-credit-card"></i>POS</a></li>
-                 <li class="flat-box"><a href="/product"><i class="fa fa-archive"></i>Product</a></li>
+                  <li class="dropdown">
+                     <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-archive"></i> Product <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                           <li class="flat-box"><a href="/product"><i class="fa fa-archive"></i> Product (Stock) </a></li>
+                           <li class="flat-box"><a href="/category"><i class="fa fa-cog"></i> Category</a></li>
+                           <li class="flat-box"><a href=""><i class="fa fa-bullseye"></i> Unit</a></li>
+                     </ul>
+                  </li>
                  <li class="flat-box"><a href="/sale"><i class="fa fa-ticket"></i>Sales</a></li>
+                 
                  {{-- <li class="flat-box"><a href="#"><i class="fa fa-line-chart"></i>Reports</a></li> --}}
                </ul>
                @endif
