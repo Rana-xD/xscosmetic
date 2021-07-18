@@ -31,12 +31,12 @@
                         <span class="float-right"><b id="ItemsNum"><span></span>item</b></span>
                      </td>
                   </tr>
-                  <tr>
+                  {{-- <tr>
                      <td class="active" width="40%">Discount</td>
                      <td class="whiteBg" width="60%"><span id="Subtot"></span> 
                         <input type="text" class="form-control discount-input overall-discount" value="" placeholder="0" maxlength="3" onblur="handleProductOverallDiscount(this)">
                      </td>
-                  </tr>
+                  </tr> --}}
                   <tr>
                      <td class="active">Total</td>
                      <td class="whiteBg light-blue text-bold"><span id="total" total-data="">$</td>
@@ -243,7 +243,7 @@ $(document).ready(function() {
      let total = 0;
      let cards = $('#productList').children();
       for(let i=0; i < cards.length;i++){
-         total += parseFloat($(cards[i]).find('.subtotal').text());
+         total += parseFloat($(cards[i]).find('.subtotal').text().replace('$',''));
       }
       $('#total').text(`${total.toFixed(2)} $`)
       $('#total').attr('total-data',total.toFixed(2));

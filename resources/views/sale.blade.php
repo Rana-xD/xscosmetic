@@ -42,7 +42,7 @@
           <td>{{$item["product_name"]}}</td>
           <td>{{$item["quantity"]}}</td>
           <td>{{$item["price"]}}</td>
-          <td>{{$item["discount"]}}</td>
+          <td>{{$item["discount"]}}%</td>
           <td>{{$item["total"]}}</td>
           <td>{{$item["cost"]}}</td>
           <td>{{$item["profit"]}}</td>
