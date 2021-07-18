@@ -13,7 +13,7 @@ class SaleController extends Controller
     }
 
     public function show(){
-        $orders = POS::orderBy('created_at', 'DESC')->paginate(20);;
+        $orders = POS::orderBy('created_at', 'DESC')->paginate(30);
         return view('sale',[
             'orders' => $orders
         ]);

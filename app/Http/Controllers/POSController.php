@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Product;
 use App\POS;
 use Auth;
+use DateTime;
+use DateTimeZone;
 use App\ProductIncome;
 use App\Events\NewOrder;
 
@@ -18,7 +20,7 @@ class POSController extends Controller
     }
 
     public function show(){
-        $products = Product::orderBy('created_at','asc')->get();
+        $products = Product::with('unit')->orderBy('created_at','asc')->get();
         return view('pos',[
             'products' => $products
         ]);
@@ -28,9 +30,10 @@ class POSController extends Controller
         $data = [
             "order_no" => date('Ymd').strval(rand(1000,9999)),
             "items" => $request->data,
-            "cashier" => Auth::user()->username
+            "cashier" => Auth::user()->username,
+            "time" => $this->getLocaleTime()
         ];
-        // $order = POS::create($data);
+        $order = POS::create($data);
 
         $this->deductStock($data['items']);        
         $this->updateProductIncome($data['items']);
@@ -66,5 +69,11 @@ class POSController extends Controller
             $product_income->profit += $profit;
             $product_income->save();          
         }
+    }
+
+    private function getLocaleTime(){
+        $timezone = "Asia/Bangkok";
+        $date = new DateTime('now', new DateTimeZone($timezone));
+        return $date->format('h:i A');
     }
 }

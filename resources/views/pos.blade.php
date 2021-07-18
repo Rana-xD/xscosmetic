@@ -95,7 +95,9 @@
                         <h3 id="proname" data-id="{{ $product->id }}">{{ $product->name }} <br><br> ({{ $product->stock }})</h3>
                            <input type="hidden" id="idname-{{ $product->id }}"  name="name" value="{{$product->name}}" />
                            <input type="hidden" id="idprice-{{$product->id}}" name="price" value="{{$product->price}}" />
+                           <input type="hidden" id="idcost-{{$product->id}}" name="cost" value="{{$product->cost}}" />
                            <input type="hidden" id="category" name="category" value="{{$product->category->id}}" />
+                           <input type="hidden" id="unit" name="unit" value="{{$product->unit->name}}" />
                         </div>
                      </a>
                </div>
@@ -116,6 +118,8 @@ $(document).ready(function() {
          var name = $('#idname-'+id).val();
          var price = $('#idprice-'+id).val();
          var categoryID = $(card).find('#category').val();
+         var cost = $('#idcost-'+id).val();
+         var unit = $(card).find('#unit').val();
 
          
          var qt = 1;
@@ -142,6 +146,8 @@ $(document).ready(function() {
                               <div class="col-xs-9 nopadding">
                                  <input type="hidden" class="product-id"  name="product-id" value="${id}" />
                                  <input type="hidden" class="category-id"  name="category-id" value="${categoryID}" />
+                                 <input type="hidden" class="unit-id"  name="unit-id" value="${unit}" />
+                                 <input type="hidden" class="product-cost"  name="product-cost" value="${cost}" />
                                  <input type="hidden" class="product-price"  name="product-price" value="${price}" />
                                  <input type="hidden" class="product-discount-price"  name="product-discount-price" value="${price}" />
                                  <input type="hidden" class="extra-price"  name="extra-price" value="0" />
@@ -173,7 +179,7 @@ $(document).ready(function() {
                               <input type="text" class="form-control discount-input discount" value="" placeholder="0" maxlength="3" onblur="handleProductDiscount(this)">
                             </div>
                          <div class="col-xs-2 nopadding ">
-                        <span class="subtotal textPD" subtotal-data="${parseFloat(price * qt).toFixed(2)}">${ (parseFloat(price * qt).toFixed(2))}$</span>
+                        <span class="subtotal textPD" subtotal-data="${parseFloat(price * qt).toFixed(2)}">$ ${ (parseFloat(price * qt).toFixed(2))}</span>
                         </div>
                         </div>
                      </div>
@@ -261,7 +267,15 @@ $(document).ready(function() {
 
      for(let i=0; i < cards.length;i++){
          totalProduct(cards[i]);
-         let item = {product_id: parseInt($(cards[i]).find('.product-id').val()),product_name: $(cards[i]).find('.product-name-final').val(), quantity: parseInt($(cards[i]).find('.quantity').val()), price: $(cards[i]).find('.product-price').val(), discount: $(cards[i]).find('.discount').val() === '' ? 0 : $(cards[i]).find('.discount').val(), total: $(cards[i]).find('.subtotal').text()};
+
+         let cost = $(cards[i]).find('.product-cost').val(),
+         unit = $(cards[i]).find('.unit-id').val()
+         quantity = parseInt($(cards[i]).find('.quantity').val()),
+         totalCost = (cost*quantity).toFixed(2),
+         totalPrice = parseFloat(($(cards[i]).find('.subtotal').text()).replace('$','')).toFixed(2),
+         profit = parseFloat(totalPrice - totalCost).toFixed(2);
+
+         let item = {product_id: parseInt($(cards[i]).find('.product-id').val()),product_name: $(cards[i]).find('.product-name-final').val(), quantity: `${quantity} ${unit}`, price: $(cards[i]).find('.product-price').val(), discount: $(cards[i]).find('.discount').val() === '' ? 0 : $(cards[i]).find('.discount').val(), total: $(cards[i]).find('.subtotal').text(), cost: `$ ${totalCost}`, profit: `$ ${profit}`};
          data.push(item);
       }
       if(data.length == 0)return;

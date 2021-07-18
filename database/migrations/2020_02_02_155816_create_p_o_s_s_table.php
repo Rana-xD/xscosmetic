@@ -18,6 +18,7 @@ class CreatePOSSTable extends Migration
             $table->string("order_no");
             $table->text("items");
             $table->string("cashier");
+            $table->string("time");
             $table->timestamps();
             
         });
