@@ -8,13 +8,13 @@
             <h3>Product</h3>
          </div>
          <div class="col-xs-2 table-header">
-            <h3 class="text-left">Size</h3>
+            <h3 class="text-left">Price</h3>
          </div>
          <div class="col-xs-2 table-header nopadding">
             <h3 class="text-left">Quantity</h3>
          </div>
          <div class="col-xs-3 table-header">
-            <h3 class="text-left">Extra</h3>
+            <h3 class="text-left">Discount</h3>
          </div>
          <div class="col-xs-2 table-header nopadding">
             <h3>Total</h3>
@@ -24,15 +24,22 @@
          </div>
          <div class="footer-section">
             <div class="table-responsive col-sm-12 totalTab">
-               <table class="table">
+               <table class="table cashier-section">
                   <tr>
                      <td class="active" width="40%">Total Items</td>
                      <td class="whiteBg" width="60%"><span id="Subtot"></span> 
                         <span class="float-right"><b id="ItemsNum"><span></span>item</b></span>
                      </td>
                   </tr>
+                  <tr>
+                     <td class="active" width="40%">Discount</td>
+                     <td class="whiteBg" width="60%"><span id="Subtot"></span> 
+                        <input type="text" class="form-control discount-input overall-discount" value="" placeholder="0" maxlength="3" onblur="handleProductOverallDiscount(this)">
+                     </td>
+                  </tr>
+                  <tr>
                      <td class="active">Total</td>
-                     <td class="whiteBg light-blue text-bold"><span id="total">$</td>
+                     <td class="whiteBg light-blue text-bold"><span id="total" total-data="">$</td>
                   </tr>
                </table>
             </div>
@@ -41,7 +48,7 @@
          </div>
 
       </div>
-      <div class="col-md-1 right-side nopadding">              <!-- product list section -->
+      {{-- <div class="col-md-1 right-side nopadding">              <!-- product list section -->
                <div class="col-sm-12 col-xs-12 div">
                      <a href="javascript:void(0)" class="size" data-id="S" style="display: block;">
                         <div class="product color01 flat-box" data-id="S">
@@ -70,8 +77,8 @@
             </div>
          </a>
    </div>
-      </div>
-      <div class="col-md-5 right-side nopadding">  
+      </div> --}}
+      <div class="col-md-6 right-side nopadding">  
          <div class="row row-horizon">
             <span class="categories selectedGat" id=""><i class="fa fa-home"></i></span>
                @foreach (App\Category::all() as $category)
@@ -82,11 +89,11 @@
          </div>            <!-- product list section -->
          <div id="productList2">
             @foreach ( $products as $product)
-               <div class="col-sm-3 col-xs-4 div">
+               <div class="col-xs-4 div">
                      <a href="javascript:void(0)" class="addPct" id="product-{{$product->product_code}}" data-id="{{ $product->id }}" style="display: block;">
                         <div class="product color06 flat-box" data-id="{{ $product->id }}">
-                        <h3 id="proname" data-id="{{ $product->id }}">{{ $product->product_no }}. {{ $product->product_name }} </h3>
-                           <input type="hidden" id="idname-{{ $product->id }}"  name="name" value="{{$product->product_name}}" />
+                        <h3 id="proname" data-id="{{ $product->id }}">{{ $product->name }} <br><br> ({{ $product->stock }})</h3>
+                           <input type="hidden" id="idname-{{ $product->id }}"  name="name" value="{{$product->name}}" />
                            <input type="hidden" id="idprice-{{$product->id}}" name="price" value="{{$product->price}}" />
                            <input type="hidden" id="category" name="category" value="{{$product->category->id}}" />
                         </div>
@@ -107,14 +114,12 @@ $(document).ready(function() {
          if(id == undefined) return;
          
          var name = $('#idname-'+id).val();
+         var price = $('#idprice-'+id).val();
          var categoryID = $(card).find('#category').val();
 
-         if(categoryID==3){
-            addExtra(name);
-            return;
-         }
+         
          var qt = 1;
-         var price = 0
+         // var price = 0
          
          let string = name.split(",");
          let productName = '';
@@ -135,8 +140,10 @@ $(document).ready(function() {
                                     </a>
                                  </div>
                               <div class="col-xs-9 nopadding">
+                                 <input type="hidden" class="product-id"  name="product-id" value="${id}" />
                                  <input type="hidden" class="category-id"  name="category-id" value="${categoryID}" />
                                  <input type="hidden" class="product-price"  name="product-price" value="${price}" />
+                                 <input type="hidden" class="product-discount-price"  name="product-discount-price" value="${price}" />
                                  <input type="hidden" class="extra-price"  name="extra-price" value="0" />
                                  <input type="hidden" class="product-name-final"  name="product-name-final" value="" />
                                  <div class="product-name-content">
@@ -145,7 +152,7 @@ $(document).ready(function() {
                               </div>
                               </div>
                               <div class="col-xs-2 nopadding">
-                                 <span class="size textPD"></span>
+                                 <span class="size textPD">${price}$</span>
                               </div>
                               <div class="col-xs-2 nopadding productNum">
                                  <a onclick="minusQuantity(this)">
@@ -163,10 +170,10 @@ $(document).ready(function() {
                               </a>
                            </div>
                            <div class="col-xs-3 nopadding ">
-                              <span class="extra textPD"></span>
+                              <input type="text" class="form-control discount-input discount" value="" placeholder="0" maxlength="3" onblur="handleProductDiscount(this)">
                             </div>
                          <div class="col-xs-2 nopadding ">
-                        <span class="subtotal textPD">${ (parseFloat(price * qt).toFixed(2))}$</span>
+                        <span class="subtotal textPD" subtotal-data="${parseFloat(price * qt).toFixed(2)}">${ (parseFloat(price * qt).toFixed(2))}$</span>
                         </div>
                         </div>
                      </div>
@@ -233,6 +240,7 @@ $(document).ready(function() {
          total += parseFloat($(cards[i]).find('.subtotal').text());
       }
       $('#total').text(`${total.toFixed(2)} $`)
+      $('#total').attr('total-data',total.toFixed(2));
 
   }
 
@@ -253,7 +261,7 @@ $(document).ready(function() {
 
      for(let i=0; i < cards.length;i++){
          totalProduct(cards[i]);
-         let item = {product_name: $(cards[i]).find('.product-name-final').val(), quantity: $(cards[i]).find('.quantity').val(), size: $(cards[i]).find('.size').text(), extra: $(cards[i]).find('.extra').text(), total: $(cards[i]).find('.subtotal').text()};
+         let item = {product_id: parseInt($(cards[i]).find('.product-id').val()),product_name: $(cards[i]).find('.product-name-final').val(), quantity: parseInt($(cards[i]).find('.quantity').val()), price: $(cards[i]).find('.product-price').val(), discount: $(cards[i]).find('.discount').val() === '' ? 0 : $(cards[i]).find('.discount').val(), total: $(cards[i]).find('.subtotal').text()};
          data.push(item);
       }
       if(data.length == 0)return;
@@ -275,13 +283,70 @@ $(document).ready(function() {
                title: 'DONE',
                text: 'Order complete',
                type: "success",
+               timer: 1500,
+               showCancelButton: false,
+               showConfirmButton: false
+            },function (data){
+               location.reload(true);
             });
+            
           },
           error: function(err){
             console.log(err);
           } 
         });
   })
+
+  function handleProductDiscount(e){
+      let price = parseFloat($(e).parents('.product-card').find('.product-price').val()),
+          quantity = parseInt($(e).parents('.product-card').find('.quantity').val()),
+          initDiscountPrice = parseFloat($(e).parents('.product-card').find('.product-price').val()),
+          totalPrice = parseFloat((price) * quantity).toFixed(2),
+          discount = ($(e).parents('.product-card').find('.discount').val()) === '' ? 0 : parseFloat($(e).parents('.product-card').find('.discount').val()).toFixed(2);
+
+          
+         if(!discount){
+            let card = $(e).parents('.product-card');
+            $(e).parents('.product-card').find('.product-discount-price').val(price);
+            editQuantity(e);
+            return;
+         }
+
+         if(discount > 100){
+            return;
+         }
+      
+      discontPrice = (initDiscountPrice - (initDiscountPrice *(discount / 100))).toFixed(2);
+      totalDiscountPrice =  (totalPrice - (totalPrice *(discount / 100))).toFixed(2);
+      $(e).parents('.product-card').find('.subtotal').text(`${totalDiscountPrice}$`);
+      $(e).parents('.product-card').find('.product-discount-price').val(discontPrice);
+      totalCash();
+      
+  }
+
+  function handleProductOverallDiscount(e){
+     let parentDiv = $(e).parents('.cashier-section');
+         total = $('#total').attr('total-data') === '' ? 0 : $('#total').attr('total-data'),
+         totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
+
+         if(!total){
+            return;
+         }
+
+         if(!totalDiscount){
+            totalCash();
+            return;
+         }
+
+         if(totalDiscount > 100){
+            return;
+         }
+         let totalDiscountPrice = (total - (total *(totalDiscount / 100))).toFixed(2);
+
+
+         console.log(totalDiscountPrice);
+         $('#total').text(`${totalDiscountPrice} $`)
+  }
 
   function minusQuantity(e){
       let card = $(e).parents('.product-card');
@@ -310,10 +375,12 @@ $(document).ready(function() {
 
   function editQuantity(e){
     
-     let price = parseFloat($(e).find('.product-price').val()) ;
+     let price = parseFloat($(e).find('.product-discount-price').val());
      let quantity = parseInt($(e).find('.quantity').val());
-     let extra = parseFloat($(e).find('.extra-price').val());
-     $(e).find('.subtotal').text(`${parseFloat((price + extra) * quantity).toFixed(2)}$`);
+     $(e).find('.subtotal').text(`${parseFloat((price) * quantity).toFixed(2)}$`);
+
+     $(e).find('.subtotal').attr('subtotal-data',`${parseFloat((price) * quantity).toFixed(2)}`);
+     
      totalItem();
      totalCash();
      

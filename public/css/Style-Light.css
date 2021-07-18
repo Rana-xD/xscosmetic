@@ -410,6 +410,11 @@ div.dataTables_wrapper { clear: both; }
    width: 100%; 
    cursor: pointer;
 }
+.discount-input {
+   width: 100% !important;
+   border: 1px solid !important;
+}
+
 .product-details input[type="text"] {
    width: 2.1em;
    padding: 3px;
@@ -418,9 +423,10 @@ div.dataTables_wrapper { clear: both; }
    height: 1.8em;
 }
 
-.delete-product {
+
+
+.delete-btn {
    color: #f65e48;
-   margin-top: 1px;
 }
 
 .textPD {
@@ -533,9 +539,11 @@ div.dataTables_wrapper { clear: both; }
    overflow: hidden;
 }
 
+
+
 .product {
-   height: 120px;
-   width: 120px;
+   height: 90px;
+   width: 100%;
    border-radius: 8px;
    text-align: center;
    background-size: cover;

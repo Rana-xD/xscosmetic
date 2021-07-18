@@ -17,7 +17,7 @@ class CreatePOSSTable extends Migration
             $table->bigIncrements('id');
             $table->string("order_no");
             $table->text("items");
-            $table->boolean("is_done")->default(false);
+            $table->string("cashier");
             $table->timestamps();
             
         });

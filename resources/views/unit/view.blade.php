@@ -10,23 +10,23 @@
           <thead>
               <tr>
                   <th class="hidden-xs">No</th>
-                  <th>Category Name</th>
+                  <th>Unit Name</th>
                   <th>Action</th>
               </tr>
           </thead>
 
           <tbody>
-              @foreach ( $categories as $category)
+              @foreach ( $units as $unit)
               
-              <tr class="category-data">
+              <tr class="unit-data">
                  <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
-                 <td class="category-name">{{ $category->name }}</td>
+                 <td class="unit-name">{{ $unit->name }}</td>
                  <td><div class="btn-group">
-                  <a class="btn btn-default delete-btn" data-id="{{ $category->id }}" ><i class="fa fa-times" data-id="{{ $category->id }}"></i></a>
+                  <a class="btn btn-default delete-btn" data-id="{{ $unit->id }}" ><i class="fa fa-times" data-id="{{ $unit->id }}"></i></a>
                   
                      </div>
                      <div class="btn-group">
-                      <a class="btn btn-default edit-category" data-id="{{ $category->id }}" ><i class="fa fa-pencil-square-o" data-id="{{ $category->id }}"></i></a>
+                      <a class="btn btn-default edit-unit" data-id="{{ $unit->id }}" ><i class="fa fa-pencil-square-o" data-id="{{ $unit->id }}"></i></a>
                      </div>
                   </td>
               </tr>
@@ -35,7 +35,7 @@
       </table>
    </div>
    <!-- Button trigger modal -->
-   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addcategory">Add Category</button>
+   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addunit">Add Unit</button>
 </div>
 <!-- /.container -->
 
@@ -45,19 +45,19 @@
 <script type="text/javascript">
   $(document).ready(function() {
       
-      $("#addCategory").on("submit",(e)=>{
+      $("#addUnit").on("submit",(e)=>{
         e.preventDefault();
         let formData = new FormData();
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
-        formData.append('name',$("#CategoryName").val());
+        formData.append('name',$("#UnitName").val());
         $.ajax({
-          url: '/category/add',
+          url: '/unit/add',
           type: "POST", 
           data: formData,
           contentType: false,
           processData: false,
           success: function(res){
-            $('#CategoryName').val('');
+            $('#UnitName').val('');
             location.reload();
           },
           error: function(err){
@@ -66,7 +66,7 @@
         });
       });
 
-      $(".delete-category").on("click",(e)=>{
+      $(".delete-unit").on("click",(e)=>{
         swal({   title: 'Are you sure?',
           text: 'Delete Product',
           type: "warning",
@@ -82,7 +82,7 @@
             };
             console.log(formData);
             $.ajax({
-              url: '/category/delete',
+              url: '/unit/delete',
               type: "GET", 
               data: formData,
               contentType: false,
@@ -97,26 +97,26 @@
           })
       });
 
-      $(".edit-category").on("click",(e)=>{
+      $(".edit-unit").on("click",(e)=>{
         e.preventDefault();
         let self = e.target,
             id = $(self).attr('data-id'),
-            categoryName = $(self).parents('.category-data').find('.category-name').text();
+            unitName = $(self).parents('.unit-data').find('.unit-name').text();
 
-            $('#CategoryId').val(id);
-            $('#CategoryNameEdit').val(categoryName);
-            $('#Updatecategory').modal('show');
+            $('#UnitId').val(id);
+            $('#UnitNameEdit').val(unitName);
+            $('#Updateunit').modal('show');
       });
 
-      $('#editCategory').on("submit",(e) => {
+      $('#editUnit').on("submit",(e) => {
         e.preventDefault();
         e.stopPropagation();
         let formData = new FormData();
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
-        formData.append('name',$("#CategoryNameEdit").val());
-        formData.append('id',$("#CategoryId").val());
+        formData.append('name',$("#UnitNameEdit").val());
+        formData.append('id',$("#UnitId").val());
         $.ajax({
-          url: '/category/update',
+          url: '/unit/update',
           type: "POST", 
           data: formData,
           contentType: false,
@@ -132,19 +132,19 @@
   });
 </script>
 <!-- Add Modal -->
-<div class="modal fade" id="Addcategory" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="Addunit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
  <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
-      <form id="addCategory" action="/category/add" method="POST" enctype="multipart/form-data">
+      <form id="addUnit" action="/unit/add" method="POST" enctype="multipart/form-data">
         @csrf
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Add Category</h4>
+        <h4 class="modal-title" id="myModalLabel">Add Unit</h4>
       </div>
       <div class="modal-body">
            <div class="form-group">
-             <label for="CategoryName">Category Name</label>
-             <input type="text" name="name" maxlength="100" Required class="form-control" id="CategoryName" placeholder="Category Name">
+             <label for="UnitName">Unit Name</label>
+             <input type="text" name="name" maxlength="100" Required class="form-control" id="UnitName" placeholder="Unit Name">
            </div>
       </div>
       <div class="modal-footer">
@@ -158,20 +158,20 @@
 <!-- /.Modal -->
 
 <!-- Edit Modal -->
-<div class="modal fade" id="Updatecategory" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="Updateunit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
      <div class="modal-content">
-       <form id="editCategory" action="/category/edit" method="POST" enctype="multipart/form-data">
+       <form id="editUnit" action="/unit/edit" method="POST" enctype="multipart/form-data">
          @csrf
        <div class="modal-header">
          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-         <h4 class="modal-title" id="myModalLabel">Edit Category</h4>
+         <h4 class="modal-title" id="myModalLabel">Edit Unit</h4>
        </div>
        <div class="modal-body">
             <div class="form-group">
-              <label for="CategoryName">Category Name</label>
-              <input type="text" name="name" maxlength="100" Required class="form-control" id="CategoryNameEdit" placeholder="Category Name">
-              <input type="hidden"  name="category-id" id="CategoryId">
+              <label for="UnitName">Unit Name</label>
+              <input type="text" name="name" maxlength="100" Required class="form-control" id="UnitNameEdit" placeholder="Unit Name">
+              <input type="hidden"  name="unit-id" id="UnitId">
             </div>
        </div>
        <div class="modal-footer">

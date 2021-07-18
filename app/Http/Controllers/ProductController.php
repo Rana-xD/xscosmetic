@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Product;
+use App\ProductIncome;
 
 class ProductController extends Controller
 {
@@ -15,7 +16,8 @@ class ProductController extends Controller
     }
 
     public function show(){
-        $products = Product::All();
+        $products = Product::with('category','unit')->get();
+
         return view('product.view',[
             'products' => $products
         ]);
@@ -23,14 +25,25 @@ class ProductController extends Controller
 
     public function store(Request $request){
         $data = [
-            "product_no" => $request->product_no,
-            "product_name" => $request->name,
-            'category_id' => $request->category_id,
-            "price" => '0',
+            "name" => $request->name,
+            "category_id" => $request->category_id,
+            "unit_id" => $request->unit_id,
+            "stock" =>$request->stock,
+            "size" =>$request->size,
+            "price" =>$request->price,
+            "cost" => $request->cost,
             "photo" => "TEXT"
         ];
 
-        Product::create($data);
+        $result = Product::create($data);
+
+        $init_data = [
+            'product_id' => $result->id,
+            'unit_id' => $request->unit_id,
+            'product_name' => $request->name,
+        ];
+
+        ProductIncome::create($init_data);
 
         return response()->json([
             'code' => 200,
@@ -43,6 +56,26 @@ class ProductController extends Controller
         Product::destroy($id);
         return response()->json([
             'code' => 200
+        ]);
+    }
+
+    public function update(Request $request){
+        $data = [
+            "name" => $request->name,
+            "category_id" => $request->category_id,
+            "unit_id" =>$request->unit_id,
+            "stock" =>$request->stock,
+            "size" =>$request->size,
+            "price" =>$request->price,
+            "cost" => $request->cost,
+            "photo" => "TEXT"
+        ];
+        $id = $request->id;
+        Product::find($id)->update($data);
+        ProductIncome::where('product_id',$id)->update(['product_name' => $request->name]);
+        return response()->json([
+            'code' => 200,
+            'data' => $data
         ]);
     }
 

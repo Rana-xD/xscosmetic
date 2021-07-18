@@ -19,6 +19,7 @@ Route::get('logout', 'LoginController@logout')->name('logout');
 Route::get('/product', 'ProductController@show');
 Route::post('/product/add', 'ProductController@store');
 Route::get('/product/delete','ProductController@destroy');
+Route::post('/product/update','ProductController@update');
 
 Route::get('/sale', 'SaleController@show');
 
@@ -33,3 +34,10 @@ Route::get('/category','CategoryController@show');
 Route::post('/category/add','CategoryController@store');
 Route::get('/category/delete','CategoryController@destroy');
 Route::post('/category/update','CategoryController@update');
+
+Route::get('/unit','UnitController@show');
+Route::post('/unit/add','UnitController@store');
+Route::get('/unit/delete','UnitController@destroy');
+Route::post('/unit/update','UnitController@update');
+
+Route::get('/product-income','ProductIncomeController@show');

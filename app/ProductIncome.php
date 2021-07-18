@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class ProductIncome extends Model
 {
     /**
      * The attributes that are mass assignable.
@@ -12,7 +12,7 @@ class Product extends Model
      * @var array
      */
     protected $fillable = [
-        'name','stock', 'price','cost','size','photo','category_id','unit_id'
+        'product_id','unit_id', 'product_name','quantity','total_price','total_cost','profit'
     ];
 
     public function category(){
@@ -22,5 +22,4 @@ class Product extends Model
     public function unit(){
         return $this->belongsTo('App\Unit','unit_id');
     }
-    
 }
