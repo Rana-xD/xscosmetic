@@ -35,7 +35,7 @@ class ProductController extends Controller
             $fileNameToStore = $filename.'_'.time().'.'.$extension;
             $path = $request->file('photo')->storeAs('public/product_images',$fileNameToStore);
         }else{
-            $fileNameToStore = 'defaul.jpg';
+            $fileNameToStore = 'default.jpg';
         }
         $data = [
             "name" => $request->name,
@@ -74,6 +74,7 @@ class ProductController extends Controller
 
     public function update(Request $request){
 
+        $default_img = 'defaul.jpg';
         $id = $request->id;
         $product = Product::find($id);
         $data = [
@@ -87,7 +88,10 @@ class ProductController extends Controller
         ];
 
         if($request->hasFile('photo')){
-            unlink(storage_path('app/public/product_images/'.$product->photo));
+            if($product->photo != $default_img){    
+                unlink(storage_path('app/public/product_images/'.$product->photo));
+            }
+            
             $filenameWithExt = $request->file('photo')->getClientOriginalName();
             $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
             $extension = $request->file('photo')->getClientOriginalExtension();
