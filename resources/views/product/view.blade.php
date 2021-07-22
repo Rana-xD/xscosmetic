@@ -78,7 +78,7 @@
       
       $("body").on("change", "#Image", function(e){
         var self = e.target;
-        if(self.files[0].size/1024/1024 < 5){
+        if(self.files[0].size/1024/1024 > 5){
           html = `<h2 class="text-danger">*Image Should not bigger than 5MB</h2>`
           $('.image-content').append(html);
           $('#Image').val(null);
