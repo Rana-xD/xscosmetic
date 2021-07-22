@@ -2,6 +2,19 @@
 @extends('layouts/application')
 @section('head')
 <meta name="csrf_token" content="{{ csrf_token() }}" />
+<style>
+    #openFileInput,
+    #openFileInputEdit {
+      cursor: pointer;
+    }
+    #ProductImage,
+    #ProductImageEdit
+    {
+      width:100%;
+      /* height: 230px; */
+    }
+    
+</style>
 @endsection
 @section('content')
 <div class="container">
@@ -37,7 +50,10 @@
                   <a class="btn btn-default delete-btn" data-id="{{ $product->id }}" ><i class="fa fa-times" data-id="{{ $product->id }}"></i></a>
                      </div>
                      <div class="btn-group">
-                      <a class="btn btn-default edit-product" data-id="{{ $product->id }}" ><i class="fa fa-pencil-square-o" data-id="{{ $product->id }}"></i></a>
+                      <a class="btn btn-default edit-product" data-id="{{ $product->id }}" image-data="/storage/product_images/{{$product->photo}}" ><i class="fa fa-pencil-square-o" data-id="{{ $product->id }}" image-data="/storage/product_images/{{$product->photo}}"></i></a>
+                     </div>
+                     <div class="btn-group">
+                      <a class="btn btn-default view-product-image" data-id="{{ $product->id }}" image-data="/storage/product_images/{{$product->photo}}"><i class="fa fa-picture-o " data-id="{{ $product->id }}" image-data="/storage/product_images/{{$product->photo}}"></i></a>
                      </div>
                   </td>
               </tr>
@@ -46,7 +62,7 @@
       </table>
    </div>
    <!-- Button trigger modal -->
-   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addproduct">Add Product</button>
+   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" id="handleAddProduct">Add Product</button>
 </div>
 <!-- /.container -->
 
@@ -55,7 +71,56 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
+      let isImageUpdate = 0;
+      $("#openFileInput").on("click",(e)=>{
+        $('#Image').click();
+      })
       
+      $("body").on("change", "#Image", function(e){
+        var self = e.target;
+        if(self.files[0].size/1024/1024 < 5){
+          html = `<h2 class="text-danger">*Image Should not bigger than 5MB</h2>`
+          $('.image-content').append(html);
+          $('#Image').val(null);
+          return;
+        }
+        if (self.files && self.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+            $('#ProductImage').attr('src', e.target.result);
+          };
+
+            reader.readAsDataURL(self.files[0]);
+        } 
+
+      });
+
+      $("#openFileInputEdit").on("click",(e)=>{
+        $('#ImageEdit').click();
+      })
+      
+      $("body").on("change", "#ImageEdit", function(e){
+        var self = e.target;
+        
+        if (self.files && self.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+            $('#ProductImageEdit').attr('src', e.target.result);
+          };
+
+            reader.readAsDataURL(self.files[0]);
+            isImageUpdate = 1;
+        } 
+
+      });
+      
+      $('#handleAddProduct').on("click",(e)=>{
+        $('#addProducts')[0].reset();
+        $('#Addproduct').modal('show');
+      })
+
       $("#addProducts").on("submit",(e)=>{
         e.preventDefault();
         let formData = new FormData();
@@ -67,6 +132,8 @@
         formData.append('size',$("#size").val());
         formData.append('price',$("#price").val());
         formData.append('cost',$("#cost").val());
+        formData.append('photo',$("#Image")[0].files[0]);
+        
         $.ajax({
           url: '/product/add',
           type: "POST", 
@@ -124,7 +191,8 @@
               size = $(parentDiv).find('.product-size').text(),
               price = $(parentDiv).find('.product-price').attr('price-data'),
               cost = $(parentDiv).find('.product-cost').attr('cost-data'),
-              categoryId = $(parentDiv).find('.product-category').attr('category-id');
+              categoryId = $(parentDiv).find('.product-category').attr('category-id'),
+              image = $(self).attr('image-data');
 
               $('#ProductName-edit').val(productName);
               $('#productID').val(id);
@@ -134,7 +202,7 @@
               $('#cost-edit').val(cost);
               $('Category-edit').val(categoryId);
               $('Unit-edit').val(unitId);
-
+              $("#ProductImageEdit").attr('src',image);
 
               $('#Editproduct').modal('show');
 
@@ -152,6 +220,9 @@
         formData.append('size',$("#size-edit").val());
         formData.append('price',$("#price-edit").val());
         formData.append('cost',$("#cost-edit").val());
+        if(isImageUpdate){
+          formData.append('photo',$("#ImageEdit")[0].files[0]);
+        }
         $.ajax({
           url: '/product/update',
           type: "POST", 
@@ -159,6 +230,7 @@
           contentType: false,
           processData: false,
           success: function(res){
+            isImageUpdate = 0;
             // console.log(res)
             location.reload();
           },
@@ -166,6 +238,14 @@
             console.log(err);
           } 
         });
+      })
+
+      $(".view-product-image").on("click",(e)=>{
+        let self = e.target,
+            image = $(self).attr('image-data');
+
+            $("#ProductimageView").attr('src',image);
+            $("#ImageModal").modal('show');
       })
   });
 </script>
@@ -215,6 +295,17 @@
                  <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                @endforeach
              </select>
+          </div>
+          <div class="form-group">
+            <label for="Image">Image</label>
+              <a id="openFileInput">Browse</a>
+              <input type="file" name="logo" id="Image" style="display:none">
+              <input type="hidden" name="crop_image" id="crop_image">
+          </div>
+          <div class="form-group">
+            <div class="text-center image-content">
+              <img class="img-fluid" src="" alt="" id="ProductImage"/>
+            </div>
           </div>
       </div>
       <div class="modal-footer">
@@ -276,6 +367,16 @@
                 @endforeach
               </select>
            </div>
+           <div class="form-group">
+            <label for="Image">Image</label>
+              <a id="openFileInputEdit">Browse</a>
+              <input type="file" name="logo" id="ImageEdit" style="display:none">
+          </div>
+          <div class="form-group">
+            <div class="text-center">
+              <img class="img-fluid" src="" alt="" id="ProductImageEdit"/>
+            </div>
+          </div>
        </div>
        <div class="modal-footer">
          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -286,6 +387,24 @@
   </div>
  </div>
  <!-- /.Modal -->
+
+
+ <div class="modal fade" id="ImageModal" tabindex="-1" role="dialog" aria-labelledby="myModal">
+  <div class="modal-dialog" role="document">
+     <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Product Image</h4>
+        </div>
+        <div class="modal-body">
+          <img id="ProductimageView" src="" class="img-responsive center" alt="" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+     </div>
+  </div>
+</div>
 
 
 

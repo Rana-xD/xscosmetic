@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use App\Product;
 use App\ProductIncome;
+
 
 class ProductController extends Controller
 {
@@ -24,6 +26,17 @@ class ProductController extends Controller
     }
 
     public function store(Request $request){
+
+
+        if($request->hasFile('photo')){
+            $filenameWithExt = $request->file('photo')->getClientOriginalName();
+            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension = $request->file('photo')->getClientOriginalExtension();
+            $fileNameToStore = $filename.'_'.time().'.'.$extension;
+            $path = $request->file('photo')->storeAs('public/product_images',$fileNameToStore);
+        }else{
+            $fileNameToStore = 'defaul.jpg';
+        }
         $data = [
             "name" => $request->name,
             "category_id" => $request->category_id,
@@ -32,7 +45,7 @@ class ProductController extends Controller
             "size" =>$request->size,
             "price" =>$request->price,
             "cost" => $request->cost,
-            "photo" => "TEXT"
+            "photo" => $fileNameToStore
         ];
 
         $result = Product::create($data);
@@ -60,6 +73,9 @@ class ProductController extends Controller
     }
 
     public function update(Request $request){
+
+        $id = $request->id;
+        $product = Product::find($id);
         $data = [
             "name" => $request->name,
             "category_id" => $request->category_id,
@@ -68,9 +84,19 @@ class ProductController extends Controller
             "size" =>$request->size,
             "price" =>$request->price,
             "cost" => $request->cost,
-            "photo" => "TEXT"
         ];
-        $id = $request->id;
+
+        if($request->hasFile('photo')){
+            unlink(storage_path('app/public/product_images/'.$product->photo));
+            $filenameWithExt = $request->file('photo')->getClientOriginalName();
+            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension = $request->file('photo')->getClientOriginalExtension();
+            $fileNameToStore = $filename.'_'.time().'.'.$extension;
+            $path = $request->file('photo')->storeAs('public/product_images',$fileNameToStore);
+            $data['photo'] = $fileNameToStore;
+        }
+        
+        
         Product::find($id)->update($data);
         ProductIncome::where('product_id',$id)->update(['product_name' => $request->name]);
         return response()->json([
