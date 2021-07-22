@@ -74,7 +74,7 @@ class ProductController extends Controller
 
     public function update(Request $request){
 
-        $default_img = 'defaul.jpg';
+        $default_img = 'default.jpg';
         $id = $request->id;
         $product = Product::find($id);
         $data = [
