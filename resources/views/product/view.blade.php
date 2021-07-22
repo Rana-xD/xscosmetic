@@ -47,7 +47,7 @@
                   <td class="product-cost" cost-data="{{ $product->cost }}">{{ $product->cost }}$</td>
                   <td class="product-category" category-id="{{ $product->category->id}}">{{ $product->category->name }}</td>
                  <td><div class="btn-group">
-                  <a class="btn btn-default delete-btn" data-id="{{ $product->id }}" ><i class="fa fa-times" data-id="{{ $product->id }}"></i></a>
+                  <a class="btn btn-default delete-btn delete-product" data-id="{{ $product->id }}" ><i class="fa fa-times" data-id="{{ $product->id }}"></i></a>
                      </div>
                      <div class="btn-group">
                       <a class="btn btn-default edit-product" data-id="{{ $product->id }}" image-data="/storage/product_images/{{$product->photo}}" ><i class="fa fa-pencil-square-o" data-id="{{ $product->id }}" image-data="/storage/product_images/{{$product->photo}}"></i></a>

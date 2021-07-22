@@ -22,7 +22,7 @@
                  <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
                  <td class="category-name">{{ $category->name }}</td>
                  <td><div class="btn-group">
-                  <a class="btn btn-default delete-btn" data-id="{{ $category->id }}" ><i class="fa fa-times" data-id="{{ $category->id }}"></i></a>
+                  <a class="btn btn-default delete-btn delete-category" data-id="{{ $category->id }}" ><i class="fa fa-times" data-id="{{ $category->id }}"></i></a>
                   
                      </div>
                      <div class="btn-group">
