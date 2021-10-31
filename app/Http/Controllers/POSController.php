@@ -10,6 +10,7 @@ use DateTime;
 use DateTimeZone;
 use App\ProductIncome;
 use App\Events\NewOrder;
+use charlieuki\ReceiptPrinter\ReceiptPrinter as ReceiptPrinter;
 
 class POSController extends Controller
 {
@@ -33,14 +34,19 @@ class POSController extends Controller
             "cashier" => Auth::user()->username,
             "time" => $this->getLocaleTime()
         ];
+
+        $invoice = $request->invocie;
+        $total = $request->total;
+        $total_riel = $request->total_riel;
         $order = POS::create($data);
 
         $this->deductStock($data['items']);        
         $this->updateProductIncome($data['items']);
         // NewOrder::dispatch($order);
+        $this->printInvoice($invoice,$total,$total_riel);
         return response()->json([
             'code' => 200,
-            'data' => $data
+            'data' => $invoice
         ]);
     }
 
@@ -75,5 +81,38 @@ class POSController extends Controller
         $timezone = "Asia/Bangkok";
         $date = new DateTime('now', new DateTimeZone($timezone));
         return $date->format('h:i A');
+    }
+
+    private function printInvoice($invoice,$total,$total_riel){
+        $store_name = 'XScosmetic';
+        $store_phone = '010883816';
+
+        // Init printer
+        $printer = new ReceiptPrinter;
+        $printer->init(
+            config('receiptprinter.connector_type'),
+            config('receiptprinter.connector_descriptor')
+        );
+
+        // Set store info
+        $printer->setStore($store_name, $store_phone);
+
+        // Add items
+        foreach ($invoice as $item) {
+            $printer->addItem(
+                $item['product_name'],
+                $item['quantity'],
+                $item['price'],
+                $item['discount'],
+                $item['total']
+            );
+        }
+
+        $printer->setTotal($total);
+        $printer->setTotalRiel($total_riel);
+
+        // Print receipt
+        $printer->printReceipt();
+
     }
 }

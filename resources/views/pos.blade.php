@@ -245,7 +245,7 @@ $(document).ready(function() {
       for(let i=0; i < cards.length;i++){
          total += parseFloat($(cards[i]).find('.subtotal').text().replace('$',''));
       }
-      $('#total').text(`${total.toFixed(2)} $`)
+      $('#total').text(`$ ${total.toFixed(2)}`)
       $('#total').attr('total-data',total.toFixed(2));
 
   }
@@ -261,7 +261,9 @@ $(document).ready(function() {
 
   $('#Order').on('click',(e)=>{
      let data = [];
-     
+     let invocie = [];
+     let total = 0;
+     let totalRiel = 0;
      let cards = $('#productList').children();
      
 
@@ -278,9 +280,27 @@ $(document).ready(function() {
          let item = {product_id: parseInt($(cards[i]).find('.product-id').val()),product_name: $(cards[i]).find('.product-name-final').val(), quantity: `${quantity} ${unit}`, price: $(cards[i]).find('.product-price').val(), discount: $(cards[i]).find('.discount').val() === '' ? 0 : $(cards[i]).find('.discount').val(), total: $(cards[i]).find('.subtotal').text(), cost: `$ ${totalCost}`, profit: `$ ${profit}`};
          data.push(item);
       }
+
+      for(let i=0; i < cards.length;i++){
+         totalProduct(cards[i]);
+
+         let price = handleRemoveZeroDecimal($(cards[i]).find('.product-price').val()),
+         quantity = parseInt($(cards[i]).find('.quantity').val()),
+         totalPrice = handleRemoveZeroDecimal(parseFloat(($(cards[i]).find('.subtotal').text()).replace('$','')).toFixed(2)),
+   
+         
+         item = {product_name: $(cards[i]).find('.product-name-final').val(), quantity: `${quantity}`, price: price, discount: $(cards[i]).find('.discount').val() === '' ? `0%` : `${$(cards[i]).find('.discount').val()}%`, total: totalPrice};
+         invocie.push(item);
+      }
+
+      total = handleRemoveZeroDecimal($('#total').attr('total-data'));
+      totalRiel = handleExchangeToRielCurrency($('#total').attr('total-data'));
       if(data.length == 0)return;
       let formData = {
-         "data" : data
+         "data" : data,
+         "invocie" : invocie,
+         "total" : total,
+         "total_riel" : totalRiel
       };
       
       $.ajax({
@@ -303,6 +323,7 @@ $(document).ready(function() {
             },function (data){
                location.reload(true);
             });
+
             
           },
           error: function(err){
@@ -310,6 +331,21 @@ $(document).ready(function() {
           } 
         });
   })
+
+
+  function handleRemoveZeroDecimal(value){
+      let intValue = parseInt(value)
+      return intValue == parseFloat(value).toFixed(2) ? `$${intValue}` : `$${parseFloat(value).toFixed(2)}`;
+  }
+
+  function handleExchangeToRielCurrency(value){
+         return `R${addComma(parseFloat(value).toFixed(2) * 4200)}`;
+  }
+
+  function addComma(num) {
+  if (num === null) return;
+  return num.toString().split("").reverse().map((digit, index) => index != 0 && index % 3 === 0 ? `${digit},` : digit).reverse().join("");
+}
 
   function handleProductDiscount(e){
       let price = parseFloat($(e).parents('.product-card').find('.product-price').val()),
@@ -332,7 +368,7 @@ $(document).ready(function() {
       
       discontPrice = (initDiscountPrice - (initDiscountPrice *(discount / 100))).toFixed(2);
       totalDiscountPrice =  (totalPrice - (totalPrice *(discount / 100))).toFixed(2);
-      $(e).parents('.product-card').find('.subtotal').text(`${totalDiscountPrice}$`);
+      $(e).parents('.product-card').find('.subtotal').text(`$ ${totalDiscountPrice}`);
       $(e).parents('.product-card').find('.product-discount-price').val(discontPrice);
       totalCash();
       
@@ -359,7 +395,7 @@ $(document).ready(function() {
 
 
          console.log(totalDiscountPrice);
-         $('#total').text(`${totalDiscountPrice} $`)
+         $('#total').text(`$ ${totalDiscountPrice}`)
   }
 
   function minusQuantity(e){
@@ -391,7 +427,7 @@ $(document).ready(function() {
     
      let price = parseFloat($(e).find('.product-discount-price').val());
      let quantity = parseInt($(e).find('.quantity').val());
-     $(e).find('.subtotal').text(`${parseFloat((price) * quantity).toFixed(2)}$`);
+     $(e).find('.subtotal').text(`$ ${parseFloat((price) * quantity).toFixed(2)}`);
 
      $(e).find('.subtotal').attr('subtotal-data',`${parseFloat((price) * quantity).toFixed(2)}`);
      
