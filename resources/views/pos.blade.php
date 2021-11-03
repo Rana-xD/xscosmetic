@@ -86,7 +86,19 @@
                @endforeach
                
             
-         </div>            <!-- product list section -->
+         </div>    
+         <div class="col-sm-12">
+            <div id="searchContaner">
+                <div class="input-group stylish-input-group">
+                    <input type="text" id="searchProd" class="form-control"  placeholder="Search" >
+                    <span class="input-group-addon">
+                        <button type="submit">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>        <!-- product list section -->
          <div id="productList2">
             @foreach ( $products as $product)
                <div class="col-xs-4 div">
@@ -109,29 +121,29 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-   $('.addPct').on('click',(e)=>{
-         let self = e.target,
-             card = $(self).parents('.div');
-             id = $(card).find('.addPct').attr('data-id');
-         if(id == undefined) return;
-         
-         var name = $('#idname-'+id).val();
-         var price = $('#idprice-'+id).val();
-         var categoryID = $(card).find('#category').val();
-         var cost = $('#idcost-'+id).val();
-         var unit = $(card).find('#unit').val();
+    $('.addPct').on('click', (e) => {
+        let self = e.target,
+            card = $(self).parents('.div');
+        id = $(card).find('.addPct').attr('data-id');
+        if (id == undefined) return;
 
-         
-         var qt = 1;
-         // var price = 0
-         
-         let string = name.split(",");
-         let productName = '';
-         for(let i=0; i < string.length; i++){
+        var name = $('#idname-' + id).val();
+        var price = $('#idprice-' + id).val();
+        var categoryID = $(card).find('#category').val();
+        var cost = $('#idcost-' + id).val();
+        var unit = $(card).find('#unit').val();
+
+
+        var qt = 1;
+        // var price = 0
+
+        let string = name.split(",");
+        let productName = '';
+        for (let i = 0; i < string.length; i++) {
             productName += `<span class="textPD product-name" onclick="removeProduct(this)">${string[i]} </span> \n`
-         }
+        }
 
-         let row = `<div class="col-xs-12 product-card">
+        let row = `<div class="col-xs-12 product-card">
                         <div class="panel panel-default product-details">
                            <div class="panel-body" style="">
                               <div class="col-xs-3 nopadding">
@@ -184,297 +196,329 @@ $(document).ready(function() {
                         </div>
                      </div>
                   </div>`;
-         let html = $.parseHTML(row);
-         $(html).find('.product-name-content').append(productName);
-         $('#productList').append(html);
-         
+        let html = $.parseHTML(row);
+        $(html).find('.product-name-content').append(productName);
+        $('#productList').append(html);
 
-         totalItem();
-         totalCash();
-         
+
+        totalItem();
+        totalCash();
+
+    });
+
+    $("#searchProd").keyup(function(){
+      // Retrieve the input field text
+      var filter = $(this).val();
+      // Loop through the list
+      $("#productList2 #proname").each(function(){
+         // If the list item does not contain the text phrase fade it out
+         if ($(this).text().search(new RegExp(filter, "i")) < 0) {
+             $(this).parent().parent().parent().hide();
+         // Show the list item if the phrase matches
+         } else {
+             $(this).parent().parent().parent().show();
+         }
       });
-
    });
 
-   function totalProduct(html){
-      let card = $(html).find('.product-name-content').children();
-      let productName = '';
-      for(let i=0;i<card.length;i++){
-         card.length - i == 1 ? productName += `${$(card[i]).text()} `  : productName += `${$(card[i]).text()}, `;  
-      }
-      
-      $(html).find('.product-name-final').val(productName.trim());
-   }
+});
 
-   function productPrice(size,categoriesID){
-      switch (size){
-         case 'S':
+function totalProduct(html) {
+    let card = $(html).find('.product-name-content').children();
+    let productName = '';
+    for (let i = 0; i < card.length; i++) {
+        card.length - i == 1 ? productName += `${$(card[i]).text()} ` : productName += `${$(card[i]).text()}, `;
+    }
+
+    $(html).find('.product-name-final').val(productName.trim());
+}
+
+function productPrice(size, categoriesID) {
+    switch (size) {
+        case 'S':
             return categoriesID == 1 ? 3.00 : 4.00;
-         break;
-         case 'M':
+            break;
+        case 'M':
             return categoriesID == 1 ? 3.50 : 4.50;
-         break;
-         case 'L':
+            break;
+        case 'L':
             return categoriesID == 1 ? 4.00 : 5.00;
-         break;
-         case 'XL':
+            break;
+        case 'XL':
             return categoriesID == 1 ? 6.00 : 7.00;
-         break;
-      }
-   }
+            break;
+    }
+}
 
-   function delete_posale(e){
-     let card = $(e).parents('.product-card');
-     $(card[0]).remove();
-     totalItem();
-     totalCash();
-  }
+function delete_posale(e) {
+    let card = $(e).parents('.product-card');
+    $(card[0]).remove();
+    totalItem();
+    totalCash();
+}
 
-  function totalItem(){
-     let quantity = 0;
-     let cards = $('#productList').children();
-      for(let i=0; i < cards.length;i++){
-         quantity += parseInt($(cards[i]).find('.quantity').val());
-      }
-      $('#ItemsNum span').text(`${quantity} `);
-  }
+function totalItem() {
+    let quantity = 0;
+    let cards = $('#productList').children();
+    for (let i = 0; i < cards.length; i++) {
+        quantity += parseInt($(cards[i]).find('.quantity').val());
+    }
+    $('#ItemsNum span').text(`${quantity} `);
+}
 
-  function totalCash(){
-     let total = 0;
-     let cards = $('#productList').children();
-      for(let i=0; i < cards.length;i++){
-         total += parseFloat($(cards[i]).find('.subtotal').text().replace('$',''));
-      }
-      $('#total').text(`$ ${total.toFixed(2)}`)
-      $('#total').attr('total-data',total.toFixed(2));
+function totalCash() {
+    let total = 0;
+    let cards = $('#productList').children();
+    for (let i = 0; i < cards.length; i++) {
+        total += parseFloat($(cards[i]).find('.subtotal').text().replace('$', ''));
+    }
+    $('#total').text(`$ ${total.toFixed(2)}`)
+    $('#total').attr('total-data', total.toFixed(2));
 
-  }
+}
 
-  function cancelPOS(){
-      let cards = $('#productList').children();
-      $(cards).remove();
-      totalItem();
-      totalCash();
-  }
- 
-  
+function cancelPOS() {
+    let cards = $('#productList').children();
+    $(cards).remove();
+    totalItem();
+    totalCash();
+}
 
-  $('#Order').on('click',(e)=>{
-     let data = [];
-     let invocie = [];
-     let total = 0;
-     let totalRiel = 0;
-     let cards = $('#productList').children();
-     
 
-     for(let i=0; i < cards.length;i++){
-         totalProduct(cards[i]);
 
-         let cost = $(cards[i]).find('.product-cost').val(),
-         unit = $(cards[i]).find('.unit-id').val()
-         quantity = parseInt($(cards[i]).find('.quantity').val()),
-         totalCost = (cost*quantity).toFixed(2),
-         totalPrice = parseFloat(($(cards[i]).find('.subtotal').text()).replace('$','')).toFixed(2),
-         profit = parseFloat(totalPrice - totalCost).toFixed(2);
+$('#Order').on('click', (e) => {
+    let data = [];
+    let invocie = [];
+    let total = 0;
+    let totalRiel = 0;
+    let cards = $('#productList').children();
 
-         let item = {product_id: parseInt($(cards[i]).find('.product-id').val()),product_name: $(cards[i]).find('.product-name-final').val(), quantity: `${quantity} ${unit}`, price: $(cards[i]).find('.product-price').val(), discount: $(cards[i]).find('.discount').val() === '' ? 0 : $(cards[i]).find('.discount').val(), total: $(cards[i]).find('.subtotal').text(), cost: `$ ${totalCost}`, profit: `$ ${profit}`};
-         data.push(item);
-      }
 
-      for(let i=0; i < cards.length;i++){
-         totalProduct(cards[i]);
+    for (let i = 0; i < cards.length; i++) {
+        totalProduct(cards[i]);
 
-         let price = handleRemoveZeroDecimal($(cards[i]).find('.product-price').val()),
-         quantity = parseInt($(cards[i]).find('.quantity').val()),
-         totalPrice = handleRemoveZeroDecimal(parseFloat(($(cards[i]).find('.subtotal').text()).replace('$','')).toFixed(2)),
-   
-         
-         item = {product_name: $(cards[i]).find('.product-name-final').val(), quantity: `${quantity}`, price: price, discount: $(cards[i]).find('.discount').val() === '' ? `0%` : `${$(cards[i]).find('.discount').val()}%`, total: totalPrice};
-         invocie.push(item);
-      }
+        let cost = $(cards[i]).find('.product-cost').val(),
+            unit = $(cards[i]).find('.unit-id').val()
+        quantity = parseInt($(cards[i]).find('.quantity').val()),
+            totalCost = (cost * quantity).toFixed(2),
+            totalPrice = parseFloat(($(cards[i]).find('.subtotal').text()).replace('$', '')).toFixed(2),
+            profit = parseFloat(totalPrice - totalCost).toFixed(2);
 
-      total = handleRemoveZeroDecimal($('#total').attr('total-data'));
-      totalRiel = handleExchangeToRielCurrency($('#total').attr('total-data'));
-      if(data.length == 0)return;
-      let formData = {
-         "data" : data,
-         "invocie" : invocie,
-         "total" : total,
-         "total_riel" : totalRiel
-      };
-      
-      $.ajax({
-          url: '/pos/add',
-          type: "GET", 
-          data: formData,
-          contentType: false,
-          processData: true,
-          success: function(res){
+        let item = {
+            product_id: parseInt($(cards[i]).find('.product-id').val()),
+            product_name: $(cards[i]).find('.product-name-final').val(),
+            quantity: `${quantity} ${unit}`,
+            price: $(cards[i]).find('.product-price').val(),
+            discount: $(cards[i]).find('.discount').val() === '' ? 0 : $(cards[i]).find('.discount').val(),
+            total: $(cards[i]).find('.subtotal').text(),
+            cost: `$ ${totalCost}`,
+            profit: `$ ${profit}`
+        };
+        data.push(item);
+    }
+
+    for (let i = 0; i < cards.length; i++) {
+        totalProduct(cards[i]);
+
+        let price = handleRemoveZeroDecimal($(cards[i]).find('.product-price').val()),
+            quantity = parseInt($(cards[i]).find('.quantity').val()),
+            totalPrice = handleRemoveZeroDecimal(parseFloat(($(cards[i]).find('.subtotal').text()).replace('$', '')).toFixed(2)),
+
+
+            item = {
+                product_name: $(cards[i]).find('.product-name-final').val(),
+                quantity: `${quantity}`,
+                price: price,
+                discount: $(cards[i]).find('.discount').val() === '' ? `0` : `$${$(cards[i]).find('.discount').val()}`,
+                total: totalPrice
+            };
+        invocie.push(item);
+    }
+
+    total = handleRemoveZeroDecimal($('#total').attr('total-data'));
+    totalRiel = handleExchangeToRielCurrency($('#total').attr('total-data'));
+    if (data.length == 0) return;
+    let formData = {
+        "data": data,
+        "invocie": invocie,
+        "total": total,
+        "total_riel": totalRiel
+    };
+
+    $.ajax({
+        url: '/pos/add',
+        type: "GET",
+        data: formData,
+        contentType: false,
+        processData: true,
+        success: function(res) {
             $(cards).remove();
             totalItem();
             totalCash();
             swal({
-               title: 'DONE',
-               text: 'Order complete',
-               type: "success",
-               timer: 1500,
-               showCancelButton: false,
-               showConfirmButton: false
-            },function (data){
-               location.reload(true);
+                title: 'DONE',
+                text: 'Order complete',
+                type: "success",
+                timer: 1500,
+                showCancelButton: false,
+                showConfirmButton: false
+            }, function(data) {
+                location.reload(true);
             });
 
-            
-          },
-          error: function(err){
+
+        },
+        error: function(err) {
             console.log(err);
-          } 
-        });
-  })
+        }
+    });
+})
 
 
-  function handleRemoveZeroDecimal(value){
-      let intValue = parseInt(value)
-      return intValue == parseFloat(value).toFixed(2) ? `$${intValue}` : `$${parseFloat(value).toFixed(2)}`;
-  }
-
-  function handleExchangeToRielCurrency(value){
-         return `R${addComma(parseFloat(value).toFixed(2) * 4200)}`;
-  }
-
-  function addComma(num) {
-  if (num === null) return;
-  return num.toString().split("").reverse().map((digit, index) => index != 0 && index % 3 === 0 ? `${digit},` : digit).reverse().join("");
+function handleRemoveZeroDecimal(value) {
+    let intValue = parseInt(value)
+    return intValue == parseFloat(value).toFixed(2) ? `$${intValue}` : `$${parseFloat(value).toFixed(2)}`;
 }
 
-  function handleProductDiscount(e){
-      let price = parseFloat($(e).parents('.product-card').find('.product-price').val()),
-          quantity = parseInt($(e).parents('.product-card').find('.quantity').val()),
-          initDiscountPrice = parseFloat($(e).parents('.product-card').find('.product-price').val()),
-          totalPrice = parseFloat((price) * quantity).toFixed(2),
-          discount = ($(e).parents('.product-card').find('.discount').val()) === '' ? 0 : parseFloat($(e).parents('.product-card').find('.discount').val()).toFixed(2);
+function handleExchangeToRielCurrency(value) {
+    return `R${addComma(parseFloat(value).toFixed(2) * 4200)}`;
+}
 
-          
-         if(!discount){
-            let card = $(e).parents('.product-card');
-            $(e).parents('.product-card').find('.product-discount-price').val(price);
-            editQuantity(e);
-            return;
-         }
+function addComma(num) {
+    if (num === null) return;
+    return num.toString().split("").reverse().map((digit, index) => index != 0 && index % 3 === 0 ? `${digit},` : digit).reverse().join("");
+}
 
-         if(discount > 100){
-            return;
-         }
-      
-      discontPrice = (initDiscountPrice - (initDiscountPrice *(discount / 100))).toFixed(2);
-      totalDiscountPrice =  (totalPrice - (totalPrice *(discount / 100))).toFixed(2);
-      $(e).parents('.product-card').find('.subtotal').text(`$ ${totalDiscountPrice}`);
-      $(e).parents('.product-card').find('.product-discount-price').val(discontPrice);
-      totalCash();
-      
-  }
-
-  function handleProductOverallDiscount(e){
-     let parentDiv = $(e).parents('.cashier-section');
-         total = $('#total').attr('total-data') === '' ? 0 : $('#total').attr('total-data'),
-         totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
-
-         if(!total){
-            return;
-         }
-
-         if(!totalDiscount){
-            totalCash();
-            return;
-         }
-
-         if(totalDiscount > 100){
-            return;
-         }
-         let totalDiscountPrice = (total - (total *(totalDiscount / 100))).toFixed(2);
+function handleProductDiscount(e) {
+    let price = parseFloat($(e).parents('.product-card').find('.product-price').val()),
+        quantity = parseInt($(e).parents('.product-card').find('.quantity').val()),
+        initDiscountPrice = parseFloat($(e).parents('.product-card').find('.product-price').val()),
+        totalPrice = parseFloat((price) * quantity).toFixed(2),
+        discount = ($(e).parents('.product-card').find('.discount').val()) === '' ? 0 : parseFloat($(e).parents('.product-card').find('.discount').val()).toFixed(2);
 
 
-         console.log(totalDiscountPrice);
-         $('#total').text(`$ ${totalDiscountPrice}`)
-  }
+    if (!discount) {
+        let card = $(e).parents('.product-card');
+        $(e).parents('.product-card').find('.product-discount-price').val(price);
+        editQuantity(e);
+        return;
+    }
 
-  function minusQuantity(e){
-      let card = $(e).parents('.product-card');
-      let quantity = parseInt($(card).find('.quantity').val());
-      let result = quantity == 1 ? 1 : quantity - 1;
-      $(card).find('.quantity').val(result);
-      editQuantity(card);
-  }
+    if (discount > 100) {
+        return;
+    }
 
-  function addQuantity(e){
-      let card = $(e).parents('.product-card');
-      let quantity = parseInt($(card).find('.quantity').val());
-      let result = quantity + 1;
-      $(card).find('.quantity').val(result);
-      editQuantity(card);
-  }
+    discontPrice = (initDiscountPrice - discount).toFixed(2);
+    totalDiscountPrice = (totalPrice - discount).toFixed(2);
+    $(e).parents('.product-card').find('.subtotal').text(`$ ${totalDiscountPrice}`);
+    $(e).parents('.product-card').find('.product-discount-price').val(discontPrice);
+    totalCash();
 
-  function addExtra(name){
-     if($('#productList').children().length==0) return;
-     let card = $('#productList').children().last();
-     $(card).find('.extra').append(`${name}, `);
-     let price = parseFloat($(card).find('.extra-price').val()) + 1.00;
-     $(card).find('.extra-price').val(price);
-     editQuantity(card);
-  }
+}
 
-  function editQuantity(e){
-    
-     let price = parseFloat($(e).find('.product-discount-price').val());
-     let quantity = parseInt($(e).find('.quantity').val());
-     $(e).find('.subtotal').text(`$ ${parseFloat((price) * quantity).toFixed(2)}`);
+function handleProductOverallDiscount(e) {
+    let parentDiv = $(e).parents('.cashier-section');
+    total = $('#total').attr('total-data') === '' ? 0 : $('#total').attr('total-data'),
+        totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
 
-     $(e).find('.subtotal').attr('subtotal-data',`${parseFloat((price) * quantity).toFixed(2)}`);
-     
-     totalItem();
-     totalCash();
-     
-  }
+    if (!total) {
+        return;
+    }
 
-  function removeProduct(e){
-     let self = $(e);
-     $(self).remove();
-     let html = $(e).parents('.product-card');
-  }
-  
-  $(".categories").on("click", function () {
+    if (!totalDiscount) {
+        totalCash();
+        return;
+    }
 
-   //   console.log("HELLOI");
-   //Retrieve the input field text
-   var filter = $(this).attr('id');
-   $(this).parent().children().removeClass('selectedGat');
+    if (totalDiscount > 100) {
+        return;
+    }
+    let totalDiscountPrice = (total - (total * (totalDiscount / 100))).toFixed(2);
 
-   $(this).addClass('selectedGat');
-   // Loop through the list
-   $("#productList2 #category").each(function(){
-      // If the list item does not contain the text phrase fade it out
-      if ($(this).val().search(new RegExp(filter, "i")) < 0) {
-         $(this).parent().parent().parent().hide();
-         // Show the list item if the phrase matches
-      } else {
-         $(this).parent().parent().parent().show();
-      }
-      });
-   });
 
-  $('.size').on('click',function(e){
+    console.log(totalDiscountPrice);
+    $('#total').text(`$ ${totalDiscountPrice}`)
+}
 
-   if($('#productList').children().length==0) return;
-     let size = $(e.target).attr('data-id');
-     let card = $('#productList').children().last();
-     let categoriesID = $(card).find('.category-id').val();
-     $(card).find('.size').text(size);
-     let price = productPrice(size,categoriesID);
-     $(card).find('.product-price').val(price);
-     editQuantity(card);
-     
-  });
+function minusQuantity(e) {
+    let card = $(e).parents('.product-card');
+    let quantity = parseInt($(card).find('.quantity').val());
+    let result = quantity == 1 ? 1 : quantity - 1;
+    $(card).find('.quantity').val(result);
+    editQuantity(card);
+}
 
+function addQuantity(e) {
+    let card = $(e).parents('.product-card');
+    let quantity = parseInt($(card).find('.quantity').val());
+    let result = quantity + 1;
+    $(card).find('.quantity').val(result);
+    editQuantity(card);
+}
+
+function addExtra(name) {
+    if ($('#productList').children().length == 0) return;
+    let card = $('#productList').children().last();
+    $(card).find('.extra').append(`${name}, `);
+    let price = parseFloat($(card).find('.extra-price').val()) + 1.00;
+    $(card).find('.extra-price').val(price);
+    editQuantity(card);
+}
+
+function editQuantity(e) {
+
+    let price = parseFloat($(e).find('.product-price').val());
+    let quantity = parseInt($(e).find('.quantity').val());
+    let discount = ($(e).find('.discount').val()) === '' ? 0 : parseFloat($(e).find('.discount').val()).toFixed(2);
+
+    console.log(discount);
+    $(e).find('.subtotal').text(`$ ${parseFloat(((price) * quantity) - discount).toFixed(2)}`);
+
+    $(e).find('.subtotal').attr('subtotal-data', `${parseFloat((price) * quantity).toFixed(2)}`);
+
+    totalItem();
+    totalCash();
+
+}
+
+function removeProduct(e) {
+    let self = $(e);
+    $(self).remove();
+    let html = $(e).parents('.product-card');
+}
+
+$(".categories").on("click", function() {
+
+    //   console.log("HELLOI");
+    //Retrieve the input field text
+    var filter = $(this).attr('id');
+    $(this).parent().children().removeClass('selectedGat');
+
+    $(this).addClass('selectedGat');
+    // Loop through the list
+    $("#productList2 #category").each(function() {
+        // If the list item does not contain the text phrase fade it out
+        if ($(this).val().search(new RegExp(filter, "i")) < 0) {
+            $(this).parent().parent().parent().hide();
+            // Show the list item if the phrase matches
+        } else {
+            $(this).parent().parent().parent().show();
+        }
+    });
+});
+
+$('.size').on('click', function(e) {
+
+    if ($('#productList').children().length == 0) return;
+    let size = $(e.target).attr('data-id');
+    let card = $('#productList').children().last();
+    let categoriesID = $(card).find('.category-id').val();
+    $(card).find('.size').text(size);
+    let price = productPrice(size, categoriesID);
+    $(card).find('.product-price').val(price);
+    editQuantity(card);
+
+});
   
 
 </script>

@@ -43,7 +43,7 @@ class POSController extends Controller
         $this->deductStock($data['items']);        
         $this->updateProductIncome($data['items']);
         // NewOrder::dispatch($order);
-        // $this->printInvoice($invoice,$total,$total_riel);
+        $this->printInvoice($invoice,$total,$total_riel);
         return response()->json([
             'code' => 200,
             'data' => $invoice
