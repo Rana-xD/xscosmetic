@@ -14,7 +14,15 @@ class DatabaseSeeder extends Seeder
         DB::table('users')->insert([
             'username' => 'admin',
             'role' => 'ADMIN',
-            'password' => Hash::make('admin'),
+            'password' => Hash::make('@dmin'),
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        DB::table('users')->insert([
+            'username' => 'staff',
+            'role' => 'STAFF',
+            'password' => Hash::make('staff'),
             'created_at' => now(),
             'updated_at' => now()
         ]);

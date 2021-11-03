@@ -17,12 +17,7 @@ class LoginController extends Controller
         $remember = true;
         if (Auth::attempt($credentials,$remember)) {
             // Authentication passed...
-            if(Auth::user()->isAdmin()){
-                return Redirect::to('/pos');
-            }
-            else{
-                return Redirect::to('/order');
-            }
+            return Redirect::to('/pos');
             
             
         }
