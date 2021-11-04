@@ -39,6 +39,7 @@ class ProductController extends Controller
         }
         $data = [
             "name" => $request->name,
+            "product_barcode" => $request->product_barcode,
             "category_id" => $request->category_id,
             "unit_id" => $request->unit_id,
             "stock" =>$request->stock,
@@ -79,6 +80,7 @@ class ProductController extends Controller
         $product = Product::find($id);
         $data = [
             "name" => $request->name,
+            "product_barcode" => $request->product_barcode,
             "category_id" => $request->category_id,
             "unit_id" =>$request->unit_id,
             "stock" =>$request->stock,

@@ -15,7 +15,7 @@ class POS extends Model
      * @var array
      */
     protected $fillable = [
-        'order_no', 'items', 'cashier','time'
+        'order_no', 'items', 'cashier','time','created_at','updated_at'
     ];
 
     protected $casts = [

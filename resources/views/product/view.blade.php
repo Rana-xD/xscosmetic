@@ -46,7 +46,8 @@
                   <td class="product-price" price-data="{{ $product->price }}">{{ $product->price }}$</td>
                   <td class="product-cost" cost-data="{{ $product->cost }}">{{ $product->cost }}$</td>
                   <td class="product-category" category-id="{{ $product->category->id}}">{{ $product->category->name }}</td>
-                 <td><div class="btn-group">
+                  <input type="hidden" class="product-barcode" value="{{ $product->product_barcode }}">
+                  <td><div class="btn-group">
                   <a class="btn btn-default delete-btn delete-product" data-id="{{ $product->id }}" ><i class="fa fa-times" data-id="{{ $product->id }}"></i></a>
                      </div>
                      <div class="btn-group">
@@ -126,6 +127,7 @@
         let formData = new FormData();
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
         formData.append('name',$("#ProductName").val());
+        formData.append('product_barcode',$("#ProductBarcode").val());
         formData.append('category_id',$("#Category").val());
         formData.append('unit_id',$("#Unit").val());
         formData.append('stock',$("#stock").val());
@@ -186,6 +188,7 @@
               id = $(self).attr('data-id'),
               parentDiv = $(self).parents('.product-data'),
               productName = $(parentDiv).find('.product-name').text(),
+              productBarcode = $(parentDiv).find('.product-barcode').val()
               productStock = $(parentDiv).find('.product-stock').text(),
               unitId = $(parentDiv).find('.product-unit').attr('unit-id'),
               size = $(parentDiv).find('.product-size').text(),
@@ -195,6 +198,7 @@
               image = $(self).attr('image-data');
 
               $('#ProductName-edit').val(productName);
+              $('#ProductBarcode-edit').val(productBarcode);
               $('#productID').val(id);
               $('#stock-edit').val(productStock);
               $('#size-edit').val(size);
@@ -214,6 +218,7 @@
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
         formData.append('id',$("#productID").val());
         formData.append('name',$("#ProductName-edit").val());
+        formData.append('product_barcode',$("#ProductBarcode-edit").val());
         formData.append('category_id',$("#Category-edit").val());
         formData.append('unit_id',$("#Unit-edit").val());
         formData.append('stock',$("#stock-edit").val());
@@ -264,6 +269,10 @@
              <label for="ProductName">Product Name</label>
              <input type="text" name="name" maxlength="100" Required class="form-control" id="ProductName" placeholder="ProductName">
            </div>
+           <div class="form-group">
+            <label for="ProductName">Product Barcode</label>
+            <input type="text" name="barcode" maxlength="100" Required class="form-control" id="ProductBarcode" placeholder="ProductBarcode">
+          </div>
            <div class="form-group">
             <label for="ProductName">Stock</label>
             <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock" placeholder="Stock" >
@@ -334,6 +343,10 @@
             <div class="form-group">
               <label for="ProductName">Product Name</label>
               <input type="text" name="name" maxlength="100" Required class="form-control" id="ProductName-edit" placeholder="ProductName" >
+            </div>
+            <div class="form-group">
+              <label for="ProductName">Product Barcode</label>
+              <input type="text" name="barcode" maxlength="100" Required class="form-control" id="ProductBarcode-edit" placeholder="ProductBarcode" >
             </div>
             <div class="form-group">
              <label for="ProductName">Stock</label>

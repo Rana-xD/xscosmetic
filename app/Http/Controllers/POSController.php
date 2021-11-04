@@ -11,6 +11,7 @@ use DateTimeZone;
 use App\ProductIncome;
 use App\Events\NewOrder;
 use charlieuki\ReceiptPrinter\ReceiptPrinter as ReceiptPrinter;
+use Carbon\Carbon;
 
 class POSController extends Controller
 {
@@ -32,7 +33,9 @@ class POSController extends Controller
             "order_no" => date('Ymd').strval(rand(1000,9999)),
             "items" => $request->data,
             "cashier" => Auth::user()->username,
-            "time" => $this->getLocaleTime()
+            "time" => $this->getLocaleTime(),
+            'created_at' => $this->getLocaleTimestamp(),
+            'updated_at' => $this->getLocaleTimestamp()
         ];
 
         $invoice = $request->invocie;
@@ -81,6 +84,11 @@ class POSController extends Controller
         $timezone = "Asia/Bangkok";
         $date = new DateTime('now', new DateTimeZone($timezone));
         return $date->format('h:i A');
+    }
+
+    private function getLocaleTimestamp(){
+        $timezone = "Asia/Bangkok";
+        return $date = new DateTime('now', new DateTimeZone($timezone));
     }
 
     private function printInvoice($invoice,$total,$total_riel){
