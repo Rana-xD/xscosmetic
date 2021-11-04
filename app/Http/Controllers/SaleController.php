@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\POS;
+use Carbon\Carbon;
+
 class SaleController extends Controller
 {
     public function __construct()
@@ -18,5 +20,20 @@ class SaleController extends Controller
             'orders' => $orders
         ]);
     }
+
+    public function cusomterIncomeReport(Request $request){
+        $start_date = date($request->start_date).' 00:00:00';
+        $end_date = empty($request->end_date) ? Carbon::now() :  date($request->end_date).' 23:59:59';
+
+        $orders = POS::whereBetween('created_at',[$start_date,$end_date])->orderBy('created_at', 'DESC')->paginate(30);
+
+        // return $orders;
+        return view('sale',[
+            'orders' => $orders,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date
+        ]);
+    }
+
 
 }
