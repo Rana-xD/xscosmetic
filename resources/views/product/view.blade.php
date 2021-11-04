@@ -290,7 +290,7 @@
             <input type="text" name="cost" maxlength="100" Required class="form-control" id="cost" placeholder="cost" >
           </div>
            <div class="form-group">
-             <label for="Category">Category</label>
+             <label for="Category">Brand</label>
               <select class="form-control" id="Category" name="filtertype">
                 @foreach (App\Category::all() as $category)
                   <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -365,7 +365,7 @@
              <input type="text" name="cost" maxlength="100" Required class="form-control" id="cost-edit" placeholder="cost" >
            </div>
             <div class="form-group">
-              <label for="Category">Category</label>
+              <label for="Category">Brand</label>
                <select class="form-control" id="Category-edit" name="filtertype">
                  @foreach (App\Category::all() as $category)
                    <option value="{{ $category->id }}">{{ $category->name }}</option>

@@ -75,7 +75,7 @@
                      <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-archive"></i> Product <span class="caret"></span></a>
                         <ul class="dropdown-menu">
                            <li class="flat-box"><a href="/product"><i class="fa fa-archive"></i> Product (Stock) </a></li>
-                           <li class="flat-box"><a href="/category"><i class="fa fa-cog"></i> Category</a></li>
+                           <li class="flat-box"><a href="/category"><i class="fa fa-cog"></i> Brand</a></li>
                            <li class="flat-box"><a href="/unit"><i class="fa fa-bullseye"></i> Unit</a></li>
                      </ul>
                   </li>

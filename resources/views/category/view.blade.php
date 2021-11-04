@@ -10,7 +10,7 @@
           <thead>
               <tr>
                   <th class="hidden-xs">No</th>
-                  <th>Category Name</th>
+                  <th>Brand Name</th>
                   <th>Action</th>
               </tr>
           </thead>
@@ -35,7 +35,7 @@
       </table>
    </div>
    <!-- Button trigger modal -->
-   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addcategory">Add Category</button>
+   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addcategory">Add Brand</button>
 </div>
 <!-- /.container -->
 
@@ -139,12 +139,12 @@
         @csrf
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Add Category</h4>
+        <h4 class="modal-title" id="myModalLabel">Add Brand</h4>
       </div>
       <div class="modal-body">
            <div class="form-group">
-             <label for="CategoryName">Category Name</label>
-             <input type="text" name="name" maxlength="100" Required class="form-control" id="CategoryName" placeholder="Category Name">
+             <label for="CategoryName">Brand Name</label>
+             <input type="text" name="name" maxlength="100" Required class="form-control" id="CategoryName" placeholder="Brand Name">
            </div>
       </div>
       <div class="modal-footer">
@@ -165,12 +165,12 @@
          @csrf
        <div class="modal-header">
          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-         <h4 class="modal-title" id="myModalLabel">Edit Category</h4>
+         <h4 class="modal-title" id="myModalLabel">Edit Brand</h4>
        </div>
        <div class="modal-body">
             <div class="form-group">
-              <label for="CategoryName">Category Name</label>
-              <input type="text" name="name" maxlength="100" Required class="form-control" id="CategoryNameEdit" placeholder="Category Name">
+              <label for="CategoryName">Brand Name</label>
+              <input type="text" name="name" maxlength="100" Required class="form-control" id="CategoryNameEdit" placeholder="Brand Name">
               <input type="hidden"  name="category-id" id="CategoryId">
             </div>
        </div>
