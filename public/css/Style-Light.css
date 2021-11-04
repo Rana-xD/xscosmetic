@@ -107,7 +107,9 @@ a:link{
    background-color: #2980b9;
 }
 
-
+.print-invoice-daily-container{
+   margin-top: 25px;
+}
 .paid {
    background-color:#2ecc71;
    font-weight: bold;

@@ -45,8 +45,12 @@
             </div>
             <button type="button" onclick="cancelPOS()" class="btn btn-red col-md-6 flat-box-btn"><h5 class="text-bold">CANCEL</h5></button>
             <button type="button" class="btn btn-green col-md-6 flat-box-btn" data-toggle="modal" data-target="#AddSale" id="Order"><h5 class="text-bold">ORDER</h5></button>
+            
          </div>
-
+         
+        <button type="button" class="btn btn-blue col-md-12 flat-box-btn print-invoice-daily-container" id="PrintDailyInvoice"><h5 class="text-bold">PRINT</h5></button>
+         
+         
       </div>
       {{-- <div class="col-md-1 right-side nopadding">              <!-- product list section -->
                <div class="col-sm-12 col-xs-12 div">
@@ -334,7 +338,6 @@ $('#Order').on('click', (e) => {
             };
         invocie.push(item);
     }
-
     total = handleRemoveZeroDecimal($('#total').attr('total-data'));
     totalRiel = handleExchangeToRielCurrency($('#total').attr('total-data'));
     if (data.length == 0) return;
@@ -374,6 +377,30 @@ $('#Order').on('click', (e) => {
     });
 })
 
+$('#PrintDailyInvoice').on('click', (e) =>{
+    e.preventDefault();
+    $.ajax({
+        url: '/pos/daily',
+        type: "GET",
+        contentType: false,
+        processData: false,
+        success: function(res) {
+            swal({
+                title: 'DONE',
+                text: 'Print Complete',
+                type: "success",
+                timer: 1500,
+                showCancelButton: false,
+                showConfirmButton: false
+            }, function(data) {
+                location.reload(true);
+            });
+        },
+        error: function(err) {
+            console.log(err);
+        }
+    });
+});
 
 function handleRemoveZeroDecimal(value) {
     let intValue = parseInt(value)

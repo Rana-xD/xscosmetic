@@ -123,4 +123,75 @@ class POSController extends Controller
         $printer->printReceipt();
 
     }
+
+    public function printTotalInvoiceDaily(){
+        $items = [];
+        $arrange_items = [];
+        $invoice = [];
+        $start_time = Carbon::now()->format('Y-m-d').' 00:00:00';
+        $end_time = Carbon::now()->format('Y-m-d').' 23:59:59';
+        $total = 0;
+        $total_riel = 0;
+
+        $results = POS::whereBetween('created_at',[$start_time,$end_time])->pluck('items');
+    
+        foreach ($results as $result){
+            foreach($result as $item){
+                $data = [
+                    'product_name' => $item['product_name'],
+                    'quantity' => (int) str_replace("Can"," ",$item['quantity']),
+                    'price' => (float) $item['price'],
+                    'discount' => (float) $item['discount'],
+                    'total' => (float) str_replace("$"," ",$item['total'])
+                ];
+                array_push($items,$data);
+            }
+        }
+
+        foreach($items as $item){
+            $index = $this->findExistingValueInArray($arrange_items,$item['product_name']);
+
+            if($index){
+                $arrange_items[$index-1]['quantity'] += $item['quantity'];
+                // $arrange_items[$index-1]['price'] += $item['price'];
+                $arrange_items[$index-1]['discount'] += $item['discount'];
+                $arrange_items[$index-1]['total'] += $item['total'];
+            }else{
+                array_push($arrange_items,$item);
+            }
+        }
+
+        foreach($arrange_items as $item){
+
+            $data = [
+                'product_name' => $item['product_name'],
+                'quantity' => strval($item['quantity']),
+                'price' => '$'.$item['price'],
+                'discount' => '$'.$item['discount'],
+                'total' => '$'.$item['total']
+            ];
+            array_push($invoice,$data);
+        }
+
+        foreach($arrange_items as $item){
+            $total += $item['total'];
+        }
+
+        $total_riel = 'R'.number_format($total * 4200);
+        
+        $this->printInvoice($invoice,'$'.$total,$total_riel);
+        return response()->json([
+            'code' => 200,
+        ]);
+    }
+
+    private function findExistingValueInArray($arrays, $value){
+        foreach($arrays as $key => $array){
+            if($array['product_name'] === $value){
+                return $key+1;
+            }
+        }
+
+        return 0;
+    }
 }
