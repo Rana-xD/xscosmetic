@@ -91,6 +91,12 @@ class POSController extends Controller
         return $date = new DateTime('now', new DateTimeZone($timezone));
     }
 
+    private function getLocaleDateTime(){
+        $timezone = "Asia/Bangkok";
+        $date = new DateTime('now', new DateTimeZone($timezone));
+        return $date->format('j F Y h:i A');
+    }
+
     private function printInvoice($invoice,$total,$total_riel){
         $store_name = 'XScosmetic';
         $store_phone = '010883816';
@@ -118,6 +124,7 @@ class POSController extends Controller
 
         $printer->setTotal($total);
         $printer->setTotalRiel($total_riel);
+        $printer->setLocaleDateTime($this->getLocaleDateTime());
 
         // Print receipt
         $printer->printReceipt();
