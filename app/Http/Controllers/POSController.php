@@ -46,7 +46,7 @@ class POSController extends Controller
         $this->deductStock($data['items']);        
         $this->updateProductIncome($data['items']);
         // NewOrder::dispatch($order);
-        $this->printInvoice($invoice,$total,$total_riel);
+        // $this->printInvoice($invoice,$total,$total_riel);
         return response()->json([
             'code' => 200,
             'data' => $invoice
@@ -186,7 +186,7 @@ class POSController extends Controller
 
         $total_riel = 'R'.number_format($total * 4200);
         
-        $this->printInvoice($invoice,'$'.$total,$total_riel);
+        // $this->printInvoice($invoice,'$'.$total,$total_riel);
         return response()->json([
             'code' => 200,
         ]);
