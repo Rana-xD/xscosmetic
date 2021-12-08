@@ -19,7 +19,7 @@ class CreateProductsTable extends Migration
             $table->unsignedBigInteger('unit_id');
             $table->string('product_barcode')->nullable();
             $table->string('name');
-            $table->unsignedInteger('stock');
+            $table->integer('stock');
             $table->decimal('price', 6,2);
             $table->decimal('cost', 6,2);
             $table->string('size')->nullable();

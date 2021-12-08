@@ -271,7 +271,7 @@
            </div>
            <div class="form-group">
             <label for="ProductName">Product Barcode</label>
-            <input type="text" name="barcode" maxlength="100" Required class="form-control" id="ProductBarcode" placeholder="ProductBarcode">
+            <input type="text" name="barcode" maxlength="100" class="form-control" id="ProductBarcode" placeholder="ProductBarcode">
           </div>
            <div class="form-group">
             <label for="ProductName">Stock</label>
@@ -346,7 +346,7 @@
             </div>
             <div class="form-group">
               <label for="ProductName">Product Barcode</label>
-              <input type="text" name="barcode" maxlength="100" Required class="form-control" id="ProductBarcode-edit" placeholder="ProductBarcode" >
+              <input type="text" name="barcode" maxlength="100" class="form-control" id="ProductBarcode-edit" placeholder="ProductBarcode" >
             </div>
             <div class="form-group">
              <label for="ProductName">Stock</label>

@@ -11,38 +11,29 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('users')->insert([
-            'username' => 'admin',
-            'role' => 'ADMIN',
-            'password' => Hash::make('@dmin'),
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+        // DB::table('users')->insert([
+        //     'username' => 'admin',
+        //     'role' => 'ADMIN',
+        //     'password' => Hash::make('@dmin'),
+        //     'created_at' => now(),
+        //     'updated_at' => now()
+        // ]);
 
-        DB::table('users')->insert([
-            'username' => 'staff',
-            'role' => 'STAFF',
-            'password' => Hash::make('staff'),
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+        // DB::table('users')->insert([
+        //     'username' => 'staff',
+        //     'role' => 'STAFF',
+        //     'password' => Hash::make('staff'),
+        //     'created_at' => now(),
+        //     'updated_at' => now()
+        // ]);
 
-        DB::table('categories')->insert([
-            'name' => 'Face Skin',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+        // DB::table('units')->insert([
+        //     'name' => 'Box',
+        //     'created_at' => now(),
+        //     'updated_at' => now()
+        // ]);
 
-        DB::table('categories')->insert([
-            'name' => 'Shampoo',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        DB::table('units')->insert([
-            'name' => 'Can',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
+        // $this->call(CateogrySeeder::class);
+        // $this->call(ProductSeeder::class);
     }
 }
