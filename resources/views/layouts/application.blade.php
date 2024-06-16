@@ -64,33 +64,35 @@
                  <span class="icon-bar"></span>
                  <span class="icon-bar"></span>
                </button>
-               <a class="navbar-brand" href="/"><img src="/img/logo.png" alt="logo"></a>
             </div>
             <!-- Brand and toggle get grouped for better mobile display -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-               @if (Auth::user()->role == "ADMIN")
+               
                <ul class="nav navbar-nav">
                   <li class="flat-box"><a href="/pos"><i class="fa fa-credit-card"></i>POS</a></li>
-                  <li class="dropdown">
-                     <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-archive"></i> Product <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                           <li class="flat-box"><a href="/product"><i class="fa fa-archive"></i> Product (Stock) </a></li>
-                           <li class="flat-box"><a href="/category"><i class="fa fa-cog"></i> Brand</a></li>
-                           <li class="flat-box"><a href="/unit"><i class="fa fa-bullseye"></i> Unit</a></li>
-                     </ul>
-                  </li>
-                  <li class="dropdown">
-                     <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ticket"></i> Income <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                           <li class="flat-box"><a href="/income-report"><i class="fa fa-file-text-o"></i> Income </a></li>
-                           <li class="flat-box"><a href="/product-income"><i class="fa fa-file-archive-o"></i> Product Income</a></li>
-                     </ul>
-                  </li>
+                  @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "MANAGER")
+                     <li class="dropdown">
+                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-archive"></i> Product <span class="caret"></span></a>
+                           <ul class="dropdown-menu">
+                              <li class="flat-box"><a href="/product"><i class="fa fa-archive"></i> Product (Stock) </a></li>
+                              <li class="flat-box"><a href="/category"><i class="fa fa-cog"></i> Brand</a></li>
+                              <li class="flat-box"><a href="/unit"><i class="fa fa-bullseye"></i> Unit</a></li>
+                           </ul>
+                     </li>
+                  @endif
+                  @if (Auth::user()->role == "ADMIN")
+                     <li class="dropdown">
+                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ticket"></i> Income <span class="caret"></span></a>
+                           <ul class="dropdown-menu">
+                              <li class="flat-box"><a href="/income-report"><i class="fa fa-file-text-o"></i> Income </a></li>
+                              <li class="flat-box"><a href="/product-income"><i class="fa fa-file-archive-o"></i> Product Income</a></li>
+                        </ul>
+                     </li>
+                  @endif
                  {{-- <li class="flat-box"><a href="/sale"><i class="fa fa-ticket"></i>Sales</a></li> --}}
                  
                  {{-- <li class="flat-box"><a href="#"><i class="fa fa-line-chart"></i>Reports</a></li> --}}
                </ul>
-               @endif
                <ul class="nav navbar-nav navbar-right">
                   <li class="flat-box"><a href="{{ route('logout') }}" title="LogOut"><i class="fa fa-sign-out fa-lg"></i></a></li>
                </ul>

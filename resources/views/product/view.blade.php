@@ -23,13 +23,13 @@
           <thead>
               <tr>
                   <th class="hidden-xs">No</th>
-                  <th>Product Name</th>
+                  <th>Name</th>
+                  <th>Code</th>
                   <th>Total Stock</th>
-                  <th>Type</th>
-                  <th>Size</th>
                   <th>Sell Price</th>
                   <th>Cost</th>
                   <th>Product Type</th>
+                  <th>Expire Date</th>
                   <th>Action</th>
               </tr>
           </thead>
@@ -39,13 +39,13 @@
               
               <tr class="product-data">
                  <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
-                 <td class="product-name">{{ $product->name }}</td>
+                 <td class="name">{{ $product->name }}</td>
+                 <td class="barcode">{{ $product->product_barcode }}</td>
                   <td class="product-stock">{{ $product->stock }}</td>
-                  <td class="product-unit" unit-id="{{ $product->unit->id }}">{{ $product->unit->name }}</td>
-                  <td class="product-size">{{ $product->size }}</td>
                   <td class="product-price" price-data="{{ $product->price }}">{{ $product->price }}$</td>
                   <td class="product-cost" cost-data="{{ $product->cost }}">{{ $product->cost }}$</td>
                   <td class="product-category" category-id="{{ $product->category->id}}">{{ $product->category->name }}</td>
+                  <td class="product-expire-date" expire-date-data="{{ $product->expire_date }}">{{ $product->expire_date }}</td>
                   <input type="hidden" class="product-barcode" value="{{ $product->product_barcode }}">
                   <td><div class="btn-group">
                   <a class="btn btn-default delete-btn delete-product" data-id="{{ $product->id }}" ><i class="fa fa-times" data-id="{{ $product->id }}"></i></a>
@@ -131,7 +131,7 @@
         formData.append('category_id',$("#Category").val());
         formData.append('unit_id',$("#Unit").val());
         formData.append('stock',$("#stock").val());
-        formData.append('size',$("#size").val());
+        formData.append('expire_date',$("#expire-data").val());
         formData.append('price',$("#price").val());
         formData.append('cost',$("#cost").val());
         formData.append('photo',$("#Image")[0].files[0]);
@@ -187,14 +187,15 @@
           let self = e.target,
               id = $(self).attr('data-id'),
               parentDiv = $(self).parents('.product-data'),
-              productName = $(parentDiv).find('.product-name').text(),
-              productBarcode = $(parentDiv).find('.product-barcode').val()
+              productName = $(parentDiv).find('.name').text(),
+              productBarcode = $(parentDiv).find('.barcode').text()
               productStock = $(parentDiv).find('.product-stock').text(),
               unitId = $(parentDiv).find('.product-unit').attr('unit-id'),
               size = $(parentDiv).find('.product-size').text(),
               price = $(parentDiv).find('.product-price').attr('price-data'),
               cost = $(parentDiv).find('.product-cost').attr('cost-data'),
               categoryId = $(parentDiv).find('.product-category').attr('category-id'),
+              expireDate = $(parentDiv).find('.product-expire-date').attr('expire-date-data'),
               image = $(self).attr('image-data');
 
               $('#ProductName-edit').val(productName);
@@ -207,6 +208,7 @@
               $('Category-edit').val(categoryId);
               $('Unit-edit').val(unitId);
               $("#ProductImageEdit").attr('src',image);
+              $('#expire-date-edit').val(expireDate);
 
               $('#Editproduct').modal('show');
 
@@ -222,7 +224,7 @@
         formData.append('category_id',$("#Category-edit").val());
         formData.append('unit_id',$("#Unit-edit").val());
         formData.append('stock',$("#stock-edit").val());
-        formData.append('size',$("#size-edit").val());
+        formData.append('expire_date',$("#expire-date-edit").val());
         formData.append('price',$("#price-edit").val());
         formData.append('cost',$("#cost-edit").val());
         if(isImageUpdate){
@@ -252,6 +254,11 @@
             $("#ProductimageView").attr('src',image);
             $("#ImageModal").modal('show');
       })
+
+      $('.datepicker').datepicker({
+            format: 'mm/dd/yyyy',
+            startDate: 'today'
+      });
   });
 </script>
 <!-- Modal Add -->
@@ -277,14 +284,12 @@
             <label for="ProductName">Stock</label>
             <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock" placeholder="Stock" >
           </div>
-          <div class="form-group">
-            <label for="ProductName">Size</label>
-            <input type="text" name="size" maxlength="100"  class="form-control" id="size" placeholder="size">
-          </div>
+          @if (Auth::user()->role == "ADMIN")
           <div class="form-group">
             <label for="ProductName">Sell Price</label>
-            <input type="text" name="price" maxlength="100" Required class="form-control" id="price" placeholder="price" >
+            <input type="text" name="price" maxlength="100" class="form-control" id="price" placeholder="price" >
           </div>
+          @endif
           <div class="form-group">
             <label for="ProductName">Cost</label>
             <input type="text" name="cost" maxlength="100" Required class="form-control" id="cost" placeholder="cost" >
@@ -304,6 +309,15 @@
                  <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                @endforeach
              </select>
+          </div>
+          <div class="form-group">
+            <label for="Category">Expired Date</label>
+             <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
+              <input type="text" class="form-control expired-date datepicker" id="expire-data">
+              <div class="input-group-addon">
+                  <span class="glyphicon glyphicon-th"></span>
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <label for="Image">Image</label>
@@ -352,14 +366,12 @@
              <label for="ProductName">Stock</label>
              <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock-edit" placeholder="Stock" >
            </div>
-           <div class="form-group">
-             <label for="ProductName">Size</label>
-             <input type="text" name="size" maxlength="100"  class="form-control" id="size-edit" placeholder="size">
-           </div>
+           @if (Auth::user()->role == "ADMIN")
            <div class="form-group">
              <label for="ProductName">Sell Price</label>
              <input type="text" name="price" maxlength="100" Required class="form-control" id="price-edit" placeholder="price" >
            </div>
+           @endif
            <div class="form-group">
              <label for="ProductName">Cost</label>
              <input type="text" name="cost" maxlength="100" Required class="form-control" id="cost-edit" placeholder="cost" >
@@ -380,6 +392,15 @@
                 @endforeach
               </select>
            </div>
+           <div class="form-group">
+            <label for="Category">Expired Date</label>
+             <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
+              <input type="text" class="form-control expired-date datepicker" id="expire-date-edit">
+              <div class="input-group-addon">
+                  <span class="glyphicon glyphicon-th"></span>
+              </div>
+            </div>
+          </div>
            <div class="form-group">
             <label for="Image">Image</label>
               <a id="openFileInputEdit">Browse</a>

@@ -38,9 +38,14 @@ class User extends Authenticatable
     ];
 
     const ADMIN = 'ADMIN';
+    const MANAGER = 'MANAGER';
     const STAFF = 'STAFF';
     
     public function isAdmin(){
         return $this->role === self::ADMIN;
+    }
+
+    public function isManager(){
+        return $this->role === self::MANAGER;
     }
 }

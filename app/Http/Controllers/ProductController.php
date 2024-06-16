@@ -43,7 +43,7 @@ class ProductController extends Controller
             "category_id" => $request->category_id,
             "unit_id" => $request->unit_id,
             "stock" =>$request->stock,
-            "size" =>$request->size,
+            "expire_date" =>$request->expire_date,
             "price" =>$request->price,
             "cost" => $request->cost,
             "photo" => $fileNameToStore
@@ -84,7 +84,7 @@ class ProductController extends Controller
             "category_id" => $request->category_id,
             "unit_id" =>$request->unit_id,
             "stock" =>$request->stock,
-            "size" =>$request->size,
+            "expire_date" =>$request->expire_date,
             "price" =>$request->price,
             "cost" => $request->cost,
         ];

@@ -20,9 +20,9 @@ class CreateProductsTable extends Migration
             $table->string('product_barcode')->nullable();
             $table->string('name');
             $table->integer('stock');
-            $table->decimal('price', 6,2);
+            $table->decimal('price', 6,2)->nullable();
             $table->decimal('cost', 6,2);
-            $table->string('size')->nullable();
+            $table->string('expire_date')->nullable();
             $table->string('photo');
             $table->timestamps();
 
