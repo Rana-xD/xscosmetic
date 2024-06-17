@@ -30,7 +30,7 @@ class POSController extends Controller
 
     public function store(Request $request){
         $data = [
-            "order_no" => date('Ymd').strval(rand(1000,9999)),
+            "order_no" => $request->invoice_no,
             "items" => $request->data,
             "cashier" => Auth::user()->username,
             "time" => $this->getLocaleTime(),
@@ -38,7 +38,7 @@ class POSController extends Controller
             'updated_at' => $this->getLocaleTimestamp()
         ];
 
-        $invoice = $request->invocie;
+        $invoice = $request->invoice;
         $total = $request->total;
         $total_riel = $request->total_riel;
         $order = POS::create($data);
@@ -50,6 +50,17 @@ class POSController extends Controller
         return response()->json([
             'code' => 200,
             'data' => $invoice
+        ]);
+    }
+
+    public function getInvoiceNo(){
+        $start_time = Carbon::now()->format('Y-m-d').' 00:00:00';
+        $end_time = Carbon::now()->format('Y-m-d').' 23:59:59';
+        $results = POS::whereBetween('created_at',[$start_time,$end_time])->get()->count();
+        $invoice_no = 000000 + $results;
+        return response()->json([
+            'code' => 200,
+            'data' => $invoice_no
         ]);
     }
 
@@ -96,6 +107,7 @@ class POSController extends Controller
         $date = new DateTime('now', new DateTimeZone($timezone));
         return $date->format('j F Y h:i A');
     }
+
 
     private function printInvoice($invoice,$total,$total_riel){
         $store_name = 'XScosmetic';

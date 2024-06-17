@@ -84,7 +84,7 @@ $(window).on('resize', setSize);
 //for the product list in the left side
 $(function(){
 $('#productList').slimScroll({
-height: '355px',
+height: '483px',
 alwaysVisible: true,
 railVisible: true,
 });

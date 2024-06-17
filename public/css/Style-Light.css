@@ -374,7 +374,7 @@ div.dataTables_wrapper { clear: both; }
    background-color: #ecf0f1;
    border-radius: 5px;
    padding-bottom: 20px;
-   margin-bottom: 150px;
+   /* margin-bottom: 150px; */
    border: 3px solid white;
 }
 
@@ -1383,3 +1383,21 @@ input[type=checkbox]:checked + .label-text:before {
    background-color: #FB6E52;
    border: none;
 }
+
+.form-group-flex {
+   display: flex;
+   align-items: center;
+ }
+ 
+ .form-group-flex label {
+   width: 30%;
+   margin-bottom: 0;
+ }
+ 
+ .modal-body-pos {
+   padding: 30px;
+ }
+
+ #total-in-riel-modal {
+   padding-top: 12px;
+ }

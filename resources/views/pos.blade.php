@@ -31,24 +31,28 @@
                         <span class="float-right"><b id="ItemsNum"><span></span>item</b></span>
                      </td>
                   </tr>
-                  {{-- <tr>
+                  <tr>
                      <td class="active" width="40%">Discount</td>
                      <td class="whiteBg" width="60%"><span id="Subtot"></span> 
                         <input type="text" class="form-control discount-input overall-discount" value="" placeholder="0" maxlength="3" onblur="handleProductOverallDiscount(this)">
                      </td>
-                  </tr> --}}
+                  </tr> 
                   <tr>
-                     <td class="active">Total</td>
-                     <td class="whiteBg light-blue text-bold"><span id="total" total-data="">$</td>
+                     <td class="active">Total in USD</td>
+                     <td class="whiteBg light-blue text-bold"><span id="total-usd" total-usd-data="">$</td>
+                  </tr>
+                  <tr>
+                     <td class="active">Total in KHR</td>
+                     <td class="whiteBg red text-bold"><span id="total-riel" total-riel-data="">៛</td>
                   </tr>
                </table>
             </div>
             <button type="button" onclick="cancelPOS()" class="btn btn-red col-md-6 flat-box-btn"><h5 class="text-bold">CANCEL</h5></button>
-            <button type="button" class="btn btn-green col-md-6 flat-box-btn" data-toggle="modal" data-target="#AddSale" id="Order"><h5 class="text-bold">ORDER</h5></button>
+            <button type="button" class="btn btn-green col-md-6 flat-box-btn" data-toggle="modal" id="Order"><h5 class="text-bold">ORDER</h5></button>
             
          </div>
          
-        <button type="button" class="btn btn-blue col-md-12 flat-box-btn print-invoice-daily-container" id="PrintDailyInvoice"><h5 class="text-bold">PRINT</h5></button>
+        <!-- <button type="button" class="btn btn-blue col-md-12 flat-box-btn print-invoice-daily-container" id="PrintDailyInvoice"><h5 class="text-bold">PRINT</h5></button> -->
          
          
       </div>
@@ -225,6 +229,151 @@ $(document).ready(function() {
       });
    });
 
+   $('#posOrder').on('submit', (e) => {
+    e.preventDefault();
+    
+    let data = [];
+    let invoice = [];
+    let total = 0;
+    let totalRiel = 0;
+    let cards = $('#productList').children();
+    let invoiceNo = $('#invoice-no').val();
+
+
+    for (let i = 0; i < cards.length; i++) {
+        totalProduct(cards[i]);
+
+        let cost = $(cards[i]).find('.product-cost').val(),
+            unit = $(cards[i]).find('.unit-id').val()
+        quantity = parseInt($(cards[i]).find('.quantity').val()),
+            totalCost = (cost * quantity).toFixed(2),
+            totalPrice = parseFloat(($(cards[i]).find('.subtotal').text()).replace('$', '')).toFixed(2),
+            profit = parseFloat(totalPrice - totalCost).toFixed(2);
+
+        let item = {
+            product_id: parseInt($(cards[i]).find('.product-id').val()),
+            product_name: $(cards[i]).find('.product-name-final').val(),
+            quantity: `${quantity} ${unit}`,
+            price: $(cards[i]).find('.product-price').val(),
+            discount: $(cards[i]).find('.discount').val() === '' ? 0 : $(cards[i]).find('.discount').val(),
+            total: $(cards[i]).find('.subtotal').text(),
+            cost: `$ ${totalCost}`,
+            profit: `$ ${profit}`
+        };
+        data.push(item);
+    }
+
+    for (let i = 0; i < cards.length; i++) {
+        totalProduct(cards[i]);
+
+        let price = handleRemoveZeroDecimal($(cards[i]).find('.product-price').val()),
+            quantity = parseInt($(cards[i]).find('.quantity').val()),
+            totalPrice = handleRemoveZeroDecimal(parseFloat(($(cards[i]).find('.subtotal').text()).replace('$', '')).toFixed(2)),
+
+
+            item = {
+                product_name: $(cards[i]).find('.product-name-final').val(),
+                quantity: `${quantity}`,
+                price: price,
+                discount: $(cards[i]).find('.discount').val() === '' ? `0` : `$${$(cards[i]).find('.discount').val()}`,
+                total: totalPrice
+            };
+        invoice.push(item);
+    }
+    total = handleRemoveZeroDecimal($('#total-usd').attr('total-usd-data'));
+    totalRiel = $('#total-riel').attr('total-riel');
+    if (data.length == 0) return;
+    let formData = {
+        "data": data,
+        "invoice": invoice,
+        "invoice_no": invoiceNo,
+        "total": total,
+        "total_riel": totalRiel
+    };
+
+    $.ajax({
+        url: '/pos/add',
+        type: "GET",
+        data: formData,
+        contentType: false,
+        processData: true,
+        success: function(res) {
+            $(cards).remove();
+            totalItem();
+            totalCash();
+            swal({
+                title: 'DONE',
+                text: 'Order complete',
+                type: "success",
+                timer: 1500,
+                showCancelButton: false,
+                showConfirmButton: false
+            }, function(data) {
+                location.reload(true);
+            });
+
+
+        },
+        error: function(err) {
+            console.log(err);
+        }
+    });
+    })
+
+    $('#payment-type').on('change', function() {
+        let type = $(this).val();
+        if(type === 'aba' || type === 'acleda') {
+            $('.payment-type-cash').css('display','none');
+        }else {
+            $('.payment-type-cash').css('display','block');
+        }
+    });
+
+    $('#received-cash-in-usd').on('input',function(e){
+
+        let value = $(this).val();
+        
+        let totalUSD = $('#total-usd').attr('total-usd-data');
+
+        let changeInUSD = value - totalUSD;
+        let changeInRiel = handleExchangeToRielCurrency(changeInUSD);
+        $('#change-in-riel').val(`${changeInRiel} ៛`);
+        $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
+
+        if(value != '') {
+            $("#received-cash-in-riel").prop('disabled', true);
+        }else {
+            $("#received-cash-in-riel").prop('disabled', false);
+            $('#change-in-riel').val('');
+            $('#change-in-usd').val('');
+        }
+    });
+
+    $('#received-cash-in-riel').on('input',function(e){
+
+        let value = $(this).val();
+        
+        
+        let totalUSD = $('#total-usd').attr('total-usd-data');
+        let totalRiel = handleRemoveCommafromRielCurrency($('#total-riel').attr('total-riel-data'));
+
+        let changeInRiel = addComma(value - totalRiel);
+        
+        
+        $('#change-in-riel').val(`${changeInRiel} ៛`);
+
+
+        if(value != '') {
+            $("#received-cash-in-usd").prop('disabled', true);
+        }else {
+            $("#received-cash-in-usd").prop('disabled', false);
+            $('#change-in-riel').val('');
+            $('#change-in-usd').val('');
+        }
+    });
+
+
+
 });
 
 function totalProduct(html) {
@@ -272,12 +421,16 @@ function totalItem() {
 
 function totalCash() {
     let total = 0;
+    let totalRiel = 0;
     let cards = $('#productList').children();
     for (let i = 0; i < cards.length; i++) {
         total += parseFloat($(cards[i]).find('.subtotal').text().replace('$', ''));
     }
-    $('#total').text(`$ ${total.toFixed(2)}`)
-    $('#total').attr('total-data', total.toFixed(2));
+    totalRiel = handleExchangeToRielCurrency(total);
+    $('#total-usd').text(`$ ${total.toFixed(2)}`)
+    $('#total-usd').attr('total-usd-data', total.toFixed(2));
+    $('#total-riel').text(`៛ ${totalRiel}`);
+    $('#total-riel').attr('total-riel-data', totalRiel);
 
 }
 
@@ -288,94 +441,6 @@ function cancelPOS() {
     totalCash();
 }
 
-
-
-$('#Order').on('click', (e) => {
-    let data = [];
-    let invocie = [];
-    let total = 0;
-    let totalRiel = 0;
-    let cards = $('#productList').children();
-
-
-    for (let i = 0; i < cards.length; i++) {
-        totalProduct(cards[i]);
-
-        let cost = $(cards[i]).find('.product-cost').val(),
-            unit = $(cards[i]).find('.unit-id').val()
-        quantity = parseInt($(cards[i]).find('.quantity').val()),
-            totalCost = (cost * quantity).toFixed(2),
-            totalPrice = parseFloat(($(cards[i]).find('.subtotal').text()).replace('$', '')).toFixed(2),
-            profit = parseFloat(totalPrice - totalCost).toFixed(2);
-
-        let item = {
-            product_id: parseInt($(cards[i]).find('.product-id').val()),
-            product_name: $(cards[i]).find('.product-name-final').val(),
-            quantity: `${quantity} ${unit}`,
-            price: $(cards[i]).find('.product-price').val(),
-            discount: $(cards[i]).find('.discount').val() === '' ? 0 : $(cards[i]).find('.discount').val(),
-            total: $(cards[i]).find('.subtotal').text(),
-            cost: `$ ${totalCost}`,
-            profit: `$ ${profit}`
-        };
-        data.push(item);
-    }
-
-    for (let i = 0; i < cards.length; i++) {
-        totalProduct(cards[i]);
-
-        let price = handleRemoveZeroDecimal($(cards[i]).find('.product-price').val()),
-            quantity = parseInt($(cards[i]).find('.quantity').val()),
-            totalPrice = handleRemoveZeroDecimal(parseFloat(($(cards[i]).find('.subtotal').text()).replace('$', '')).toFixed(2)),
-
-
-            item = {
-                product_name: $(cards[i]).find('.product-name-final').val(),
-                quantity: `${quantity}`,
-                price: price,
-                discount: $(cards[i]).find('.discount').val() === '' ? `0` : `$${$(cards[i]).find('.discount').val()}`,
-                total: totalPrice
-            };
-        invocie.push(item);
-    }
-    total = handleRemoveZeroDecimal($('#total').attr('total-data'));
-    totalRiel = handleExchangeToRielCurrency($('#total').attr('total-data'));
-    if (data.length == 0) return;
-    let formData = {
-        "data": data,
-        "invocie": invocie,
-        "total": total,
-        "total_riel": totalRiel
-    };
-
-    $.ajax({
-        url: '/pos/add',
-        type: "GET",
-        data: formData,
-        contentType: false,
-        processData: true,
-        success: function(res) {
-            $(cards).remove();
-            totalItem();
-            totalCash();
-            swal({
-                title: 'DONE',
-                text: 'Order complete',
-                type: "success",
-                timer: 1500,
-                showCancelButton: false,
-                showConfirmButton: false
-            }, function(data) {
-                location.reload(true);
-            });
-
-
-        },
-        error: function(err) {
-            console.log(err);
-        }
-    });
-})
 
 $('#PrintDailyInvoice').on('click', (e) =>{
     e.preventDefault();
@@ -408,7 +473,11 @@ function handleRemoveZeroDecimal(value) {
 }
 
 function handleExchangeToRielCurrency(value) {
-    return `R${addComma(parseFloat(value).toFixed(2) * 4200)}`;
+    return `${addComma(parseFloat(value).toFixed(2) * 4100)}`;
+}
+
+function handleRemoveCommafromRielCurrency(value) {
+    return parseInt(value.replace(/,/g, ''));
 }
 
 function addComma(num) {
@@ -445,7 +514,7 @@ function handleProductDiscount(e) {
 
 function handleProductOverallDiscount(e) {
     let parentDiv = $(e).parents('.cashier-section');
-    total = $('#total').attr('total-data') === '' ? 0 : $('#total').attr('total-data'),
+    total = $('#total-usd').attr('') === '' ? 0 : $('#total-usd').attr(''),
         totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
 
     if (!total) {
@@ -464,7 +533,7 @@ function handleProductOverallDiscount(e) {
 
 
     console.log(totalDiscountPrice);
-    $('#total').text(`$ ${totalDiscountPrice}`)
+    $('#total-usd').text(`$ ${totalDiscountPrice}`)
 }
 
 function minusQuantity(e) {
@@ -546,8 +615,102 @@ $('.size').on('click', function(e) {
     editQuantity(card);
 
 });
+
+$('#Order').on("click",(e)=>{
+    e.preventDefault();
+    let totalUSD = $('#total-usd').attr('total-usd-data');
+    
+    if(parseInt(totalUSD) == 0 || totalUSD == ''){
+        return;
+    }
+    let totalRiel = $('#total-riel').attr('total-riel-data');
+
+    $.ajax({
+        url: '/pos/get-invoice-no',
+        type: "GET",
+        contentType: false,
+        processData: false,
+        success: function(res) {
+            const str = '000000';
+            let invoiceNo = ('0' + (+str + res.data)).padStart(str.length, '0');
+
+            $('#invoice-no').val(invoiceNo);
+            $('#total-in-usd-modal').val(`${totalUSD} $`);
+            $('#total-in-riel-modal').val(`${totalRiel} ៛`);
+            $('#OrderModal').modal('show');
+
+        },
+        error: function(err) {
+            console.log(err);
+        }
+    });
+
+    
+});
   
 
 </script>
+
+
+<!-- Add Modal -->
+<div class="modal fade" id="OrderModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+ <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <form id="posOrder" action="" method="POST" enctype="multipart/form-data">
+        @csrf
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">PAYMENT</h4>
+      </div>
+      <div class="modal-body modal-body-pos">
+           <div class="form-group form-group-flex">
+             <label for="invoice-no">Invoice No</label>
+             <input type="text" name="invoice-no" maxlength="100" class="form-control" id="invoice-no" disabled>
+           </div>
+           <div class="form-group form-group-flex">
+             <label for="total-in-usd-modal">Total In USD</label>
+             <input type="text" name="total-in-usd-modal" maxlength="100" class="form-control" id="total-in-usd-modal" disabled>
+           </div>
+           <div class="form-group form-group-flex">
+             <label for="total-in-riel-moda">Total In KHR</label>
+             <input type="text" name="total-in-riel-modal" maxlength="100" class="form-control" id="total-in-riel-modal" disabled>
+           </div>
+           <div class="form-group form-group-flex">
+             <label for="payment-type">Payment Type</label>
+             <select class="form-control" id="payment-type" name="filtertype">
+                 <option value="cash" selected>Cash</option>
+                 <option value="aba">ABA</option>
+                 <option value="acleda">Acleda</option>
+             </select>
+           </div>
+      </div>
+
+      <div class="modal-body modal-body-pos payment-type-cash">
+           <div class="form-group form-group-flex">
+             <label for="received-cash-in-usd">Received Cash In USD</label>
+             <input type="number" name="received-cash-in-usd"  class="form-control" id="received-cash-in-usd">
+           </div>
+           <div class="form-group form-group-flex">
+             <label for="received-cash-in-riel">Received Cash In Riel</label>
+             <input type="number" name="received-cash-in-riel" class="form-control" id="received-cash-in-riel">
+           </div>
+           <div class="form-group form-group-flex">
+             <label for="change-in-usd">Change In USD</label>
+             <input type="text" name="change-in-usd" maxlength="100" class="form-control" id="change-in-usd" disabled>
+           </div>
+           <div class="form-group form-group-flex">
+             <label for="change-in-riel">Change In Riel</label>
+             <input type="text" name="change-in-riel" maxlength="100" class="form-control" id="change-in-riel" disabled>
+           </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-add">Submit</button>
+      </div>
+    </form>
+    </div>
+ </div>
+</div>
+<!-- /.Modal -->
 @endsection
 

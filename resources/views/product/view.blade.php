@@ -127,15 +127,15 @@
         let formData = new FormData();
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
         formData.append('name',$("#ProductName").val());
-        formData.append('product_barcode',$("#ProductBarcode").val());
+        formData.append('product_barcode',$("#ProductBarcode").val() === undefined ? '' : $("#ProductBarcode").val());
         formData.append('category_id',$("#Category").val());
         formData.append('unit_id',$("#Unit").val());
         formData.append('stock',$("#stock").val());
         formData.append('expire_date',$("#expire-data").val());
-        formData.append('price',$("#price").val());
+        formData.append('price',$("#price").val() === undefined ? '' : $("#price").val());
         formData.append('cost',$("#cost").val());
         formData.append('photo',$("#Image")[0].files[0]);
-        
+      
         $.ajax({
           url: '/product/add',
           type: "POST", 
@@ -220,16 +220,17 @@
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
         formData.append('id',$("#productID").val());
         formData.append('name',$("#ProductName-edit").val());
-        formData.append('product_barcode',$("#ProductBarcode-edit").val());
+        formData.append('product_barcode',$("#ProductBarcode-edit").val() === '' ? '' : $("#ProductBarcode-edit").val());
         formData.append('category_id',$("#Category-edit").val());
         formData.append('unit_id',$("#Unit-edit").val());
         formData.append('stock',$("#stock-edit").val());
         formData.append('expire_date',$("#expire-date-edit").val());
-        formData.append('price',$("#price-edit").val());
+        formData.append('price',$("#price-edit").val() === undefined ? '' : $("#price-edit").val());
         formData.append('cost',$("#cost-edit").val());
         if(isImageUpdate){
           formData.append('photo',$("#ImageEdit")[0].files[0]);
         }
+
         $.ajax({
           url: '/product/update',
           type: "POST", 
@@ -259,6 +260,7 @@
             format: 'mm/dd/yyyy',
             startDate: 'today'
       });
+
   });
 </script>
 <!-- Modal Add -->

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Product;
 use App\ProductIncome;
-
+use Mockery\Undefined;
 
 class ProductController extends Controller
 {
@@ -39,12 +39,12 @@ class ProductController extends Controller
         }
         $data = [
             "name" => $request->name,
-            "product_barcode" => $request->product_barcode,
+            "product_barcode" => $request->product_barcode === '' ? null : $request->product_barcode,
             "category_id" => $request->category_id,
             "unit_id" => $request->unit_id,
             "stock" =>$request->stock,
             "expire_date" =>$request->expire_date,
-            "price" =>$request->price,
+            "price" =>$request->price === '' ? null : $request->price,
             "cost" => $request->cost,
             "photo" => $fileNameToStore
         ];
@@ -80,12 +80,12 @@ class ProductController extends Controller
         $product = Product::find($id);
         $data = [
             "name" => $request->name,
-            "product_barcode" => $request->product_barcode,
+            "product_barcode" => $request->product_barcode === '' ? null : $request->product_barcode,
             "category_id" => $request->category_id,
             "unit_id" =>$request->unit_id,
             "stock" =>$request->stock,
             "expire_date" =>$request->expire_date,
-            "price" =>$request->price,
+            "price" =>$request->price === '' ? null : $request->price,
             "cost" => $request->cost,
         ];
 

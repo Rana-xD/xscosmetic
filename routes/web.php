@@ -28,6 +28,7 @@ Route::get('/income-report/filter','SaleController@cusomterIncomeReport');
 
 Route::get('/pos', 'POSController@show')->name('pos');
 Route::get('/pos/add', 'POSController@store')->name('pos');
+Route::get('/pos/get-invoice-no', 'POSController@getInvoiceNo')->name('pos');
 Route::get('/pos/daily','POSController@printTotalInvoiceDaily')->name('pos');
 
 Route::get('/order','OrderController@show');
