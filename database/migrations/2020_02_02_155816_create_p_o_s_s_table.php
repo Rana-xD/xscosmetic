@@ -19,6 +19,7 @@ class CreatePOSSTable extends Migration
             $table->text("items");
             $table->string("cashier");
             $table->string("time");
+            $table->string("payment_type");
             $table->timestamps();
             
         });

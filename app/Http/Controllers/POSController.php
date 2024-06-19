@@ -34,6 +34,7 @@ class POSController extends Controller
             "items" => $request->data,
             "cashier" => Auth::user()->username,
             "time" => $this->getLocaleTime(),
+            "payment_type" => $request->payment_type,
             'created_at' => $this->getLocaleTimestamp(),
             'updated_at' => $this->getLocaleTimestamp()
         ];

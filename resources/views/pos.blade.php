@@ -14,7 +14,7 @@
             <h3 class="text-left">Quantity</h3>
          </div>
          <div class="col-xs-3 table-header">
-            <h3 class="text-left">Discount</h3>
+            <h3 class="text-left">Discount %</h3>
          </div>
          <div class="col-xs-2 table-header nopadding">
             <h3>Total</h3>
@@ -32,7 +32,7 @@
                      </td>
                   </tr>
                   <tr>
-                     <td class="active" width="40%">Discount</td>
+                     <td class="active" width="40%">Discount %</td>
                      <td class="whiteBg" width="60%"><span id="Subtot"></span> 
                         <input type="text" class="form-control discount-input overall-discount" value="" placeholder="0" maxlength="3" onblur="handleProductOverallDiscount(this)">
                      </td>
@@ -238,6 +238,7 @@ $(document).ready(function() {
     let totalRiel = 0;
     let cards = $('#productList').children();
     let invoiceNo = $('#invoice-no').val();
+    let paymentType = $('#payment-type').val();
 
 
     for (let i = 0; i < cards.length; i++) {
@@ -288,7 +289,8 @@ $(document).ready(function() {
         "invoice": invoice,
         "invoice_no": invoiceNo,
         "total": total,
-        "total_riel": totalRiel
+        "total_riel": totalRiel,
+        "payment_type": paymentType
     };
 
     $.ajax({
@@ -504,17 +506,19 @@ function handleProductDiscount(e) {
         return;
     }
 
-    discontPrice = (initDiscountPrice - discount).toFixed(2);
-    totalDiscountPrice = (totalPrice - discount).toFixed(2);
+    // discontPrice = (initDiscountPrice - discount).toFixed(2);
+    discountPrice = ((initDiscountPrice * discount) / 100).toFixed(2);
+    totalDiscountPrice = (totalPrice - discountPrice).toFixed(2);
     $(e).parents('.product-card').find('.subtotal').text(`$ ${totalDiscountPrice}`);
-    $(e).parents('.product-card').find('.product-discount-price').val(discontPrice);
+    $(e).parents('.product-card').find('.product-discount-price').val(discountPrice);
     totalCash();
 
 }
 
 function handleProductOverallDiscount(e) {
+    console.log('handleProductOverallDiscount');
     let parentDiv = $(e).parents('.cashier-section');
-    total = $('#total-usd').attr('') === '' ? 0 : $('#total-usd').attr(''),
+    total = $('#total-usd').attr('') === '' ? 0 : $('#total-usd').attr('total-usd-data'),
         totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
 
     if (!total) {
@@ -530,10 +534,12 @@ function handleProductOverallDiscount(e) {
         return;
     }
     let totalDiscountPrice = (total - (total * (totalDiscount / 100))).toFixed(2);
+    totalRielDiscountPrice = handleExchangeToRielCurrency(totalDiscountPrice);
 
 
     console.log(totalDiscountPrice);
     $('#total-usd').text(`$ ${totalDiscountPrice}`)
+    $('#total-riel').text(`៛ ${totalRielDiscountPrice}`)
 }
 
 function minusQuantity(e) {
