@@ -493,7 +493,7 @@ function handleProductDiscount(e) {
         totalPrice = parseFloat((price) * quantity).toFixed(2),
         discount = ($(e).parents('.product-card').find('.discount').val()) === '' ? 0 : parseInt($(e).parents('.product-card').find('.discount').val());
 
-        console.log(discount);
+        
 
 
     if (!discount) {
@@ -508,7 +508,7 @@ function handleProductDiscount(e) {
     }
 
     // discontPrice = (initDiscountPrice - discount).toFixed(2);
-    discountPrice = ((totalPrice * discount) / 100).toFixed(2);
+    discountPrice = (totalPrice - ((totalPrice * discount) / 100)).toFixed(2);
     // totalDiscountPrice = (totalPrice - discountPrice).toFixed(2);
   
     $(e).parents('.product-card').find('.subtotal').text(`$ ${discountPrice}`);
@@ -518,7 +518,6 @@ function handleProductDiscount(e) {
 }
 
 function handleProductOverallDiscount(e) {
-    console.log('handleProductOverallDiscount');
     let parentDiv = $(e).parents('.cashier-section');
     total = $('#total-usd').attr('') === '' ? 0 : $('#total-usd').attr('total-usd-data'),
         totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
@@ -549,7 +548,7 @@ function minusQuantity(e) {
     let quantity = parseInt($(card).find('.quantity').val());
     let result = quantity == 1 ? 1 : quantity - 1;
     $(card).find('.quantity').val(result);
-    editQuantity(card);
+    editQuantity(e);
 }
 
 function addQuantity(e) {
@@ -557,7 +556,7 @@ function addQuantity(e) {
     let quantity = parseInt($(card).find('.quantity').val());
     let result = quantity + 1;
     $(card).find('.quantity').val(result);
-    editQuantity(card);
+    editQuantity(e);
 }
 
 function addExtra(name) {
@@ -571,13 +570,24 @@ function addExtra(name) {
 
 function editQuantity(e) {
 
-    let price = parseFloat($(e).find('.product-price').val());
-    let quantity = parseInt($(e).find('.quantity').val());
-    let discount = ($(e).find('.discount').val()) === '' ? 0 : parseFloat($(e).find('.discount').val()).toFixed(2);
+    let price = parseFloat($(e).parents('.product-card').find('.product-price').val());
+    let quantity = parseInt($(e).parents('.product-card').find('.quantity').val());
+    let discount = ($(e).parents('.product-card').find('.discount').val()) === '' ? 0 : parseInt($(e).parents('.product-card').find('.discount').val());
+    
 
-    $(e).find('.subtotal').text(`$ ${parseFloat((((price) * quantity) * discount) / 100).toFixed(2)}`);
+    console.log(discount);
 
-    $(e).find('.subtotal').attr('subtotal-data', `${parseFloat((((price) * quantity) * discount) / 100).toFixed(2)}`);
+    if (!discount) {
+
+        $(e).parents('.product-card').find('.subtotal').text(`$ ${parseFloat(price * quantity).toFixed(2)}`);
+        $(e).parents('.product-card').find('.subtotal').attr('subtotal-data', `${parseFloat(price * quantity).toFixed(2)}`);
+
+    } else {
+        $(e).parents('.product-card').find('.subtotal').text(`$ ${parseFloat((price * quantity) - (((price * quantity) * discount) / 100)).toFixed(2)}`);
+        $(e).parents('.product-card').find('.subtotal').attr('subtotal-data', `${parseFloat((price * quantity) - (((price * quantity) * discount) / 100)).toFixed(2)}`);
+    }
+
+    
 
     totalItem();
     totalCash();
