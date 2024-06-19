@@ -22,7 +22,7 @@ class POSController extends Controller
     }
 
     public function show(){
-        $products = Product::with('unit')->orderBy('created_at','asc')->get();
+        $products = Product::orderBy('created_at','asc')->get();
         return view('pos',[
             'products' => $products
         ]);

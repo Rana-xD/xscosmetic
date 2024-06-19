@@ -24,7 +24,7 @@
               <tr class="unit-data">
                  <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
                  <td class="unit-name">{{ $product->product_name }}</td>
-                 <td>{{ $product->quantity }} {{$product->unit->name}}</td>
+                 <td>{{ $product->quantity }}</td>
                  <td>$ {{ $product->total_price }}</td>
                  <td>$ {{ $product->total_cost  }}</td>
                  <td>$ {{ $product->profit}}</td>

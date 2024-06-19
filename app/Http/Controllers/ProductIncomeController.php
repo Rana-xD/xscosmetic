@@ -14,7 +14,7 @@ class ProductIncomeController extends Controller
     }
 
     public function show(){
-        $products = ProductIncome::with('unit')->get();
+        $products = ProductIncome::all();
         return view('income_report.product_income',[
             'products' => $products
         ]);

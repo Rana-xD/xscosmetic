@@ -18,7 +18,7 @@ class ProductController extends Controller
     }
 
     public function show(){
-        $products = Product::with('category','unit')->get();
+        $products = Product::with('category')->get();
 
         return view('product.view',[
             'products' => $products
@@ -41,7 +41,7 @@ class ProductController extends Controller
             "name" => $request->name,
             "product_barcode" => $request->product_barcode === '' ? null : $request->product_barcode,
             "category_id" => $request->category_id,
-            "unit_id" => $request->unit_id,
+            // "unit_id" => $request->unit_id,
             "stock" =>$request->stock,
             "expire_date" =>$request->expire_date,
             "price" =>$request->price === '' ? null : $request->price,
@@ -53,7 +53,7 @@ class ProductController extends Controller
 
         $init_data = [
             'product_id' => $result->id,
-            'unit_id' => $request->unit_id,
+            // 'unit_id' => $request->unit_id,
             'product_name' => $request->name,
         ];
 
@@ -82,7 +82,7 @@ class ProductController extends Controller
             "name" => $request->name,
             "product_barcode" => $request->product_barcode === '' ? null : $request->product_barcode,
             "category_id" => $request->category_id,
-            "unit_id" =>$request->unit_id,
+            // "unit_id" =>$request->unit_id,
             "stock" =>$request->stock,
             "expire_date" =>$request->expire_date,
             "price" =>$request->price === '' ? null : $request->price,

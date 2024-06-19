@@ -117,7 +117,6 @@
                            <input type="hidden" id="idprice-{{$product->id}}" name="price" value="{{$product->price}}" />
                            <input type="hidden" id="idcost-{{$product->id}}" name="cost" value="{{$product->cost}}" />
                            <input type="hidden" id="category" name="category" value="{{$product->category->id}}" />
-                           <input type="hidden" id="unit" name="unit" value="{{$product->unit->name}}" />
                         </div>
                      </a>
                </div>
@@ -492,7 +491,9 @@ function handleProductDiscount(e) {
         quantity = parseInt($(e).parents('.product-card').find('.quantity').val()),
         initDiscountPrice = parseFloat($(e).parents('.product-card').find('.product-price').val()),
         totalPrice = parseFloat((price) * quantity).toFixed(2),
-        discount = ($(e).parents('.product-card').find('.discount').val()) === '' ? 0 : parseFloat($(e).parents('.product-card').find('.discount').val()).toFixed(2);
+        discount = ($(e).parents('.product-card').find('.discount').val()) === '' ? 0 : parseInt($(e).parents('.product-card').find('.discount').val());
+
+        console.log(discount);
 
 
     if (!discount) {
@@ -507,9 +508,10 @@ function handleProductDiscount(e) {
     }
 
     // discontPrice = (initDiscountPrice - discount).toFixed(2);
-    discountPrice = ((initDiscountPrice * discount) / 100).toFixed(2);
-    totalDiscountPrice = (totalPrice - discountPrice).toFixed(2);
-    $(e).parents('.product-card').find('.subtotal').text(`$ ${totalDiscountPrice}`);
+    discountPrice = ((totalPrice * discount) / 100).toFixed(2);
+    // totalDiscountPrice = (totalPrice - discountPrice).toFixed(2);
+  
+    $(e).parents('.product-card').find('.subtotal').text(`$ ${discountPrice}`);
     $(e).parents('.product-card').find('.product-discount-price').val(discountPrice);
     totalCash();
 
@@ -573,10 +575,9 @@ function editQuantity(e) {
     let quantity = parseInt($(e).find('.quantity').val());
     let discount = ($(e).find('.discount').val()) === '' ? 0 : parseFloat($(e).find('.discount').val()).toFixed(2);
 
-    console.log(discount);
-    $(e).find('.subtotal').text(`$ ${parseFloat(((price) * quantity) - discount).toFixed(2)}`);
+    $(e).find('.subtotal').text(`$ ${parseFloat((((price) * quantity) * discount) / 100).toFixed(2)}`);
 
-    $(e).find('.subtotal').attr('subtotal-data', `${parseFloat((price) * quantity).toFixed(2)}`);
+    $(e).find('.subtotal').attr('subtotal-data', `${parseFloat((((price) * quantity) * discount) / 100).toFixed(2)}`);
 
     totalItem();
     totalCash();

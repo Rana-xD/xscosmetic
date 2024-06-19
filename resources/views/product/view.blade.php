@@ -129,7 +129,7 @@
         formData.append('name',$("#ProductName").val());
         formData.append('product_barcode',$("#ProductBarcode").val() === undefined ? '' : $("#ProductBarcode").val());
         formData.append('category_id',$("#Category").val());
-        formData.append('unit_id',$("#Unit").val());
+        // formData.append('unit_id',$("#Unit").val());
         formData.append('stock',$("#stock").val());
         formData.append('expire_date',$("#expire-data").val());
         formData.append('price',$("#price").val() === undefined ? '' : $("#price").val());
@@ -190,7 +190,7 @@
               productName = $(parentDiv).find('.name').text(),
               productBarcode = $(parentDiv).find('.barcode').text()
               productStock = $(parentDiv).find('.product-stock').text(),
-              unitId = $(parentDiv).find('.product-unit').attr('unit-id'),
+              // unitId = $(parentDiv).find('.product-unit').attr('unit-id'),
               size = $(parentDiv).find('.product-size').text(),
               price = $(parentDiv).find('.product-price').attr('price-data'),
               cost = $(parentDiv).find('.product-cost').attr('cost-data'),
@@ -206,7 +206,7 @@
               $('#price-edit').val(price);
               $('#cost-edit').val(cost);
               $('Category-edit').val(categoryId);
-              $('Unit-edit').val(unitId);
+              // $('Unit-edit').val(unitId);
               $("#ProductImageEdit").attr('src',image);
               $('#expire-date-edit').val(expireDate);
 
@@ -222,7 +222,7 @@
         formData.append('name',$("#ProductName-edit").val());
         formData.append('product_barcode',$("#ProductBarcode-edit").val() === '' ? '' : $("#ProductBarcode-edit").val());
         formData.append('category_id',$("#Category-edit").val());
-        formData.append('unit_id',$("#Unit-edit").val());
+        // formData.append('unit_id',$("#Unit-edit").val());
         formData.append('stock',$("#stock-edit").val());
         formData.append('expire_date',$("#expire-date-edit").val());
         formData.append('price',$("#price-edit").val() === undefined ? '' : $("#price-edit").val());
@@ -304,14 +304,14 @@
                 @endforeach
               </select>
            </div>
-           <div class="form-group">
+           <!-- <div class="form-group">
             <label for="Category">Unit</label>
              <select class="form-control" id="Unit" name="filtertype">
                @foreach (App\Unit::all() as $unit)
                  <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                @endforeach
              </select>
-          </div>
+          </div> -->
           <div class="form-group">
             <label for="Category">Expired Date</label>
              <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
@@ -386,14 +386,14 @@
                  @endforeach
                </select>
             </div>
-            <div class="form-group">
+            <!-- <div class="form-group">
              <label for="Category">Unit</label>
               <select class="form-control" id="Unit-edit" name="filtertype">
                 @foreach (App\Unit::all() as $unit)
                   <option value="{{ $unit->id }}">{{ $unit->name }}</option>
                 @endforeach
               </select>
-           </div>
+           </div> -->
            <div class="form-group">
             <label for="Category">Expired Date</label>
              <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">

@@ -16,7 +16,7 @@ class CreateProductIncomesTable extends Migration
         Schema::create('product_incomes', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('product_id');
-            $table->unsignedBigInteger('unit_id');
+            // $table->unsignedBigInteger('unit_id');
             $table->string('product_name');
             $table->integer('quantity')->default(0);
             $table->decimal('total_price', 12,2)->default(0);
@@ -25,7 +25,7 @@ class CreateProductIncomesTable extends Migration
             $table->timestamps();
 
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
-            $table->foreign('unit_id')->references('id')->on('units')->onDelete('cascade');
+            // $table->foreign('unit_id')->references('id')->on('units')->onDelete('cascade');
         });
     }
 
