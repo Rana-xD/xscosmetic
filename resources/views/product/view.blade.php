@@ -298,7 +298,7 @@
           </div>
            <div class="form-group">
              <label for="Category">Brand</label>
-              <select class="form-control" id="Category" name="filtertype">
+              <select class="form-control selectpicker" id="Category" name="filtertype" data-live-search="true">
                 @foreach (App\Category::all() as $category)
                   <option value="{{ $category->id }}">{{ $category->name }}</option>
                 @endforeach

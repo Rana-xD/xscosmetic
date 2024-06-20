@@ -44,6 +44,8 @@
       <link rel="stylesheet" type="text/css" href="/css/bootstrap-datepicker.min.css">
       <!-- Custom CSS -->
       <link href="/css/Style-Light.css" rel="stylesheet">
+
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
       <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
       <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
       <!--[if lt IE 9]>
@@ -144,5 +146,7 @@
       <!-- ajax form -->
       <script src="/js/jquery.form.min.js"></script>
       <!-- custom script -->
+
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
    </body>
 </html>

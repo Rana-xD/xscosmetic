@@ -7,14 +7,17 @@
          <div class="col-xs-3 table-header">
             <h3>Product</h3>
          </div>
-         <div class="col-xs-2 table-header">
+         <div class="col-xs-1 table-header">
             <h3 class="text-left">Price</h3>
          </div>
          <div class="col-xs-2 table-header nopadding">
             <h3 class="text-left">Quantity</h3>
          </div>
-         <div class="col-xs-3 table-header">
-            <h3 class="text-left">Discount %</h3>
+         <div class="col-xs-2 table-header">
+            <h3 >Discount %</h3>
+         </div>
+         <div class="col-xs-2 table-header">
+            <h3 >Discount USD</h3>
          </div>
          <div class="col-xs-2 table-header nopadding">
             <h3>Total</h3>
@@ -176,7 +179,7 @@ $(document).ready(function() {
                                  </div>
                               </div>
                               </div>
-                              <div class="col-xs-2 nopadding">
+                              <div class="col-xs-1 nopadding">
                                  <span class="size textPD">${price}$</span>
                               </div>
                               <div class="col-xs-2 nopadding productNum">
@@ -194,8 +197,11 @@ $(document).ready(function() {
                                  </span>
                               </a>
                            </div>
-                           <div class="col-xs-3 nopadding ">
+                           <div class="col-xs-2">
                               <input type="text" class="form-control discount-input discount" value="" placeholder="0" maxlength="3" onblur="handleProductDiscount(this)">
+                            </div>
+                            <div class="col-xs-2">
+                              <input type="text" class="form-control discount-input discount-in-usd" value="" placeholder="0" maxlength="3" onblur="handleProductDiscountInUSD(this)">
                             </div>
                          <div class="col-xs-2 nopadding ">
                         <span class="subtotal textPD" subtotal-data="${parseFloat(price * qt).toFixed(2)}">$ ${ (parseFloat(price * qt).toFixed(2))}</span>
@@ -323,7 +329,7 @@ $(document).ready(function() {
 
     $('#payment-type').on('change', function() {
         let type = $(this).val();
-        if(type === 'aba' || type === 'acleda') {
+        if(type === 'aba' || type === 'acleda' || type === 'delivery') {
             $('.payment-type-cash').css('display','none');
         }else {
             $('.payment-type-cash').css('display','block');
@@ -499,8 +505,11 @@ function handleProductDiscount(e) {
     if (!discount) {
         let card = $(e).parents('.product-card');
         $(e).parents('.product-card').find('.product-discount-price').val(price);
+        $(e).parents('.product-card').find('.discount-in-usd').prop('disabled', false);
         editQuantity(e);
         return;
+    }else{
+        $(e).parents('.product-card').find('.discount-in-usd').prop('disabled', true);
     }
 
     if (discount > 100) {
@@ -516,6 +525,32 @@ function handleProductDiscount(e) {
     totalCash();
 
 }
+
+function handleProductDiscountInUSD(e) {
+
+    console.log(`handleProductDiscountInUSD`);
+    let price = parseFloat($(e).parents('.product-card').find('.product-price').val()),
+        quantity = parseInt($(e).parents('.product-card').find('.quantity').val()),
+        initDiscountPrice = parseFloat($(e).parents('.product-card').find('.product-price').val()),
+        totalPrice = parseFloat((price) * quantity).toFixed(2),
+        discountInUSD = ($(e).parents('.product-card').find('.discount-in-usd').val()) === '' ? 0 : parseInt($(e).parents('.product-card').find('.discount-in-usd').val());
+
+
+    if (!discountInUSD) {
+        let card = $(e).parents('.product-card');
+        $(e).parents('.product-card').find('.product-discount-price').val(price);
+        editQuantity(e);
+        $(e).parents('.product-card').find('.discount').prop('disabled', false);
+        return;
+    }else{
+        $(e).parents('.product-card').find('.discount').prop('disabled', true);
+    }
+
+    discountPrice = (totalPrice - discountInUSD).toFixed(2);
+    $(e).parents('.product-card').find('.subtotal').text(`$ ${discountPrice}`);
+    $(e).parents('.product-card').find('.product-discount-price').val(discountPrice);
+    totalCash();
+}   
 
 function handleProductOverallDiscount(e) {
     let parentDiv = $(e).parents('.cashier-section');
@@ -573,18 +608,23 @@ function editQuantity(e) {
     let price = parseFloat($(e).parents('.product-card').find('.product-price').val());
     let quantity = parseInt($(e).parents('.product-card').find('.quantity').val());
     let discount = ($(e).parents('.product-card').find('.discount').val()) === '' ? 0 : parseInt($(e).parents('.product-card').find('.discount').val());
+    let discountInUSD = ($(e).parents('.product-card').find('.discount-in-usd').val()) === '' ? 0 : parseInt($(e).parents('.product-card').find('.discount-in-usd').val());
     
 
     console.log(discount);
 
-    if (!discount) {
+    if (!discount && !discountInUSD) {
 
         $(e).parents('.product-card').find('.subtotal').text(`$ ${parseFloat(price * quantity).toFixed(2)}`);
         $(e).parents('.product-card').find('.subtotal').attr('subtotal-data', `${parseFloat(price * quantity).toFixed(2)}`);
 
-    } else {
+    } else if (!discountInUSD) {
         $(e).parents('.product-card').find('.subtotal').text(`$ ${parseFloat((price * quantity) - (((price * quantity) * discount) / 100)).toFixed(2)}`);
         $(e).parents('.product-card').find('.subtotal').attr('subtotal-data', `${parseFloat((price * quantity) - (((price * quantity) * discount) / 100)).toFixed(2)}`);
+    }
+    else {
+        $(e).parents('.product-card').find('.subtotal').text(`$ ${parseFloat((price * quantity) - discountInUSD).toFixed(2)}`);
+        $(e).parents('.product-card').find('.subtotal').attr('subtotal-data', `${parseFloat((price * quantity) - discountInUSD).toFixed(2)}`);
     }
 
     
@@ -698,6 +738,7 @@ $('#Order').on("click",(e)=>{
                  <option value="cash" selected>Cash</option>
                  <option value="aba">ABA</option>
                  <option value="acleda">Acleda</option>
+                 <option value="delivery">Delivery</option>
              </select>
            </div>
       </div>
