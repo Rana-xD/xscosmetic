@@ -58,10 +58,9 @@ class POSController extends Controller
         $start_time = Carbon::now()->format('Y-m-d').' 00:00:00';
         $end_time = Carbon::now()->format('Y-m-d').' 23:59:59';
         $results = POS::whereBetween('created_at',[$start_time,$end_time])->get()->count();
-        $invoice_no = 000000 + $results;
         return response()->json([
             'code' => 200,
-            'data' => $invoice_no
+            'data' => $results
         ]);
     }
 

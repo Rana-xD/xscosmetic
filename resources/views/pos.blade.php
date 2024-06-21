@@ -270,18 +270,24 @@ $(document).ready(function() {
         totalProduct(cards[i]);
 
         let cost = $(cards[i]).find('.product-cost').val(),
-            unit = $(cards[i]).find('.unit-id').val()
         quantity = parseInt($(cards[i]).find('.quantity').val()),
             totalCost = (cost * quantity).toFixed(2),
             totalPrice = parseFloat(($(cards[i]).find('.subtotal').text()).replace('$', '')).toFixed(2),
-            profit = parseFloat(totalPrice - totalCost).toFixed(2);
+            profit = parseFloat(totalPrice - totalCost).toFixed(2),
+            discount = 0;
+
+            if($(cards[i]).find('.discount').val()){
+                discount = `${$(cards[i]).find('.discount').val()}%`;
+            }else if ($(cards[i]).find('.discount-in-usd').val()) {
+                discount = `${$(cards[i]).find('.discount-in-usd').val()}$`;
+            }
 
         let item = {
             product_id: parseInt($(cards[i]).find('.product-id').val()),
-            product_name: $(cards[i]).find('.product-name-final').val(),
-            quantity: `${quantity} ${unit}`,
+            product_name: $(cards[i]).find('.product-name').val(),
+            quantity: `${quantity}`,
             price: $(cards[i]).find('.product-price').val(),
-            discount: $(cards[i]).find('.discount').val() === '' ? 0 : $(cards[i]).find('.discount').val(),
+            discount: discount,
             total: $(cards[i]).find('.subtotal').text(),
             cost: `$ ${totalCost}`,
             profit: `$ ${profit}`
@@ -298,7 +304,7 @@ $(document).ready(function() {
 
 
             item = {
-                product_name: $(cards[i]).find('.product-name-final').val(),
+                product_name: $(cards[i]).find('.product-name').val(),
                 quantity: `${quantity}`,
                 price: price,
                 discount: $(cards[i]).find('.discount').val() === '' ? `0` : `$${$(cards[i]).find('.discount').val()}`,
@@ -712,7 +718,7 @@ $('#Order').on("click",(e)=>{
         processData: false,
         success: function(res) {
             const str = '000000';
-            let invoiceNo = ('0' + (+str + res.data)).padStart(str.length, '0');
+            let invoiceNo = res.data === 0 ? ('0' + (+str + 1)).padStart(str.length, '0') : ('0' + (+str + res.data)).padStart(str.length, '0');
 
             $('#invoice-no').val(invoiceNo);
             $('#total-in-usd-modal').val(`${totalUSD} $`);

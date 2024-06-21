@@ -24,7 +24,8 @@ Route::post('/product/update','ProductController@update');
 
 Route::get('/income-report', 'SaleController@show');
 Route::get('/income-report/filter','SaleController@cusomterIncomeReport');
-
+Route::get('/invoice', 'SaleController@showInvoice');
+Route::get('/invoice/filter', 'SaleController@showCustomInvoice');
 
 Route::get('/pos', 'POSController@show')->name('pos');
 Route::get('/pos/add', 'POSController@store')->name('pos');

@@ -35,5 +35,25 @@ class SaleController extends Controller
         ]);
     }
 
+    public function showInvoice(){
+        $orders = POS::orderBy('created_at', 'DESC')->paginate(30);
+        return view('invoice',[
+            'orders' => $orders
+        ]);
+    }
+
+    public function showCustomInvoice(Request $request){    
+        $start_date = date($request->start_date).' 00:00:00';
+        $end_date = empty($request->end_date) ? Carbon::now()->format('Y-m-d').' 23:59:59' :  date($request->end_date).' 23:59:59';
+
+        $orders = POS::whereBetween('created_at',[$start_date,$end_date])->orderBy('created_at', 'DESC')->paginate(30);
+
+        return view('invoice',[
+            'orders' => $orders,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date
+        ]);
+    }
+
 
 }

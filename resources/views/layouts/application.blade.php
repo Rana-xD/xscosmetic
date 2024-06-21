@@ -84,9 +84,10 @@
                   @endif
                   @if (Auth::user()->role == "ADMIN")
                      <li class="dropdown">
-                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ticket"></i> Income <span class="caret"></span></a>
+                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ticket"></i> Report <span class="caret"></span></a>
                            <ul class="dropdown-menu">
-                              <li class="flat-box"><a href="/income-report"><i class="fa fa-file-text-o"></i> Income </a></li>
+                              <li class="flat-box"><a href="/income-report"><i class="fa fa-money"></i> Income </a></li>
+                              <li class="flat-box"><a href="/invoice"><i class="fa fa-file-text-o"></i> Invoice </a></li>
                               <li class="flat-box"><a href="/product-income"><i class="fa fa-file-archive-o"></i> Product Income</a></li>
                         </ul>
                      </li>
