@@ -92,7 +92,7 @@
       <div class="col-md-6 right-side nopadding">  
          <div class="row row-horizon">
             <span class="categories selectedGat" id=""><i class="fa fa-home"></i></span>
-               @foreach (App\Category::all() as $category)
+               @foreach (App\Category::orderBy('name', 'ASC')->get() as $category)
                <span class="categories" id="{{$category->id}}">{{$category->name}}</span>
                @endforeach
                
@@ -130,7 +130,9 @@
 </div>
 
 <script type="text/javascript">
+    var items = [];
 $(document).ready(function() {
+    
     $('.addPct').on('click', (e) => {
         let self = e.target,
             card = $(self).parents('.div');
@@ -143,14 +145,20 @@ $(document).ready(function() {
         var cost = $('#idcost-' + id).val();
         var unit = $(card).find('#unit').val();
 
-
+        if (items.includes(name)) {
+            let element = getProductElement(id);
+            addQuantity(element);
+            return;
+        }
+        items.push(name);
+        
         var qt = 1;
         // var price = 0
 
         let string = name.split(",");
         let productName = '';
         for (let i = 0; i < string.length; i++) {
-            productName += `<span class="textPD product-name" onclick="removeProduct(this)">${string[i]} </span> \n`
+            productName += `<span class="textPD product-name">${string[i]} </span> \n`
         }
 
         let row = `<div class="col-xs-12 product-card">
@@ -173,7 +181,7 @@ $(document).ready(function() {
                                  <input type="hidden" class="product-price"  name="product-price" value="${price}" />
                                  <input type="hidden" class="product-discount-price"  name="product-discount-price" value="${price}" />
                                  <input type="hidden" class="extra-price"  name="extra-price" value="0" />
-                                 <input type="hidden" class="product-name-final"  name="product-name-final" value="" />
+                                 <input type="hidden" class="product-name"  name="product-name" value="${name}" />
                                  <div class="product-name-content">
                                     
                                  </div>
@@ -218,6 +226,18 @@ $(document).ready(function() {
         totalCash();
 
     });
+
+    function getProductElement(id) {
+
+        let cards = $('#productList').children();
+
+
+        for (let i = 0; i < cards.length; i++) {
+            if($(cards[i]).find('.product-id').val() == id) {
+                return $(cards[i]).find('.product-name-content');
+            }
+        }
+    }
 
     $("#searchProd").keyup(function(){
       // Retrieve the input field text
@@ -379,9 +399,18 @@ $(document).ready(function() {
         }
     });
 
-
+    
 
 });
+
+function delete_posale(e) {
+    let card = $(e).parents('.product-card');
+    let name = $(card).find('.product-name').val();
+    items = items.filter(item => item !== name);
+    $(card[0]).remove();
+    totalItem();
+    totalCash();
+}
 
 function totalProduct(html) {
     let card = $(html).find('.product-name-content').children();
@@ -410,12 +439,7 @@ function productPrice(size, categoriesID) {
     }
 }
 
-function delete_posale(e) {
-    let card = $(e).parents('.product-card');
-    $(card[0]).remove();
-    totalItem();
-    totalCash();
-}
+
 
 function totalItem() {
     let quantity = 0;
@@ -444,6 +468,7 @@ function totalCash() {
 function cancelPOS() {
     let cards = $('#productList').children();
     $(cards).remove();
+    items = [];
     totalItem();
     totalCash();
 }
@@ -610,8 +635,6 @@ function editQuantity(e) {
     let discount = ($(e).parents('.product-card').find('.discount').val()) === '' ? 0 : parseInt($(e).parents('.product-card').find('.discount').val());
     let discountInUSD = ($(e).parents('.product-card').find('.discount-in-usd').val()) === '' ? 0 : parseInt($(e).parents('.product-card').find('.discount-in-usd').val());
     
-
-    console.log(discount);
 
     if (!discount && !discountInUSD) {
 
