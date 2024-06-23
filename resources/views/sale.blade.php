@@ -29,9 +29,60 @@
   .date{
     width: 70%;
   }
+  .table-payment-type-income,
+  .table-total-item {
+    table-layout: fixed;
+  }
+
+  .table-payment-type-income td, 
+  .table-payment-type-income th,
+  .table-total-item td,
+  .table-total-item th {
+    text-align: center;
+    
+  }
+
+  .table-payment-type-income {
+    margin-bottom: 50px;
+  }
+
+  .table .light-pink th {
+  color: #fff;
+  background-color: #f5c6cb;
+  border-color: #dee2e6;
+  font-size: 16px;
+}
+
+.table .light-yellow th {
+  color: #fff;
+  background-color: #b8daff;
+  border-color: #dee2e6;
+  font-size: 16px;
+}
+
+.income-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.date-text {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.total-income {
+  font-size: 26px;
+  font-weight: bold;
+  color: #1fe01f;
+  margin-bottom: 30px;
+}
+
   </style>
   <div class="container">
-    <h3>Sales</h3>
+    <h3>Daily Income</h3>
     <br />
     <br />
   
@@ -39,23 +90,11 @@
       <div class="row">
         <div class="col-md-4" style="padding-left: 0">
           <div class="calendar">
-            <p class="label-text">Start Date: </p>
+            <p class="label-text">Date:</p>
             <div class="input-group date"data-provide="datepicker" data-date-format="yyyy-mm-dd">
-              <input type="text" class="form-control start-date datepicker" value="{{ empty($start_date) ? '' : $start_date }}">
+              <input type="text" class="form-control selected-date datepicker" value="{{ empty($date) ? '' : $date }}">
               <div class="input-group-addon">
                   <span class="glyphicon glyphicon-th"></span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-md-4">
-          <div class="calendar">
-            <p class="label-text">End Date: </p>
-            <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
-              <input type="text" class="form-control end-date datepicker" value="{{ empty($end_date) ? '' : $end_date }}">
-              <div class="input-group-addon">
-                 <span class="glyphicon glyphicon-th"></span>
               </div>
             </div>
           </div>
@@ -65,45 +104,53 @@
         </div>
       </div>
     </div>  
-  
-  
     <div>
-      @foreach ($orders as $order)
-      <p class="cashier-name">Cashier: {{$order->cashier}}</p>
-      <span style="font-weight: bold;">Order: {{$order->order_no}}</span>
-      <span style="float: right; font-weight: bold;">Date: {{  date("d M Y", strtotime($order->created_at)) }} | {{$order->time}}</span> 
-    <table class="table table-striped">
-      <thead class="thead-dark">
+    <div class="income-info">
+      <p class="date-text">{{ empty($date) ? Carbon\Carbon::now()->format('Y-m-d') : $date }}</p>
+      <p class="total-income">{{$data["total"] === 0 ? '' : "{$data["total"]}$"}}</p>
+    </div>
+      <table class="table table-payment-type-income">
+      <thead class="light-pink">
         <tr>
-          <th scope="col">#</th>
-          <th scope="col">Name</th>
-          <th scope="col">Qty</th>
-          <th scope="col">Price</th>
-          <th scope="col">Discount</th>
-          <th scope="col">Total</th>
-          <th scope="col">Cost</th>
-          <th scope="col">Profit</th>
+          <th scope="col">Cash</th>
+          <th scope="col">ABA</th>
+          <th scope="col">ACLEDA</th>
+          <th scope="col">Delivery</th>
           
         </tr>
       </thead>
       <tbody>
-        @foreach ($order->items as $index => $item)
+        <tr>
+          <td>{{$data["payment_type_income"]["cash"]}}$</td>
+          <td>{{$data["payment_type_income"]["aba"]}}$</td>
+          <td>{{$data["payment_type_income"]["acleda"]}}$</td>
+          <td>{{$data["payment_type_income"]["delivery"]}}$</td>
+        </tr>
+      </tbody>
+      </table>
+
+      <table class="table table-striped table-total-item">
+      <thead class="light-yellow">
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Name</th>
+          <th scope="col">Quantity</th>
+          <th scope="col">Total</th>
+          
+        </tr>
+      </thead>
+      <tbody>
+        @foreach ($data['items'] as $index => $item)
         <tr>
         <th scope="row">{{ ($index + 1) }}</th>
           <td>{{$item["product_name"]}}</td>
           <td>{{$item["quantity"]}}</td>
-          <td>{{$item["price"]}}</td>
-          <td>${{$item["discount"]}}</td>
           <td>{{$item["total"]}}</td>
-          <td>{{$item["cost"]}}</td>
-          <td>{{$item["profit"]}}</td>
         </tr>
         @endforeach
       </tbody>
-    </table>
-    @endforeach
+      </table>
     </div>
-    {{ $orders->links() }}
   </div>
 
   <script type="text/javascript">
@@ -115,13 +162,12 @@
 
       $('#handleCustomIncomeSearch').on('click',(e) =>{
         e.preventDefault();
-        let startDate = $('.start-date').val();
-        let endDate = $('.end-date').val();
+        let date = $('.selected-date').val();
 
-        if(startDate === ''){
+        if(date === ''){
           return;
         }
-        let filter = `/income-report/filter?start_date=${startDate}&end_date=${endDate}`;
+        let filter = `/income-report/filter?date=${date}`;
 
         window.location = filter;
       })
