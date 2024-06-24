@@ -44,8 +44,8 @@ class ProductController extends Controller
             // "unit_id" => $request->unit_id,
             "stock" =>$request->stock,
             "expire_date" =>$request->expire_date,
-            "price" =>$request->price === '' ? null : $request->price,
-            "cost" => $request->cost,
+            "price" =>$request->price === 0 ? 0 : $request->price,
+            "cost" => $request->cost === 0 ? 0 : $request->cost,
             "photo" => $fileNameToStore
         ];
 
@@ -85,8 +85,8 @@ class ProductController extends Controller
             // "unit_id" =>$request->unit_id,
             "stock" =>$request->stock,
             "expire_date" =>$request->expire_date,
-            "price" =>$request->price === '' ? null : $request->price,
-            "cost" => $request->cost,
+            "price" =>$request->price === 0 ? 0 : $request->price,
+            "cost" => $request->cost === 0 ? 0 : $request->cost,
         ];
 
         if($request->hasFile('photo')){

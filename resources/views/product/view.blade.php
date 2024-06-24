@@ -132,10 +132,10 @@
         // formData.append('unit_id',$("#Unit").val());
         formData.append('stock',$("#stock").val());
         formData.append('expire_date',$("#expire-data").val());
-        formData.append('price',$("#price").val() === undefined ? '' : $("#price").val());
-        formData.append('cost',$("#cost").val());
+        formData.append('price',$("#price").val() === '' || $("#price").val() === undefined ? 0 : $("#price").val());
+        formData.append('cost',$("#cost").val() === '' || $("#cost").val() === undefined ? 0 : $("#cost").val());
         formData.append('photo',$("#Image")[0].files[0]);
-      
+    
         $.ajax({
           url: '/product/add',
           type: "POST", 
@@ -225,8 +225,8 @@
         // formData.append('unit_id',$("#Unit-edit").val());
         formData.append('stock',$("#stock-edit").val());
         formData.append('expire_date',$("#expire-date-edit").val());
-        formData.append('price',$("#price-edit").val() === undefined ? '' : $("#price-edit").val());
-        formData.append('cost',$("#cost-edit").val());
+        formData.append('price',$("#price-edit").val() === '' || $("#price-edit").val() === undefined ? 0 : $("#price-edit").val());
+        formData.append('cost',$("#cost-edit").val() === '' || $("#cost-edit").val() === undefined ? 0 : $("#cost-edit").val());
         if(isImageUpdate){
           formData.append('photo',$("#ImageEdit")[0].files[0]);
         }
@@ -291,11 +291,11 @@
             <label for="ProductName">Sell Price</label>
             <input type="text" name="price" maxlength="100" class="form-control" id="price" placeholder="price" >
           </div>
-          @endif
           <div class="form-group">
             <label for="ProductName">Cost</label>
-            <input type="text" name="cost" maxlength="100" Required class="form-control" id="cost" placeholder="cost" >
+            <input type="text" name="cost" maxlength="100" class="form-control" id="cost" placeholder="cost" >
           </div>
+          @endif
            <div class="form-group">
              <label for="Category">Brand</label>
               <select class="form-control selectpicker" id="Category" name="filtertype" data-live-search="true">
@@ -371,13 +371,13 @@
            @if (Auth::user()->role == "ADMIN")
            <div class="form-group">
              <label for="ProductName">Sell Price</label>
-             <input type="text" name="price" maxlength="100" Required class="form-control" id="price-edit" placeholder="price" >
+             <input type="text" name="price" maxlength="100" class="form-control" id="price-edit" placeholder="price" >
            </div>
-           @endif
            <div class="form-group">
              <label for="ProductName">Cost</label>
-             <input type="text" name="cost" maxlength="100" Required class="form-control" id="cost-edit" placeholder="cost" >
+             <input type="text" name="cost" maxlength="100" class="form-control" id="cost-edit" placeholder="cost" >
            </div>
+           @endif
             <div class="form-group">
               <label for="Category">Brand</label>
                <select class="form-control" id="Category-edit" name="filtertype">

@@ -35,7 +35,7 @@
                      </td>
                   </tr>
                   <tr>
-                     <td class="active" width="40%">Discount %</td>
+                     <td class="active" width="40%">Discount All %</td>
                      <td class="whiteBg" width="60%"><span id="Subtot"></span> 
                         <input type="text" class="form-control discount-input overall-discount" value="" placeholder="0" maxlength="3" onblur="handleProductOverallDiscount(this)">
                      </td>
@@ -59,41 +59,12 @@
          
          
       </div>
-      {{-- <div class="col-md-1 right-side nopadding">              <!-- product list section -->
-               <div class="col-sm-12 col-xs-12 div">
-                     <a href="javascript:void(0)" class="size" data-id="S" style="display: block;">
-                        <div class="product color01 flat-box" data-id="S">
-                        <h3 id="proname" data-id="S">S</h3>
-                        </div>
-                     </a>
-               </div>
-               <div class="col-sm-12 col-xs-12 div">
-                  <a href="javascript:void(0)" class="size" id="M" data-id="S" style="display: block;">
-                  <div class="product color02 flat-box" data-id="M">
-                  <h3 id="proname" data-id="M">M</h3>
-                  </div>
-               </a>
-         </div>
-         <div class="col-sm-12 col-xs-12 div">
-            <a href="javascript:void(0)" class="size" data-id="L" style="display: block;">
-            <div class="product color03 flat-box" data-id="L">
-            <h3 id="proname" data-id="L">L</h3>
-            </div>
-         </a>
-         </div>
-         <div class="col-sm-12 col-xs-12 div">
-            <a href="javascript:void(0)" class="size" data-id="XL" style="display: block;">
-            <div class="product color04 flat-box" data-id="XL">
-            <h3 id="proname" data-id="XL">XL</h3>
-            </div>
-         </a>
-   </div>
-      </div> --}}
+      
       <div class="col-md-6 right-side nopadding">  
          <div class="row row-horizon">
             <span class="categories selectedGat" id=""><i class="fa fa-home"></i></span>
                @foreach (App\Category::orderBy('name', 'ASC')->get() as $category)
-               <span class="categories" id="{{$category->id}}">{{$category->name}}</span>
+               <span class="categories categories-name" id="{{$category->id}}">{{$category->name}}</span>
                @endforeach
                
             
@@ -120,6 +91,7 @@
                            <input type="hidden" id="idprice-{{$product->id}}" name="price" value="{{$product->price}}" />
                            <input type="hidden" id="idcost-{{$product->id}}" name="cost" value="{{$product->cost}}" />
                            <input type="hidden" id="category" name="category" value="{{$product->category->id}}" />
+                           <input type="hidden" id="barcode" name="barcode" value="{{$product->product_barcode}}" />
                         </div>
                      </a>
                </div>
@@ -252,6 +224,26 @@ $(document).ready(function() {
              $(this).parent().parent().parent().show();
          }
       });
+
+      $(".categories-name").each(function(){
+        if ($(this).text().search(new RegExp(filter, "i")) < 0) {
+             $(this).hide();
+            
+         } else {
+             $(this).show();
+         }
+      })
+
+      $("#productList2 #barcode").each(function(){
+         // If the list item does not contain the text phrase fade it out
+         if ($(this).val().search(new RegExp(filter, "i")) < 0) {
+             $(this).parent().parent().parent().hide();
+         // Show the list item if the phrase matches
+         } else {
+             $(this).parent().parent().parent().show();
+         }
+      });
+
    });
 
    $('#posOrder').on('submit', (e) => {
