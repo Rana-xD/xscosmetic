@@ -1,4 +1,18 @@
 @extends('layouts/application')
+@section('head')
+<style>
+    #searchContainer {
+        margin-top: 20px;
+        display: flex;
+        gap: 20px;
+    }
+
+    #searchContainer .stylish-input-group {
+        flex: 1;
+    }
+    
+</style>
+@endsection
 @section('content')
 <!-- Page Content -->
 <div class="container-fluid">
@@ -37,7 +51,7 @@
                   <tr>
                      <td class="active" width="40%">Discount All %</td>
                      <td class="whiteBg" width="60%"><span id="Subtot"></span> 
-                        <input type="text" class="form-control discount-input overall-discount" value="" placeholder="0" maxlength="3" onblur="handleProductOverallDiscount(this)">
+                        <input type="text" class="form-control discount-input overall-discount" value="" placeholder="0" maxlength="3" onkeyup="handleProductOverallDiscount(this)">
                      </td>
                   </tr> 
                   <tr>
@@ -70,9 +84,25 @@
             
          </div>    
          <div class="col-sm-12">
-            <div id="searchContaner">
+            <div id="searchContainer">
                 <div class="input-group stylish-input-group">
-                    <input type="text" id="searchProd" class="form-control"  placeholder="Search" >
+                    <input type="text" id="searchBrand" class="form-control"  placeholder="Search Brand" >
+                    <span class="input-group-addon">
+                        <button type="submit">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                    </span>
+                </div>
+                <div class="input-group stylish-input-group">
+                    <input type="text" id="searchProd" class="form-control"  placeholder="Search Product Name" >
+                    <span class="input-group-addon">
+                        <button type="submit">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                    </span>
+                </div>
+                <div class="input-group stylish-input-group">
+                    <input type="text" id="searchBarcode" class="form-control"  placeholder="Search Product Barcode" >
                     <span class="input-group-addon">
                         <button type="submit">
                             <span class="glyphicon glyphicon-search"></span>
@@ -225,6 +255,12 @@ $(document).ready(function() {
          }
       });
 
+   });
+
+   $("#searchBrand").keyup(function(){
+      // Retrieve the input field text
+      var filter = $(this).val();
+
       $(".categories-name").each(function(){
         if ($(this).text().search(new RegExp(filter, "i")) < 0) {
              $(this).hide();
@@ -233,6 +269,11 @@ $(document).ready(function() {
              $(this).show();
          }
       })
+   });
+
+   $("#searchBarcode").keyup(function(){
+      // Retrieve the input field text
+      var filter = $(this).val();
 
       $("#productList2 #barcode").each(function(){
          // If the list item does not contain the text phrase fade it out
@@ -243,7 +284,6 @@ $(document).ready(function() {
              $(this).parent().parent().parent().show();
          }
       });
-
    });
 
    $('#posOrder').on('submit', (e) => {

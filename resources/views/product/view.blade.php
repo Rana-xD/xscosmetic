@@ -27,7 +27,9 @@
                   <th>Code</th>
                   <th>Total Stock</th>
                   <th>Sell Price</th>
+                  @if (Auth::user()->role == "ADMIN")
                   <th>Cost</th>
+                  @endif
                   <th>Product Type</th>
                   <th>Expire Date</th>
                   <th>Action</th>
@@ -43,7 +45,9 @@
                  <td class="barcode">{{ $product->product_barcode }}</td>
                   <td class="product-stock">{{ $product->stock }}</td>
                   <td class="product-price" price-data="{{ $product->price }}">{{ $product->price }}$</td>
+                  @if (Auth::user()->role == "ADMIN")
                   <td class="product-cost" cost-data="{{ $product->cost }}">{{ $product->cost }}$</td>
+                  @endif
                   <td class="product-category" category-id="{{ $product->category->id}}">{{ $product->category->name }}</td>
                   <td class="product-expire-date" expire-date-data="{{ $product->expire_date }}">{{ $product->expire_date }}</td>
                   <input type="hidden" class="product-barcode" value="{{ $product->product_barcode }}">
