@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 
-class Admin
+class Manager
 {
     /**
      * Handle an incoming request.
@@ -15,7 +15,7 @@ class Admin
      */
     public function handle($request, Closure $next)
     {
-        if(auth()->user()->isAdmin()) {
+        if(auth()->user()->isManager()) {
             return $next($request);
         }
         return redirect('/');

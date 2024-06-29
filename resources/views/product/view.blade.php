@@ -303,7 +303,7 @@
            <div class="form-group">
              <label for="Category">Brand</label>
               <select class="form-control selectpicker" id="Category" name="filtertype" data-live-search="true">
-                @foreach (App\Category::all() as $category)
+                @foreach (App\Category::orderBy('name', 'ASC')->get() as $category)
                   <option value="{{ $category->id }}">{{ $category->name }}</option>
                 @endforeach
               </select>
@@ -385,7 +385,7 @@
             <div class="form-group">
               <label for="Category">Brand</label>
                <select class="form-control" id="Category-edit" name="filtertype">
-                 @foreach (App\Category::all() as $category)
+                 @foreach (App\Category::orderBy('name', 'ASC')->get() as $category)
                    <option value="{{ $category->id }}">{{ $category->name }}</option>
                  @endforeach
                </select>

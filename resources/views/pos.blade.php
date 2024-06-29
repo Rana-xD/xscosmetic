@@ -126,6 +126,7 @@
                      </a>
                </div>
                @endforeach
+               <input type="hidden" id="exchange_rate" name="exchange_rate" value="{{$exchange_rate}}" />
          </div>
       </div>
    </div>
@@ -133,6 +134,9 @@
 
 <script type="text/javascript">
     var items = [];
+    let code = "";
+    let reading = false;
+
 $(document).ready(function() {
     
     $('.addPct').on('click', (e) => {
@@ -229,6 +233,120 @@ $(document).ready(function() {
 
     });
 
+    function addProduct(element) {
+        let  card = $(element).parents('.div');
+        let id = $(card).find('.addPct').attr('data-id');
+        if (id == undefined) return;
+
+        var name = $('#idname-' + id).val();
+        var price = $('#idprice-' + id).val();
+        var categoryID = $(card).find('#category').val();
+        var cost = $('#idcost-' + id).val();
+        var unit = $(card).find('#unit').val();
+
+        if (items.includes(name)) {
+            let element = getProductElement(id);
+            addQuantity(element);
+            return;
+        }
+        items.push(name);
+        
+        var qt = 1;
+        // var price = 0
+
+        let string = name.split(",");
+        let productName = '';
+        for (let i = 0; i < string.length; i++) {
+            productName += `<span class="textPD product-name">${string[i]} </span> \n`
+        }
+
+        let row = `<div class="col-xs-12 product-card">
+                        <div class="panel panel-default product-details">
+                           <div class="panel-body" style="">
+                              <div class="col-xs-3 nopadding">
+                                 <div class="col-xs-3 nopadding">
+                                    <a onclick="delete_posale(this);">
+                                       <span class="fa-stack fa-sm productD">
+                                          <i class="fa fa-circle fa-stack-2x delete-product"></i>
+                                          <i class="fa fa-times fa-stack-1x fa-fw fa-inverse"></i>
+                                       </span>
+                                    </a>
+                                 </div>
+                              <div class="col-xs-9 nopadding">
+                                 <input type="hidden" class="product-id"  name="product-id" value="${id}" />
+                                 <input type="hidden" class="category-id"  name="category-id" value="${categoryID}" />
+                                 <input type="hidden" class="unit-id"  name="unit-id" value="${unit}" />
+                                 <input type="hidden" class="product-cost"  name="product-cost" value="${cost}" />
+                                 <input type="hidden" class="product-price"  name="product-price" value="${price}" />
+                                 <input type="hidden" class="product-discount-price"  name="product-discount-price" value="${price}" />
+                                 <input type="hidden" class="extra-price"  name="extra-price" value="0" />
+                                 <input type="hidden" class="product-name"  name="product-name" value="${name}" />
+                                 <div class="product-name-content">
+                                    
+                                 </div>
+                              </div>
+                              </div>
+                              <div class="col-xs-1 nopadding">
+                                 <span class="size textPD">${price}$</span>
+                              </div>
+                              <div class="col-xs-2 nopadding productNum">
+                                 <a onclick="minusQuantity(this)">
+                                    <span class="fa-stack fa-sm decbutton">
+                                       <i class="fa fa-square fa-stack-2x light-grey"></i>
+                                       <i class="fa fa-minus fa-stack-1x fa-inverse white"></i>
+                                    </span>
+                                 </a>
+                              <input type="text" id="qt-${id}"class="form-control quantity" value="${qt}" placeholder="0" maxlength="2">
+                               <a onclick="addQuantity(this)">
+                                 <span class="fa-stack fa-sm incbutton">
+                                    <i class="fa fa-square fa-stack-2x light-grey"></i>
+                                    <i class="fa fa-plus fa-stack-1x fa-inverse white"></i>
+                                 </span>
+                              </a>
+                           </div>
+                           <div class="col-xs-2">
+                              <input type="text" class="form-control discount-input discount" value="" placeholder="0" maxlength="3" onblur="handleProductDiscount(this)">
+                            </div>
+                            <div class="col-xs-2">
+                              <input type="text" class="form-control discount-input discount-in-usd" value="" placeholder="0" maxlength="3" onblur="handleProductDiscountInUSD(this)">
+                            </div>
+                         <div class="col-xs-2 nopadding ">
+                        <span class="subtotal textPD" subtotal-data="${parseFloat(price * qt).toFixed(2)}">$ ${ (parseFloat(price * qt).toFixed(2))}</span>
+                        </div>
+                        </div>
+                     </div>
+                  </div>`;
+        let html = $.parseHTML(row);
+        $(html).find('.product-name-content').append(productName);
+        $('#productList').append(html);
+
+
+        totalItem();
+        totalCash();
+}
+
+    document.addEventListener('keypress', e => {
+        //usually scanners throw an 'Enter' key at the end of read
+        if (e.keyCode === 13) {
+            if(code.length > 10) {
+                element = getProductElementByBarcode(code);
+                addProduct(element);            
+                code = "";
+            }
+        } else {
+            code += e.key; //while this is not an 'enter' it stores the every key            
+        }
+
+        //run a timeout of 200ms at the first read and clear everything
+        if(!reading) {
+            reading = true;
+            setTimeout(() => {
+                code = "";
+                reading = false;
+            }, 400);  //200 works fine for me but you can adjust it
+        }
+    });
+
     function getProductElement(id) {
 
         let cards = $('#productList').children();
@@ -237,6 +355,17 @@ $(document).ready(function() {
         for (let i = 0; i < cards.length; i++) {
             if($(cards[i]).find('.product-id').val() == id) {
                 return $(cards[i]).find('.product-name-content');
+            }
+        }
+    }
+
+    function getProductElementByBarcode(barcode) {
+        let cards = $('#productList2').children();
+
+
+        for (let i = 0; i < cards.length; i++) {
+            if($(cards[i]).find('#barcode').val() == barcode) {
+             return $(cards[i]).find('.addPct');
             }
         }
     }
@@ -441,6 +570,7 @@ $(document).ready(function() {
 
 });
 
+
 function delete_posale(e) {
     let card = $(e).parents('.product-card');
     let name = $(card).find('.product-name').val();
@@ -543,7 +673,8 @@ function handleRemoveZeroDecimal(value) {
 }
 
 function handleExchangeToRielCurrency(value) {
-    return `${addComma(parseFloat(value).toFixed(2) * 4100)}`;
+    let exchange_rate = $('#exchange_rate').val()
+    return `${addComma(parseFloat(value).toFixed(2) * exchange_rate)}`;
 }
 
 function handleRemoveCommafromRielCurrency(value) {

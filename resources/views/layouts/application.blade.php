@@ -91,8 +91,10 @@
                               <li class="flat-box"><a href="/product-income"><i class="fa fa-file-archive-o"></i>  Product Income</a></li>
                         </ul>
                      </li>
+                     <li class="flat-box"><a href="/user"><i class="fa fa-users"></i> User</a></li>
+                     <li class="flat-box"><a href="/setting"><i class="fa fa-cogs"></i> Setting</a></li>
                   @endif
-                 {{-- <li class="flat-box"><a href="/sale"><i class="fa fa-ticket"></i>Sales</a></li> --}}
+                 
                  
                  {{-- <li class="flat-box"><a href="#"><i class="fa fa-line-chart"></i>Reports</a></li> --}}
                </ul>

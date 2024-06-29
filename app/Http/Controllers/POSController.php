@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Product;
 use App\POS;
+use App\Setting;
 use Auth;
 use DateTime;
 use DateTimeZone;
@@ -23,8 +24,10 @@ class POSController extends Controller
 
     public function show(){
         $products = Product::orderBy('created_at','asc')->get();
+        $setting = Setting::first();
         return view('pos',[
-            'products' => $products
+            'products' => $products,
+            'exchange_rate' => $setting->exchange_rate
         ]);
     }
 

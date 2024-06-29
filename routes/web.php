@@ -46,4 +46,13 @@ Route::post('/unit/add','UnitController@store');
 Route::get('/unit/delete','UnitController@destroy');
 Route::post('/unit/update','UnitController@update');
 
+
+Route::get('/user','UserController@show');
+Route::post('/user/add','UserController@store');
+Route::get('/user/delete','UserController@destroy');
+Route::post('/user/update','UserController@update');
+
 Route::get('/product-income','ProductIncomeController@show');
+
+Route::get('/setting','SettingController@show');
+Route::post('/setting/update','SettingController@update');
