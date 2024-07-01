@@ -10,6 +10,10 @@
     #searchContainer .stylish-input-group {
         flex: 1;
     }
+
+    .delivery {
+        display: none;
+    }
     
 </style>
 @endsection
@@ -136,6 +140,7 @@
     var items = [];
     let code = "";
     let reading = false;
+    let addDelivery = 0;
 
 $(document).ready(function() {
     
@@ -473,8 +478,10 @@ $(document).ready(function() {
             };
         invoice.push(item);
     }
-    total = handleRemoveZeroDecimal($('#total-usd').attr('total-usd-data'));
-    totalRiel = $('#total-riel').attr('total-riel');
+    // total = handleRemoveZeroDecimal($('#total-usd').attr('total-usd-data'));
+    // totalRiel = $('#total-riel').attr('total-riel');
+    total = handleRemoveZeroDecimal($('#total-in-usd-final').val());
+    totalRiel = $('#total-in-riel-final').val();
     if (data.length == 0) return;
     let formData = {
         "data": data,
@@ -520,6 +527,14 @@ $(document).ready(function() {
             $('.payment-type-cash').css('display','none');
         }else {
             $('.payment-type-cash').css('display','block');
+        }
+
+        if(type === 'delivery') {
+            $('.delivery').css('display','block');
+            depositDeliveryFee();
+        }else {
+            $('.delivery').css('display','none');
+            withdrawDeliveryFee();
         }
     });
 
@@ -569,6 +584,35 @@ $(document).ready(function() {
     
 
 });
+
+function depositDeliveryFee() {
+    let totalInUSD = parseFloat($('#total-in-usd-final').val());
+    
+    if (totalInUSD < 50.00 && addDelivery == 0) {
+        addDelivery = 1;
+        totalInUSD += 1.50;
+        let totalRiel = handleExchangeToRielCurrency(totalInUSD);
+        $('#total-in-usd-modal').val(`${totalInUSD.toFixed(2)} $`);
+        $('#total-in-usd-final').val(totalInUSD);
+        $('#total-in-riel-modal').val(`${totalRiel} ៛`);
+        $('#total-in-riel-final').val(totalRiel);
+    }
+}
+
+function withdrawDeliveryFee() {
+    let totalInUSD = parseFloat($('#total-in-usd-final').val());
+
+    if (addDelivery == 1) {
+        addDelivery = 0;
+        totalInUSD -= 1.50;
+        let totalRiel = handleExchangeToRielCurrency(totalInUSD);
+        $('#total-in-usd-modal').val(`${totalInUSD.toFixed(2)} $`);
+        $('#total-in-usd-final').val(totalInUSD);
+        $('#total-in-riel-modal').val(`${totalRiel} ៛`);
+        $('#total-in-riel-final').val(handleRemoveCommafromRielCurrency(totalRiel));
+    }
+
+}
 
 
 function delete_posale(e) {
@@ -883,9 +927,13 @@ $('#Order').on("click",(e)=>{
             const str = '000000';
             let invoiceNo = res.data === 0 ? ('0' + (+str + 1)).padStart(str.length, '0') : ('0' + (+str + res.data)).padStart(str.length, '0');
 
+            addDelivery = 0;
+            $('#payment-type').val('cash');
             $('#invoice-no').val(invoiceNo);
             $('#total-in-usd-modal').val(`${totalUSD} $`);
+            $('#total-in-usd-final').val(totalUSD);
             $('#total-in-riel-modal').val(`${totalRiel} ៛`);
+            $('#total-in-riel-final').val(handleRemoveCommafromRielCurrency(totalRiel));
             $('#OrderModal').modal('show');
 
         },
@@ -919,10 +967,12 @@ $('#Order').on("click",(e)=>{
            <div class="form-group form-group-flex">
              <label for="total-in-usd-modal">Total In USD</label>
              <input type="text" name="total-in-usd-modal" maxlength="100" class="form-control" id="total-in-usd-modal" disabled>
+             <input type="hidden" name="total-in-usd-final" maxlength="100" class="form-control" id="total-in-usd-final">
            </div>
            <div class="form-group form-group-flex">
              <label for="total-in-riel-moda">Total In KHR</label>
              <input type="text" name="total-in-riel-modal" maxlength="100" class="form-control" id="total-in-riel-modal" disabled>
+             <input type="hidden" name="total-in-riel-final" maxlength="100" class="form-control" id="total-in-riel-final">
            </div>
            <div class="form-group form-group-flex">
              <label for="payment-type">Payment Type</label>
@@ -932,6 +982,16 @@ $('#Order').on("click",(e)=>{
                  <option value="acleda">Acleda</option>
                  <option value="delivery">Delivery</option>
              </select>
+           </div>
+           <div class="delivery">
+           <div class="form-group form-group-flex">
+             <label for="delivery-type">Delivery Type</label>
+             <select class="form-control" id="delivery-type" name="filtertype">
+                @foreach (App\Delivery::orderBy('name', 'ASC')->get() as $delivery)
+                   <option value="{{ $delivery->name }}">{{ $delivery->name }}</option>
+                 @endforeach
+             </select>
+           </div>
            </div>
       </div>
 
@@ -954,7 +1014,7 @@ $('#Order').on("click",(e)=>{
            </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-default cancel-pos" data-dismiss="modal">Close</button>
         <button type="submit" class="btn btn-add">Submit</button>
       </div>
     </form>

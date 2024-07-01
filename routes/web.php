@@ -46,6 +46,11 @@ Route::post('/unit/add','UnitController@store');
 Route::get('/unit/delete','UnitController@destroy');
 Route::post('/unit/update','UnitController@update');
 
+Route::get('/delivery','DeliveryController@show');
+Route::post('/delivery/add','DeliveryController@store');
+Route::get('/delivery/delete','DeliveryController@destroy');
+Route::post('/delivery/update','DeliveryController@update');
+
 
 Route::get('/user','UserController@show');
 Route::post('/user/add','UserController@store');
