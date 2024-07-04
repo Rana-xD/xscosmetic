@@ -34,6 +34,10 @@
     table-layout: fixed;
   }
 
+  .table-total-item {
+    margin-bottom: 100px;
+  }
+
   .table-payment-type-income td, 
   .table-payment-type-income th,
   .table-total-item td,
