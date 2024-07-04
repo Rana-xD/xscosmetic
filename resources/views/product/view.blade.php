@@ -42,7 +42,7 @@
               
               <tr class="product-data">
                  <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
-                 <td class="name">{{ date('d-m-Y / h:i A',strtotime($product->created_at)) }}</td>
+                 <td class="input-date">{{ date('d-m-Y / h:i A',strtotime($product->created_at)) }}</td>
                  <td class="name">{{ $product->name }}</td>
                  <td class="barcode">{{ $product->product_barcode }}</td>
                   <td class="product-stock">{{ $product->stock }}</td>
