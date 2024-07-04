@@ -467,13 +467,20 @@ $(document).ready(function() {
         let price = handleRemoveZeroDecimal($(cards[i]).find('.product-price').val()),
             quantity = parseInt($(cards[i]).find('.quantity').val()),
             totalPrice = handleRemoveZeroDecimal(parseFloat(($(cards[i]).find('.subtotal').text()).replace('$', '')).toFixed(2)),
+            discount = 0;
+
+            if($(cards[i]).find('.discount').val()){
+                discount = `${$(cards[i]).find('.discount').val()}%`;
+            }else if ($(cards[i]).find('.discount-in-usd').val()) {
+                discount = `${$(cards[i]).find('.discount-in-usd').val()}$`;
+            }
 
 
             item = {
                 product_name: $(cards[i]).find('.product-name').val(),
                 quantity: `${quantity}`,
                 price: price,
-                discount: $(cards[i]).find('.discount').val() === '' ? `0` : `$${$(cards[i]).find('.discount').val()}`,
+                discount: discount,
                 total: totalPrice
             };
         invoice.push(item);
@@ -481,7 +488,12 @@ $(document).ready(function() {
     // total = handleRemoveZeroDecimal($('#total-usd').attr('total-usd-data'));
     // totalRiel = $('#total-riel').attr('total-riel');
     total = handleRemoveZeroDecimal($('#total-in-usd-final').val());
-    totalRiel = $('#total-in-riel-final').val();
+    totalRiel =  addComma($('#total-in-riel-final').val());
+    totalDiscount = otalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
+    receivedInUSD = $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val();
+    receivedInRiel = $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val();
+    changeInUSD = $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val();
+    changeInRiel = $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val();
     if (data.length == 0) return;
     let formData = {
         "data": data,
@@ -489,7 +501,12 @@ $(document).ready(function() {
         "invoice_no": invoiceNo,
         "total": total,
         "total_riel": totalRiel,
-        "payment_type": paymentType
+        "payment_type": paymentType,
+        "totalDiscount": totalDiscount,
+        "receivedInUSD": receivedInUSD,
+        "receivedInRiel": receivedInRiel,
+        "changeInUSD": changeInUSD,
+        "changeInRiel": changeInRiel
     };
 
     $.ajax({

@@ -49,6 +49,14 @@ class ProductController extends Controller
             "photo" => $fileNameToStore
         ];
 
+        $product_exist = Product::where('product_barcode',$request->product_barcode)->where('name',$request->name)->first();
+
+        if($product_exist){
+            return response()->json([
+                'code' => 404
+            ]);
+        }
+
         $result = Product::create($data);
 
         $init_data = [

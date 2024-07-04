@@ -45,12 +45,18 @@ class POSController extends Controller
         $invoice = $request->invoice;
         $total = $request->total;
         $total_riel = $request->total_riel;
+        $total_discount = $request->totalDiscount;
+        $received_in_usd = $request->receivedInUSD;
+        $received_in_riel = $request->receivedInRiel;
+        $change_in_usd = $request->changeInUSD;
+        $change_in_riel = $request->changeInRiel;
+
         $order = POS::create($data);
 
         $this->deductStock($data['items']);        
         $this->updateProductIncome($data['items']);
         // NewOrder::dispatch($order);
-        // $this->printInvoice($invoice,$total,$total_riel);
+        $this->printInvoice($invoice,Auth::user()->username,$total,$total_riel,$total_discount,$received_in_usd,$received_in_riel,$change_in_usd,$change_in_riel);
         return response()->json([
             'code' => 200,
             'data' => $invoice
@@ -112,9 +118,8 @@ class POSController extends Controller
     }
 
 
-    private function printInvoice($invoice,$total,$total_riel){
-        $store_name = 'XScosmetic';
-        $store_phone = '010883816';
+    private function printInvoice($invoice,$cashier, $total,$total_riel,$total_discount,$received_in_usd,$received_in_riel,$change_in_usd,$change_in_riel){
+        $store_name = 'cosmetic';
 
         // Init printer
         $printer = new ReceiptPrinter;
@@ -124,8 +129,15 @@ class POSController extends Controller
         );
 
         // Set store info
-        $printer->setStore($store_name, $store_phone);
-
+        $printer->setStore($store_name);
+        $printer->setCashier($cashier);
+        $printer->setTotal($total);
+        $printer->setTotalRiel($total_riel);
+        $printer->setTotalDiscount($total_discount);
+        $printer->setReceivedInUsd($received_in_usd);
+        $printer->setReceivedInRiel($received_in_riel);
+        $printer->setChangeInUsd($change_in_usd);
+        $printer->setChangeInRiel($change_in_riel);
         // Add items
         foreach ($invoice as $item) {
             $printer->addItem(
@@ -137,12 +149,7 @@ class POSController extends Controller
             );
         }
 
-        $printer->setTotal($total);
-        $printer->setTotalRiel($total_riel);
-        $printer->setLocaleDateTime($this->getLocaleDateTime());
-
-        // Print receipt
-        $printer->printReceipt();
+        $printer->printXscometicReceipt();
 
     }
 

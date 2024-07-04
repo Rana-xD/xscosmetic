@@ -19,7 +19,7 @@ return [
     | Typically printer name or IP address.
     |
     */
-    'connector_descriptor' => 'Xprinter_USB_Printer_P',
+    'connector_descriptor' => '_80Series2',
     /*
     |--------------------------------------------------------------------------
     | Printer port

@@ -23,6 +23,7 @@
           <thead>
               <tr>
                   <th class="hidden-xs">No</th>
+                  <th>Input Date</th>
                   <th>Name</th>
                   <th>Code</th>
                   <th>Total Stock</th>
@@ -41,6 +42,7 @@
               
               <tr class="product-data">
                  <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
+                 <td class="name">{{ date('d-m-Y / h:i A',strtotime($product->created_at)) }}</td>
                  <td class="name">{{ $product->name }}</td>
                  <td class="barcode">{{ $product->product_barcode }}</td>
                   <td class="product-stock">{{ $product->stock }}</td>
@@ -147,7 +149,20 @@
           contentType: false,
           processData: false,
           success: function(res){
-            location.reload();
+            if(res.code === 404){
+              swal({
+                title: 'Error',
+                type: "error",
+                text: "That Product Already Exists. Please find it and update it instead",
+                timer: 2500,
+                showCancelButton: false,
+                showConfirmButton: false
+            }, function(data) {
+                location.reload(true);
+            });
+            }else {
+              location.reload();
+            }
           },
           error: function(err){
             console.log(err);
@@ -284,7 +299,7 @@
            </div>
            <div class="form-group">
             <label for="ProductName">Product Barcode</label>
-            <input type="text" name="barcode" maxlength="100" class="form-control" id="ProductBarcode" placeholder="ProductBarcode">
+            <input type="text" name="barcode" maxlength="100" Required class="form-control" id="ProductBarcode" placeholder="ProductBarcode">
           </div>
            <div class="form-group">
             <label for="ProductName">Stock</label>
