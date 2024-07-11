@@ -141,6 +141,7 @@
     let code = "";
     let reading = false;
     let addDelivery = 0;
+    let timeoutId = null;
 
 $(document).ready(function() {
     
@@ -612,7 +613,7 @@ function depositDeliveryFee() {
         $('#total-in-usd-modal').val(`${totalInUSD.toFixed(2)} $`);
         $('#total-in-usd-final').val(totalInUSD);
         $('#total-in-riel-modal').val(`${totalRiel} ៛`);
-        $('#total-in-riel-final').val(totalRiel);
+        $('#total-in-riel-final').val(handleRemoveCommafromRielCurrency(totalRiel));
     }
 }
 
@@ -806,8 +807,18 @@ function handleProductDiscountInUSD(e) {
     $(e).parents('.product-card').find('.product-discount-price').val(discountPrice);
     totalCash();
 }   
-
+let searchTimeout;
 function handleProductOverallDiscount(e) {
+
+    clearTimeout(searchTimeout); // Clear any existing timeout to prevent it from executing
+
+    searchTimeout = setTimeout(() => {
+        productOverallDiscount(); // Execute the productOverallDiscount() function after the delay
+    }, 500);
+
+}
+
+function productOverallDiscount(e) {
     let parentDiv = $(e).parents('.cashier-section');
     total = $('#total-usd').attr('') === '' ? 0 : $('#total-usd').attr('total-usd-data'),
         totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
@@ -824,13 +835,13 @@ function handleProductOverallDiscount(e) {
     if (totalDiscount > 100) {
         return;
     }
-    let totalDiscountPrice = (total - (total * (totalDiscount / 100))).toFixed(2);
+    let totalDiscountPrice = (total - ((total * totalDiscount) / 100)).toFixed(2);
     totalRielDiscountPrice = handleExchangeToRielCurrency(totalDiscountPrice);
-
-
-    console.log(totalDiscountPrice);
+   
     $('#total-usd').text(`$ ${totalDiscountPrice}`)
+    $('#total-usd').attr('total-usd-data', totalDiscountPrice);
     $('#total-riel').text(`៛ ${totalRielDiscountPrice}`)
+    $('#total-riel').attr('total-riel-data', totalRielDiscountPrice);
 }
 
 function minusQuantity(e) {
