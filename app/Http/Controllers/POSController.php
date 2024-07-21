@@ -138,12 +138,15 @@ class POSController extends Controller
         $printer->setReceivedInRiel($received_in_riel);
         $printer->setChangeInUsd($change_in_usd);
         $printer->setChangeInRiel($change_in_riel);
+        // $printer->setLogo(asset('img/invoice_image.png'));
+        $printer->setLogo(public_path('img/logo.png'));
+        $printer->setNote(public_path('img/invoice_image.png'));
         // Add items
         foreach ($invoice as $item) {
             $printer->addItem(
                 $item['product_name'],
-                $item['quantity'],
                 $item['price'],
+                $item['quantity'],
                 $item['discount'],
                 $item['total']
             );
