@@ -23,7 +23,8 @@ class POSController extends Controller
     }
 
     public function show(){
-        $products = Product::orderBy('created_at','asc')->get();
+        ini_set('max_execution_time', '300');
+        $products = Product::with('category')->get();
         $setting = Setting::first();
         return view('pos',[
             'products' => $products,
