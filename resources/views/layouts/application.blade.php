@@ -7,7 +7,7 @@
       <meta name="description" content="">
       <meta name="author" content="">
       <script src="js/app.js"></script>
-      <title>XSCosmetic</title>
+      <title>Tyche Xcosmetic</title>
       <!-- jQuery -->
       <script type="text/javascript" src="/js/jquery-2.2.2.min.js"></script>
       <script type="text/javascript" src="/js/loading.js"></script>

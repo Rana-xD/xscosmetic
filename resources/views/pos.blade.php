@@ -953,7 +953,13 @@ $('#Order').on("click",(e)=>{
         processData: false,
         success: function(res) {
             const str = '000000';
-            let invoiceNo = res.data === 0 ? ('0' + (+str + 1)).padStart(str.length, '0') : ('0' + (+str + res.data)).padStart(str.length, '0');
+            let invoiceNo = '';
+
+            if(res.data === 0){
+                invoiceNo = ('0' + (+str + 1)).padStart(str.length, '0');
+            }else {
+                invoiceNo = ('0' + (+str + (res.data + 1))).padStart(str.length, '0');
+            }
 
             addDelivery = 0;
             $('#payment-type').val('cash');
