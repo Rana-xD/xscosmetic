@@ -37,6 +37,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    const SUPERADMIN = 'SUPERADMIN';
     const ADMIN = 'ADMIN';
     const MANAGER = 'MANAGER';
     const STAFF = 'STAFF';
@@ -47,5 +48,9 @@ class User extends Authenticatable
 
     public function isManager(){
         return $this->role === self::MANAGER;
+    }
+
+    public function isSuperAdmin(){
+        return $this->role === self::SUPERADMIN;
     }
 }

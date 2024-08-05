@@ -17,7 +17,7 @@ class UserController extends Controller {
     }
 
     public function show(){
-        $users = User::All();
+        $users = User::where('role','!=','SUPERADMIN')->get();
         return view('user.view',[
             'users' => $users
         ]);

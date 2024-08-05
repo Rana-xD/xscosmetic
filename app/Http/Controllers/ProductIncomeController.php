@@ -11,6 +11,7 @@ class ProductIncomeController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('admin');
+        $this->middleware('superadmin');
     }
 
     public function show(){

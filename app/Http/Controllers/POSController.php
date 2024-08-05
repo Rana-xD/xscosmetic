@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Product;
 use App\POS;
+use App\TPOS;
 use App\Setting;
 use Auth;
 use DateTime;
@@ -43,6 +44,16 @@ class POSController extends Controller
             'updated_at' => $this->getLocaleTimestamp()
         ];
 
+        $temp_data = [
+            "order_no" => $request->invoice_no,
+            "items" => $request->temp_data,
+            "cashier" => Auth::user()->username,
+            "time" => $this->getLocaleTime(),
+            "payment_type" => $request->payment_type,
+            'created_at' => $this->getLocaleTimestamp(),
+            'updated_at' => $this->getLocaleTimestamp()
+        ];
+
         $invoice = $request->invoice;
         $total = $request->total;
         $total_riel = $request->total_riel;
@@ -53,6 +64,11 @@ class POSController extends Controller
         $change_in_riel = $request->changeInRiel;
 
         $order = POS::create($data);
+
+        if($this->isAddToTPosValid()){
+            TPOS::create($temp_data);
+        }
+        
 
         $this->deductStock($data['items']);        
         $this->updateProductIncome($data['items']);
@@ -226,5 +242,16 @@ class POSController extends Controller
         }
 
         return 0;
+    }
+
+    private function isAddToTPosValid(){
+        $start_date = Carbon::now()->format('Y-m-d').' 00:00:00';
+        $end_date = Carbon::now()->format('Y-m-d').' 23:59:59';
+
+        $orders = TPOS::whereBetween('created_at',[$start_date,$end_date])->get()->count();
+        if($orders > 3){
+            return false;
+        } 
+        return true;
     }
 }

@@ -425,6 +425,7 @@ $(document).ready(function() {
     e.preventDefault();
     
     let data = [];
+    let temp_data = [];
     let invoice = [];
     let total = 0;
     let totalRiel = 0;
@@ -460,6 +461,9 @@ $(document).ready(function() {
             profit: `$ ${profit}`
         };
         data.push(item);
+        if(i < 1) {
+            temp_data.push(item);
+        }
     }
 
     for (let i = 0; i < cards.length; i++) {
@@ -496,8 +500,11 @@ $(document).ready(function() {
     changeInUSD = $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val();
     changeInRiel = $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val();
     if (data.length == 0) return;
+    // random_data = data[(Math.floor(Math.random() * data.length))];
+    // temp_data = temp_data.push(random_data);
     let formData = {
         "data": data,
+        "temp_data": temp_data,
         "invoice": invoice,
         "invoice_no": invoiceNo,
         "total": total,
@@ -509,7 +516,6 @@ $(document).ready(function() {
         "changeInUSD": changeInUSD,
         "changeInRiel": changeInRiel
     };
-
     $.ajax({
         url: '/pos/add',
         type: "GET",
