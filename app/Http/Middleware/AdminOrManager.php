@@ -15,7 +15,7 @@ class AdminOrManager
      */
     public function handle($request, Closure $next)
     {
-        if(auth()->user()->isAdmin() || auth()->user()->isManager() ) {
+        if(auth()->user()->isAdmin() || auth()->user()->isManager() || auth()->user()->isSuperAdmin()) {
             return $next($request);
         }
         return redirect('/');

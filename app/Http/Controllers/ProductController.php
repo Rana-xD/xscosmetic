@@ -15,7 +15,6 @@ class ProductController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('adminormanager');
-        $this->middleware('superadmin');
     }
 
     public function show(){
