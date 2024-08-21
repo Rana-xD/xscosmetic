@@ -14,6 +14,66 @@
     .delivery {
         display: none;
     }
+
+    /* HTML: <div class="loader"></div> */
+.loader {
+  display: none;
+  width: 40px;
+  aspect-ratio: 1;
+  --c:no-repeat radial-gradient(farthest-side,#514b82 92%,#0000);
+  background: 
+    var(--c) 50%  0, 
+    var(--c) 50%  100%, 
+    var(--c) 100% 50%, 
+    var(--c) 0    50%;
+  background-size: 10px 10px;
+  animation: l18 1s infinite;
+  position: relative;
+}
+.loader::before {    
+  content:"";
+  position: absolute;
+  inset:0;
+  margin: 3px;
+  background: repeating-conic-gradient(#0000 0 35deg,#514b82 0 90deg);
+  -webkit-mask: radial-gradient(farthest-side,#0000 calc(100% - 3px),#000 0);
+  border-radius: 50%;
+}
+@keyframes l18 { 
+  100%{transform: rotate(.5turn)}
+}
+
+/* HTML: <div class="loader"></div> */
+.order-loader {
+  width: 45px;
+  aspect-ratio: 1;
+  display: grid;
+  display: none;
+  margin: auto;
+}
+.order-loader::before,
+.order-loader::after {    
+  content:"";
+  grid-area: 1/1;
+  --c:no-repeat radial-gradient(farthest-side,#25b09b 92%,#0000);
+  background: 
+    var(--c) 50%  0, 
+    var(--c) 50%  100%, 
+    var(--c) 100% 50%, 
+    var(--c) 0    50%;
+  background-size: 12px 12px;
+  animation: l12 1s infinite;
+}
+.order-loader::before {
+  margin: 4px;
+  filter: hue-rotate(45deg);
+  background-size: 8px 8px;
+  animation-timing-function: linear
+}
+
+@keyframes l12 { 
+  100%{transform: rotate(.5turn)}
+}
     
 </style>
 @endsection
@@ -70,7 +130,7 @@
             </div>
             <button type="button" onclick="cancelPOS()" class="btn btn-red col-md-6 flat-box-btn"><h5 class="text-bold">CANCEL</h5></button>
             <button type="button" class="btn btn-green col-md-6 flat-box-btn" data-toggle="modal" id="Order"><h5 class="text-bold">ORDER</h5></button>
-            
+            <div class="order-loader"></div>
          </div>
          
         <!-- <button type="button" class="btn btn-blue col-md-12 flat-box-btn print-invoice-daily-container" id="PrintDailyInvoice"><h5 class="text-bold">PRINT</h5></button> -->
@@ -126,6 +186,7 @@
                            <input type="hidden" id="idcost-{{$product->id}}" name="cost" value="{{$product->cost}}" />
                            <input type="hidden" id="category" name="category" value="{{$product->category->id}}" />
                            <input type="hidden" id="barcode" name="barcode" value="{{$product->product_barcode}}" />
+                           <input type="hidden" id="temp-barcode" name="temp-barcode" value="" />
                         </div>
                      </a>
                </div>
@@ -144,6 +205,10 @@
     let timeoutId = null;
 
 $(document).ready(function() {
+
+    e = $.Event('keypress');
+    e.keyCode= 13; // enter
+    $('#searchBrand').trigger(e);
     
     $('.addPct').on('click', (e) => {
         let self = e.target,
@@ -336,6 +401,7 @@ $(document).ready(function() {
         if (e.keyCode === 13) {
             if(code.length > 10) {
                 element = getProductElementByBarcode(code);
+                // console.log('code:: '+code);
                 addProduct(element);            
                 code = "";
             }
@@ -423,7 +489,7 @@ $(document).ready(function() {
 
    $('#posOrder').on('submit', (e) => {
     e.preventDefault();
-    
+    showSpinner();
     let data = [];
     let temp_data = [];
     let invoice = [];
@@ -526,6 +592,7 @@ $(document).ready(function() {
             $(cards).remove();
             totalItem();
             totalCash();
+            hideSpinner();
             swal({
                 title: 'DONE',
                 text: 'Order complete',
@@ -910,6 +977,28 @@ function removeProduct(e) {
     let html = $(e).parents('.product-card');
 }
 
+function showSpinner() {
+
+    $('.loader').css('display', 'block');
+    $('#posOrder .btn-add').prop('disabled', true);
+}
+
+function hideSpinner() {
+    $('.loader').css('display', 'none');
+    $('#posOrder .btn-add').prop('disabled', false);
+}
+
+function showOrderSpinner() {
+
+    $('.order-loader').css('display', 'grid');
+    $('#Order').css('display', 'none');
+}
+
+function hideOrderSpinner() {
+    $('.order-loader').css('display', 'none');
+    $('#Order').css('display', 'block');
+}
+
 $(".categories").on("click", function() {
 
     //   console.log("HELLOI");
@@ -951,13 +1040,14 @@ $('#Order').on("click",(e)=>{
         return;
     }
     let totalRiel = $('#total-riel').attr('total-riel-data');
-
+    showOrderSpinner();
     $.ajax({
         url: '/pos/get-invoice-no',
         type: "GET",
         contentType: false,
         processData: false,
         success: function(res) {
+            hideOrderSpinner();
             const str = '000000';
             let invoiceNo = '';
 
@@ -967,6 +1057,7 @@ $('#Order').on("click",(e)=>{
                 invoiceNo = ('0' + (+str + (res.data + 1))).padStart(str.length, '0');
             }
 
+            hideSpinner();
             addDelivery = 0;
             $('#payment-type').val('cash');
             $('#invoice-no').val(invoiceNo);
@@ -1055,7 +1146,8 @@ $('#Order').on("click",(e)=>{
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default cancel-pos" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-add">Submit</button>
+        <button type="submit" class="btn btn-add"></span>Submit</button>
+        <div class="loader"></div>
       </div>
     </form>
     </div>

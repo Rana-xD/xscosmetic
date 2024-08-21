@@ -78,7 +78,40 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
+       
       let isImageUpdate = 0;
+      let code = "";
+      let reading = false;
+
+      document.addEventListener('keypress', e => {
+        //usually scanners throw an 'Enter' key at the end of read
+        if (e.keyCode === 13) {
+            if(code.length > 10) {
+                // element = getProductElementByBarcode(code);
+                // console.log('code:: '+code);
+                if($('#Addproduct').is(':visible')){
+                  $('#ProductBarcode').val(code);
+                }
+                if($('#Editproduct').is(':visible')){
+                  $('#ProductBarcode-edit').val(code);
+                }
+                
+                code = "";
+            }
+        } else {
+            code += e.key; //while this is not an 'enter' it stores the every key            
+        }
+
+        //run a timeout of 200ms at the first read and clear everything
+        if(!reading) {
+            reading = true;
+            setTimeout(() => {
+                code = "";
+                reading = false;
+            }, 400);  //200 works fine for me but you can adjust it
+        }
+    });
+
       $("#openFileInput").on("click",(e)=>{
         $('#Image').click();
       })
