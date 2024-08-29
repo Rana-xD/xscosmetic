@@ -13,6 +13,34 @@
       width:100%;
       /* height: 230px; */
     }
+
+    /* HTML: <div class="loader"></div> */
+.loader {
+  display: none;
+  width: 40px;
+  aspect-ratio: 1;
+  --c:no-repeat radial-gradient(farthest-side,#514b82 92%,#0000);
+  background: 
+    var(--c) 50%  0, 
+    var(--c) 50%  100%, 
+    var(--c) 100% 50%, 
+    var(--c) 0    50%;
+  background-size: 10px 10px;
+  animation: l18 1s infinite;
+  position: relative;
+}
+.loader::before {    
+  content:"";
+  position: absolute;
+  inset:0;
+  margin: 3px;
+  background: repeating-conic-gradient(#0000 0 35deg,#514b82 0 90deg);
+  -webkit-mask: radial-gradient(farthest-side,#0000 calc(100% - 3px),#000 0);
+  border-radius: 50%;
+}
+@keyframes l18 { 
+  100%{transform: rotate(.5turn)}
+}
     
 </style>
 @endsection
@@ -112,6 +140,18 @@
         }
     });
 
+    function showSpinner() {
+
+      $('.loader').css('display', 'block');
+      $('.modal-btn').prop('disabled', true);
+
+    }
+
+    function hideSpinner() {
+      $('.loader').css('display', 'none');
+      $('.modal-btn').prop('disabled', false);
+    }
+
       $("#openFileInput").on("click",(e)=>{
         $('#Image').click();
       })
@@ -174,7 +214,7 @@
         formData.append('price',$("#price").val() === '' || $("#price").val() === undefined ? 0 : $("#price").val());
         formData.append('cost',$("#cost").val() === '' || $("#cost").val() === undefined ? 0 : $("#cost").val());
         formData.append('photo',$("#Image")[0].files[0]);
-    
+        showSpinner();
         $.ajax({
           url: '/product/add',
           type: "POST", 
@@ -182,6 +222,7 @@
           contentType: false,
           processData: false,
           success: function(res){
+            hideSpinner();
             if(res.code === 404){
               swal({
                 title: 'Error',
@@ -276,13 +317,18 @@
         formData.append('category_id',$("#Category-edit").val());
         // formData.append('unit_id',$("#Unit-edit").val());
         formData.append('stock',$("#stock-edit").val());
+        formData.append('new_stock',$("#new-stock-edit").val() === '' || $("#new-stock-edit").val() === undefined ? 0 : $("#new-stock-edit").val());
         formData.append('expire_date',$("#expire-date-edit").val());
         formData.append('price',$("#price-edit").val() === '' || $("#price-edit").val() === undefined ? 0 : $("#price-edit").val());
         formData.append('cost',$("#cost-edit").val() === '' || $("#cost-edit").val() === undefined ? 0 : $("#cost-edit").val());
         if(isImageUpdate){
           formData.append('photo',$("#ImageEdit")[0].files[0]);
         }
-
+        // for (var pair of formData.entries()) {
+        //     console.log(pair[0]+ ', ' + pair[1]); 
+        // }
+        // return;
+        showSpinner();
         $.ajax({
           url: '/product/update',
           type: "POST", 
@@ -290,6 +336,7 @@
           contentType: false,
           processData: false,
           success: function(res){
+            hideSpinner();
             isImageUpdate = 0;
             // console.log(res)
             location.reload();
@@ -387,7 +434,8 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-add">Submit</button>
+        <button type="submit" class="btn btn-add modal-btn">Submit</button>
+        <div class="loader"></div>
       </div>
     </form>
     </div>
@@ -417,8 +465,12 @@
               <input type="text" name="barcode" maxlength="100" class="form-control" id="ProductBarcode-edit" placeholder="ProductBarcode" >
             </div>
             <div class="form-group">
-             <label for="ProductName">Stock</label>
-             <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock-edit" placeholder="Stock" >
+             <label for="ProductName">Current Stock</label>
+             <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock-edit" placeholder="Stock" readonly="readonly">
+           </div>
+           <div class="form-group">
+             <label for="ProductName">New Stock</label>
+             <input type="number" name="stock" maxlength="100" class="form-control" id="new-stock-edit" placeholder="New Stock">
            </div>
            @if (Auth::user()->role == "ADMIN")
            <div class="form-group">
@@ -468,7 +520,8 @@
        </div>
        <div class="modal-footer">
          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-         <button type="submit" class="btn btn-add">Submit</button>
+         <button type="submit" class="btn btn-add modal-btn">Submit</button>
+         <div class="loader"></div>
        </div>
      </form>
      </div>

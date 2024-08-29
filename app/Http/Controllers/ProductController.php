@@ -86,12 +86,13 @@ class ProductController extends Controller
         $default_img = 'default.jpg';
         $id = $request->id;
         $product = Product::find($id);
+        $stock = $request->stock + intval($request->new_stock);
         $data = [
             "name" => $request->name,
             "product_barcode" => $request->product_barcode === '' ? null : $request->product_barcode,
             "category_id" => $request->category_id,
             // "unit_id" =>$request->unit_id,
-            "stock" =>$request->stock,
+            "stock" => $stock,
             "expire_date" =>$request->expire_date,
             "price" =>$request->price === 0 ? 0 : $request->price,
             "cost" => $request->cost === 0 ? 0 : $request->cost,
