@@ -489,7 +489,6 @@ $(document).ready(function() {
 
    $('#posOrder').on('submit', (e) => {
     e.preventDefault();
-    showSpinner();
     let data = [];
     let temp_data = [];
     let invoice = [];
@@ -498,6 +497,46 @@ $(document).ready(function() {
     let cards = $('#productList').children();
     let invoiceNo = $('#invoice-no').val();
     let paymentType = $('#payment-type').val();
+
+    total = handleRemoveZeroDecimal($('#total-in-usd-final').val());
+    totalRiel =  addComma($('#total-in-riel-final').val());
+    totalDiscount = otalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
+    receivedInUSD = $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val();
+    receivedInRiel = $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val();
+    changeInUSD = $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val();
+    changeInRiel = $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val();
+
+    if(receivedInUSD != 0){
+        totalRawData = parseFloat(total.replace('$', '')).toFixed(2);
+        receivedInUSDRawData = parseFloat(receivedInUSD).toFixed(2);
+        if(receivedInUSDRawData < totalRawData){
+            swal({
+                title: 'Error',
+                type: "error",
+                text: "Amount of received cash is not enough",
+                timer: 2000,
+                showCancelButton: false,
+                showConfirmButton: false
+            });
+            return;
+        }
+    }
+
+    if(receivedInRiel != 0){
+        totalRielRawData = parseInt(totalRiel.replace(/,/g, ''));
+        receivedInRielData = parseInt(receivedInRiel.replace(/,/g, ''));
+        if(receivedInRielData < totalRielRawData){
+            swal({
+                title: 'Error',
+                type: "error",
+                text: "Amount of received cash is not enough",
+                timer: 2000,
+                showCancelButton: false,
+                showConfirmButton: false
+            });
+            return;
+        }
+    }
 
 
     for (let i = 0; i < cards.length; i++) {
@@ -558,16 +597,15 @@ $(document).ready(function() {
     }
     // total = handleRemoveZeroDecimal($('#total-usd').attr('total-usd-data'));
     // totalRiel = $('#total-riel').attr('total-riel');
-    total = handleRemoveZeroDecimal($('#total-in-usd-final').val());
-    totalRiel =  addComma($('#total-in-riel-final').val());
-    totalDiscount = otalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
-    receivedInUSD = $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val();
-    receivedInRiel = $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val();
-    changeInUSD = $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val();
-    changeInRiel = $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val();
+    
     if (data.length == 0) return;
-    // random_data = data[(Math.floor(Math.random() * data.length))];
-    // temp_data = temp_data.push(random_data);
+
+    
+
+    
+
+    
+   
     let formData = {
         "data": data,
         "temp_data": temp_data,
@@ -582,6 +620,7 @@ $(document).ready(function() {
         "changeInUSD": changeInUSD,
         "changeInRiel": changeInRiel
     };
+    showSpinner();
     $.ajax({
         url: '/pos/add',
         type: "GET",

@@ -324,10 +324,7 @@
         if(isImageUpdate){
           formData.append('photo',$("#ImageEdit")[0].files[0]);
         }
-        // for (var pair of formData.entries()) {
-        //     console.log(pair[0]+ ', ' + pair[1]); 
-        // }
-        // return;
+    
         showSpinner();
         $.ajax({
           url: '/product/update',
