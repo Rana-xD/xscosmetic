@@ -291,6 +291,7 @@
               expireDate = $(parentDiv).find('.product-expire-date').attr('expire-date-data'),
               image = $(self).attr('image-data');
 
+              console.log(categoryId);
               $('#ProductName-edit').val(productName);
               $('#ProductBarcode-edit').val(productBarcode);
               $('#productID').val(id);
@@ -298,7 +299,7 @@
               $('#size-edit').val(size);
               $('#price-edit').val(price);
               $('#cost-edit').val(cost);
-              $('Category-edit').val(categoryId);
+              $('#Category-edit').val(categoryId);
               // $('Unit-edit').val(unitId);
               $("#ProductImageEdit").attr('src',image);
               $('#expire-date-edit').val(expireDate);
