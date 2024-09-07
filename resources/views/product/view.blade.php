@@ -56,7 +56,7 @@
                   <th>Code</th>
                   <th>Total Stock</th>
                   <th>Sell Price</th>
-                  @if (Auth::user()->role == "ADMIN")
+                  @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
                   <th>Cost</th>
                   @endif
                   <th>Product Type</th>
@@ -75,7 +75,7 @@
                  <td class="barcode">{{ $product->product_barcode }}</td>
                   <td class="product-stock">{{ $product->stock }}</td>
                   <td class="product-price" price-data="{{ $product->price }}">{{ $product->price }}$</td>
-                  @if (Auth::user()->role == "ADMIN")
+                  @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
                   <td class="product-cost" cost-data="{{ $product->cost }}">{{ $product->cost }}$</td>
                   @endif
                   <td class="product-category" category-id="{{ $product->category->id}}">{{ $product->category->name }}</td>
