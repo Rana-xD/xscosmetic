@@ -507,8 +507,9 @@ $(document).ready(function() {
     changeInRiel = $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val();
 
     if(receivedInUSD != 0){
-        totalRawData = parseFloat(total.replace('$', '')).toFixed(2);
-        receivedInUSDRawData = parseFloat(receivedInUSD).toFixed(2);
+        totalRawData = parseFloat(total.replace('$', ''));
+        receivedInUSDRawData = parseFloat(receivedInUSD);
+        console.log(totalRawData, receivedInUSDRawData);
         if(receivedInUSDRawData < totalRawData){
             swal({
                 title: 'Error',

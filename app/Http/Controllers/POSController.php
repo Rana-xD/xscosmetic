@@ -65,15 +65,17 @@ class POSController extends Controller
 
         $order = POS::create($data);
 
+        $this->printInvoice($invoice,Auth::user()->username,$total,$total_riel,$total_discount,$received_in_usd,$received_in_riel,$change_in_usd,$change_in_riel);
+
         if($this->isAddToTPosValid()){
             TPOS::create($temp_data);
         }
         
 
         $this->deductStock($data['items']);        
-        $this->updateProductIncome($data['items']);
+        // $this->updateProductIncome($data['items']);
         // NewOrder::dispatch($order);
-        $this->printInvoice($invoice,Auth::user()->username,$total,$total_riel,$total_discount,$received_in_usd,$received_in_riel,$change_in_usd,$change_in_riel);
+        
         return response()->json([
             'code' => 200,
             'data' => $invoice
