@@ -506,10 +506,44 @@ $(document).ready(function() {
     changeInUSD = $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val();
     changeInRiel = $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val();
 
-    if(receivedInUSD != 0){
+    if(paymentType === '50ABA') {
+        if(receivedInUSD != 0){
+        totalRawData = (parseFloat(total.replace('$', '')) / 2 );
+        receivedInUSDRawData = parseFloat(receivedInUSD);
+        console.log(totalRawData, receivedInUSDRawData)
+        if(receivedInUSDRawData < totalRawData){
+            swal({
+                title: 'Error',
+                type: "error",
+                text: "Amount of received cash is not enough",
+                timer: 2000,
+                showCancelButton: false,
+                showConfirmButton: false
+            });
+            return;
+        }
+    }
+
+    if(receivedInRiel != 0){
+        totalRielRawData = (parseInt(totalRiel.replace(/,/g, '')) / 2);
+        receivedInRielData = parseInt(receivedInRiel.replace(/,/g, ''));
+        if(receivedInRielData < totalRielRawData){
+            swal({
+                title: 'Error',
+                type: "error",
+                text: "Amount of received cash is not enough",
+                timer: 2000,
+                showCancelButton: false,
+                showConfirmButton: false
+            });
+            return;
+        }
+    }
+    
+    } else {
+        if(receivedInUSD != 0){
         totalRawData = parseFloat(total.replace('$', ''));
         receivedInUSDRawData = parseFloat(receivedInUSD);
-        console.log(totalRawData, receivedInUSDRawData);
         if(receivedInUSDRawData < totalRawData){
             swal({
                 title: 'Error',
@@ -538,6 +572,9 @@ $(document).ready(function() {
             return;
         }
     }
+    }
+
+    
 
 
     for (let i = 0; i < cards.length; i++) {
@@ -654,7 +691,8 @@ $(document).ready(function() {
 
     $('#payment-type').on('change', function() {
         let type = $(this).val();
-        if(type === 'aba' || type === 'acleda' || type === 'delivery') {
+        resetReceivedCashAndChange();
+        if(type === 'aba' || type === 'acleda' || type === 'delivery' || type === '50ABA') {
             $('.payment-type-cash').css('display','none');
         }else {
             $('.payment-type-cash').css('display','block');
@@ -743,6 +781,15 @@ function withdrawDeliveryFee() {
         $('#total-in-riel-final').val(handleRemoveCommafromRielCurrency(totalRiel));
     }
 
+}
+
+function resetReceivedCashAndChange() {
+    $('#received-cash-in-usd').val('');
+    $('#received-cash-in-riel').val('');
+    $('#change-in-riel').val('');
+    $('#change-in-usd').val('');
+    $("#received-cash-in-usd").prop('disabled', false);
+    $("#received-cash-in-riel").prop('disabled', false);
 }
 
 
@@ -1115,6 +1162,9 @@ $('#Order').on("click",(e)=>{
 
     
 });
+
+
+
   
 
 </script>
@@ -1151,6 +1201,7 @@ $('#Order').on("click",(e)=>{
                  <option value="cash" selected>Cash</option>
                  <option value="aba">ABA</option>
                  <option value="acleda">Acleda</option>
+                 <option value="50ABA">50% Cash 50% ABA</option>
                  <option value="delivery">Delivery</option>
              </select>
            </div>

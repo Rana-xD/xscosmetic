@@ -63,9 +63,11 @@ class POSController extends Controller
         $change_in_usd = $request->changeInUSD;
         $change_in_riel = $request->changeInRiel;
 
+        $this->printInvoice($invoice,Auth::user()->username,$total,$total_riel,$total_discount,$received_in_usd,$received_in_riel,$change_in_usd,$change_in_riel);
+
         $order = POS::create($data);
 
-        $this->printInvoice($invoice,Auth::user()->username,$total,$total_riel,$total_discount,$received_in_usd,$received_in_riel,$change_in_usd,$change_in_riel);
+        
 
         if($this->isAddToTPosValid()){
             TPOS::create($temp_data);

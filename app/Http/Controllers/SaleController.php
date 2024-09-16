@@ -152,6 +152,14 @@ class SaleController extends Controller
         $orders_in_delivery = POS::whereBetween('created_at',[$start_date,$end_date])->where('payment_type','delivery')->pluck('items');
         $total_income_in_delivery = $this->getTotalAmount($orders_in_delivery);
 
+        $orders_in_50ABA = POS::whereBetween('created_at',[$start_date,$end_date])->where('payment_type','50ABA')->pluck('items');
+        if($orders_in_50ABA->count() > 0){
+            $total_income_in_orders_in_50ABA = $this->getTotalAmount($orders_in_50ABA) / 2;
+            $total_income_in_cash += $total_income_in_orders_in_50ABA;
+            $total_income_in_aba += $total_income_in_orders_in_50ABA;
+        }
+
+
         $payment_type_income = [
             'cash' => $total_income_in_cash,
             'aba' => $total_income_in_aba,
@@ -177,6 +185,14 @@ class SaleController extends Controller
 
         $orders_in_delivery = TPOS::whereBetween('created_at',[$start_date,$end_date])->where('payment_type','delivery')->pluck('items');
         $total_income_in_delivery = $this->getTotalAmount($orders_in_delivery);
+
+        $orders_in_50ABA = TPOS::whereBetween('created_at',[$start_date,$end_date])->where('payment_type','50ABA')->pluck('items');
+        $orders_in_50ABA = TPOS::whereBetween('created_at',[$start_date,$end_date])->where('payment_type','50ABA')->pluck('items');
+        if($orders_in_50ABA->count() > 0){
+            $total_income_in_orders_in_50ABA = $this->getTotalAmount($orders_in_50ABA) / 2;
+            $total_income_in_cash += $total_income_in_orders_in_50ABA;
+            $total_income_in_aba += $total_income_in_orders_in_50ABA;
+        }
 
         $payment_type_income = [
             'cash' => $total_income_in_cash,
