@@ -500,7 +500,7 @@ $(document).ready(function() {
 
     total = handleRemoveZeroDecimal($('#total-in-usd-final').val());
     totalRiel =  addComma($('#total-in-riel-final').val());
-    totalDiscount = otalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
+    totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
     receivedInUSD = $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val();
     receivedInRiel = $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val();
     changeInUSD = $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val();
@@ -1122,8 +1122,9 @@ $('.size').on('click', function(e) {
 $('#Order').on("click",(e)=>{
     e.preventDefault();
     let totalUSD = $('#total-usd').attr('total-usd-data');
+    let totalDiscount = $('.overall-discount').val();
     
-    if(parseInt(totalUSD) == 0 || totalUSD == ''){
+    if((parseInt(totalUSD) == 0 || totalUSD == '') && totalDiscount != '100'){
         return;
     }
     let totalRiel = $('#total-riel').attr('total-riel-data');
