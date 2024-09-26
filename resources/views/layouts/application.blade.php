@@ -76,6 +76,7 @@
                         <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-thumb-tack"></i> Tracking <span class="caret"></span></a>
                            <ul class="dropdown-menu">
                               <li class="flat-box"><a href="/change"><i class="fa fa-money"></i> Change Log</a></li>
+                              <li class="flat-box"><a href="/expense"><i class="fa fa-credit-card-alt"></i> Expense</a></li>
                            </ul>
                      </li>
                   @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "MANAGER" || Auth::user()->role == "SUPERADMIN")
