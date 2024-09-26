@@ -383,7 +383,7 @@
             <label for="ProductName">Stock</label>
             <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock" placeholder="Stock" >
           </div>
-          @if (Auth::user()->role == "ADMIN")
+          @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
           <div class="form-group">
             <label for="ProductName">Sell Price</label>
             <input type="text" name="price" maxlength="100" class="form-control" id="price" placeholder="price" >
@@ -470,7 +470,7 @@
              <label for="ProductName">New Stock</label>
              <input type="number" name="stock" maxlength="100" class="form-control" id="new-stock-edit" placeholder="New Stock">
            </div>
-           @if (Auth::user()->role == "ADMIN")
+           @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
            <div class="form-group">
              <label for="ProductName">Sell Price</label>
              <input type="text" name="price" maxlength="100" class="form-control" id="price-edit" placeholder="price" >
