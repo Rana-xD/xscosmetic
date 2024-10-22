@@ -72,6 +72,13 @@
                
                <ul class="nav navbar-nav">
                   <li class="flat-box"><a href="/pos"><i class="fa fa-credit-card"></i> POS</a></li>
+                  <li class="dropdown">
+                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-thumb-tack"></i> Tracking <span class="caret"></span></a>
+                           <ul class="dropdown-menu">
+                              <li class="flat-box"><a href="/change"><i class="fa fa-money"></i> Change Log</a></li>
+                              <li class="flat-box"><a href="/expense"><i class="fa fa-credit-card-alt"></i> Expense</a></li>
+                           </ul>
+                     </li>
                   @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "MANAGER" || Auth::user()->role == "SUPERADMIN")
                      <li class="dropdown">
                         <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-archive"></i> Product <span class="caret"></span></a>
@@ -88,9 +95,9 @@
                            <ul class="dropdown-menu">
                               <li class="flat-box"><a href="/income-report"><i class="fa fa-money"></i>  Daily Income </a></li>
                               <li class="flat-box"><a href="/invoice"><i class="fa fa-file-text-o"></i>  Invoice </a></li>
-                              @if (Auth::user()->role == "SUPERADMIN")
+                              <!-- @if (Auth::user()->role == "SUPERADMIN")
                                  <li class="flat-box"><a href="/product-income"><i class="fa fa-file-archive-o"></i>  Product Income</a></li>
-                              @endif
+                              @endif -->
                         </ul>
                      </li>
                      <li class="flat-box"><a href="/delivery"><i class="fa fa-motorcycle"></i> Delivery</a></li>

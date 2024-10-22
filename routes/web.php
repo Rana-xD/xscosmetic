@@ -46,6 +46,16 @@ Route::post('/unit/add','UnitController@store');
 Route::get('/unit/delete','UnitController@destroy');
 Route::post('/unit/update','UnitController@update');
 
+Route::get('/change','ChangeController@show');
+Route::post('/change/add','ChangeController@store');
+Route::get('/change/delete','ChangeController@destroy');
+Route::post('/change/update','ChangeController@update');
+
+Route::get('/expense','ExpenseController@show');
+Route::get('/expense/add','ExpenseController@store');
+Route::get('/expense/delete','ExpenseController@destroy');
+Route::post('/expense/update','ExpenseController@update');
+
 Route::get('/delivery','DeliveryController@show');
 Route::post('/delivery/add','DeliveryController@store');
 Route::get('/delivery/delete','DeliveryController@destroy');
