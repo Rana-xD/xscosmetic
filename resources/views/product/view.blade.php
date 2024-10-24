@@ -58,6 +58,8 @@
                   <th>Sell Price</th>
                   @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
                   <th>Cost</th>
+                  @else
+                  <th style="display: none;">Cost</th>
                   @endif
                   <th>Product Type</th>
                   <th>Expire Date</th>
@@ -76,7 +78,9 @@
                   <td class="product-stock">{{ $product->stock }}</td>
                   <td class="product-price" price-data="{{ $product->price }}">{{ $product->price }}$</td>
                   @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
-                  <td class="product-cost" cost-data="{{ $product->cost }}">{{ $product->cost }}$</td>
+                  <td class="product-cost" cost-data="{{ implode(', ', $product->cost_group)  }}">{{ implode('$ , ', $product->cost_group) }}$</td>
+                  @else
+                  <td style="display: none;" class="product-cost" cost-data="{{ implode(', ', $product->cost_group)  }}">{{ implode('$ , ', $product->cost_group) }}$</td>
                   @endif
                   <td class="product-category" category-id="{{ $product->category->id}}">{{ $product->category->name }}</td>
                   <td class="product-expire-date" expire-date-data="{{ $product->expire_date }}">{{ $product->expire_date }}</td>
@@ -322,6 +326,7 @@
         formData.append('expire_date',$("#expire-date-edit").val());
         formData.append('price',$("#price-edit").val() === '' || $("#price-edit").val() === undefined ? 0 : $("#price-edit").val());
         formData.append('cost',$("#cost-edit").val() === '' || $("#cost-edit").val() === undefined ? 0 : $("#cost-edit").val());
+        formData.append('new_cost',$("#newCost").val() === '' || $("#newCost").val() === undefined ? 0 : $("#newCost").val());
         if(isImageUpdate){
           formData.append('photo',$("#ImageEdit")[0].files[0]);
         }
@@ -479,6 +484,14 @@
              <label for="ProductName">Cost</label>
              <input type="text" name="cost" maxlength="100" class="form-control" id="cost-edit" placeholder="cost" >
            </div>
+           <div class="form-group">
+            <label for="ProductName">New Cost</label>
+            <input type="text" name="new-cost" maxlength="100" class="form-control" id="newCost" placeholder="new cost" >
+          </div>
+          @else
+            <input type="hidden" name="price" maxlength="100" class="form-control" id="price-edit" placeholder="price" >
+            <input type="hidden" name="cost" maxlength="100" class="form-control" id="cost-edit" placeholder="cost" >
+            <input type="hidden" name="new-cost" maxlength="100" class="form-control" id="newCost" placeholder="new cost" >
            @endif
             <div class="form-group">
               <label for="Category">Brand</label>

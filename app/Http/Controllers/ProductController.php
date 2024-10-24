@@ -46,6 +46,7 @@ class ProductController extends Controller
             "expire_date" =>$request->expire_date,
             "price" =>$request->price === 0 ? 0 : $request->price,
             "cost" => $request->cost === 0 ? 0 : $request->cost,
+            "cost_group" => $request->cost === 0 ? [] : [$request->cost],
             "photo" => $fileNameToStore
         ];
 
@@ -59,13 +60,13 @@ class ProductController extends Controller
 
         $result = Product::create($data);
 
-        $init_data = [
-            'product_id' => $result->id,
-            // 'unit_id' => $request->unit_id,
-            'product_name' => $request->name,
-        ];
+        // $init_data = [
+        //     'product_id' => $result->id,
+        //     // 'unit_id' => $request->unit_id,
+        //     'product_name' => $request->name,
+        // ];
 
-        ProductIncome::create($init_data);
+        // ProductIncome::create($init_data);
 
         return response()->json([
             'code' => 200,
@@ -95,8 +96,17 @@ class ProductController extends Controller
             "stock" => $stock,
             "expire_date" =>$request->expire_date,
             "price" =>$request->price === 0 ? 0 : $request->price,
-            "cost" => $request->cost === 0 ? 0 : $request->cost,
         ];
+        $costGroupData = explode(', ', $request->cost);
+        $data['cost_group'] = $costGroupData;
+        if($request->new_cost != 0){
+            $data['cost'] = $request->new_cost;
+            $costGroupData = array_filter(explode(', ', $request->cost), function($value) {
+                return $value !== '0';
+            });
+            array_push($costGroupData, $request->new_cost);
+            $data['cost_group'] = $costGroupData;
+        }
 
         if($request->hasFile('photo')){
             if($product->photo != $default_img){    
@@ -113,7 +123,7 @@ class ProductController extends Controller
         
         
         Product::find($id)->update($data);
-        ProductIncome::where('product_id',$id)->update(['product_name' => $request->name]);
+        // ProductIncome::where('product_id',$id)->update(['product_name' => $request->name]);
         return response()->json([
             'code' => 200,
             'data' => $data

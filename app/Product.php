@@ -12,7 +12,11 @@ class Product extends Model
      * @var array
      */
     protected $fillable = [
-        'name','product_barcode','stock', 'price','cost','expire_date','photo','category_id'
+        'name','product_barcode','stock', 'price','cost','cost_group','expire_date','photo','category_id'
+    ];
+
+    protected $casts = [
+        'cost_group' => 'array',
     ];
 
     public function category(){
