@@ -51,10 +51,12 @@ class SaleController extends Controller
 
     public function showInvoice(){
         
+        $start_date = Carbon::now()->format('Y-m-d').' 00:00:00';
+        $end_date = Carbon::now()->format('Y-m-d').' 23:59:59';
         if(auth()->user()->isAdmin()){
-            $orders = TPOS::orderBy('created_at', 'DESC')->paginate(30);
+            $orders = TPOS::whereBetween('created_at',[$start_date,$end_date])->orderBy('created_at', 'DESC')->paginate(30);
         }else{
-            $orders = POS::orderBy('created_at', 'DESC')->paginate(30);
+            $orders = POS::whereBetween('created_at',[$start_date,$end_date])->orderBy('created_at', 'DESC')->paginate(30);
         }
         return view('invoice',[
             'orders' => $orders
