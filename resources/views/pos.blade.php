@@ -1147,7 +1147,8 @@ $('#Order').on("click",(e)=>{
 
             hideSpinner();
             addDelivery = 0;
-            $('#payment-type').val('cash');
+            $('#payment-type').val('aba');
+            $('.payment-type-cash').css('display','none');
             $('#invoice-no').val(invoiceNo);
             $('#total-in-usd-modal').val(`${totalUSD} $`);
             $('#total-in-usd-final').val(totalUSD);
@@ -1199,8 +1200,8 @@ $('#Order').on("click",(e)=>{
            <div class="form-group form-group-flex">
              <label for="payment-type">Payment Type</label>
              <select class="form-control" id="payment-type" name="filtertype">
-                 <option value="cash" selected>Cash</option>
-                 <option value="aba">ABA</option>
+                 <option value="aba" selected>ABA</option>
+                 <option value="cash">Cash</option>
                  <option value="acleda">Acleda</option>
                  <option value="50ABA">50% Cash 50% ABA</option>
                  <option value="delivery">Delivery</option>

@@ -27,7 +27,8 @@ class SaleController extends Controller
         }
         $data = $this->generateIncomeData($orders);
         return view('sale',[
-            'data' => $data
+            'data' => $data,
+            'date' => Carbon::now()->format('Y-m-d')
         ]);
     }
 
