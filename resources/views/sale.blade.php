@@ -117,6 +117,8 @@
       <thead class="light-pink">
         <tr>
           <th scope="col">Cash</th>
+          <th scope="col">Change Money</th>
+          <th scope="col">Expense</th>
           <th scope="col">ABA</th>
           <th scope="col">ACLEDA</th>
           <th scope="col">Delivery</th>
@@ -126,6 +128,8 @@
       <tbody>
         <tr>
           <td>{{$data["payment_type_income"]["cash"]}}$</td>
+          <td>{{$data["payment_type_income"]["change"]}}$</td>
+          <td>{{$data["payment_type_income"]["expense"]}}$</td>
           <td>{{$data["payment_type_income"]["aba"]}}$</td>
           <td>{{$data["payment_type_income"]["acleda"]}}$</td>
           <td>{{$data["payment_type_income"]["delivery"]}}$</td>

@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\POS;
 use App\TPOS;
+use App\Change;
+use App\Setting;
+use App\Expense;
 use Carbon\Carbon;
+use Hamcrest\Core\Set;
 use Illuminate\Support\Facades\Auth;
 
 class SaleController extends Controller
@@ -120,14 +124,29 @@ class SaleController extends Controller
             array_push($invoice,$data);
         }
 
+        $change = Change::where('date',Carbon::now()->format('Y-m-d'))->first();
+        if(empty($change)){
+            $change_in_riel = 0;
+            $change_in_usd = 0;
+            $total_change = 0;
+        }else{
+            $change_in_riel = $this->exchangeRielToUSD($change->riel);
+            $change_in_usd = $change->usd;
+            $total_change = $change_in_riel + $change_in_usd;
+        }
+        
+
         foreach($arrange_items as $item){
             $total += $item['total'];
         }
+        $total_expense = $this->getTotalExpense();
+
+        $total = $total + $total_change - $total_expense;
 
         if(auth()->user()->isAdmin()){
-            $payment_type_income = $this->generateIncomeDataFromTPosForPaymentType($date);
+            $payment_type_income = $this->generateIncomeDataFromTPosForPaymentType($date,$total_change,$total_expense);
         }else{
-            $payment_type_income = $this->generateIncomeDataForPaymentType($date);
+            $payment_type_income = $this->generateIncomeDataForPaymentType($date,$total_change,$total_expense);
         }
         
         
@@ -139,7 +158,7 @@ class SaleController extends Controller
         return $income_data;
     }
 
-    private function generateIncomeDataForPaymentType($date) {
+    private function generateIncomeDataForPaymentType($date,$total_change,$total_expense) {
         $start_date = empty($date) ? Carbon::now()->format('Y-m-d').' 00:00:00' : date($date).' 00:00:00';
         $end_date = empty($date) ? Carbon::now()->format('Y-m-d').' 23:59:59' : date($date).' 23:59:59';
 
@@ -162,9 +181,12 @@ class SaleController extends Controller
             $total_income_in_aba += $total_income_in_orders_in_50ABA;
         }
 
+        $total_income_in_cash = $total_income_in_cash + $total_change - $total_expense;
 
         $payment_type_income = [
             'cash' => $total_income_in_cash,
+            'change' => $total_change,
+            'expense' => $total_expense,
             'aba' => $total_income_in_aba,
             'acleda' => $total_income_in_acleda,
             'delivery' => $total_income_in_delivery
@@ -173,7 +195,7 @@ class SaleController extends Controller
         return $payment_type_income;
     }
 
-    private function generateIncomeDataFromTPosForPaymentType($date) {
+    private function generateIncomeDataFromTPosForPaymentType($date,$total_change,$total_expense) {
         $start_date = empty($date) ? Carbon::now()->format('Y-m-d').' 00:00:00' : date($date).' 00:00:00';
         $end_date = empty($date) ? Carbon::now()->format('Y-m-d').' 23:59:59' : date($date).' 23:59:59';
 
@@ -197,8 +219,12 @@ class SaleController extends Controller
             $total_income_in_aba += $total_income_in_orders_in_50ABA;
         }
 
+        $total_income_in_cash = $total_income_in_cash + $total_change - $total_expense;
+
         $payment_type_income = [
             'cash' => $total_income_in_cash,
+            'change' => $total_change,
+            'expense' => $total_expense,
             'aba' => $total_income_in_aba,
             'acleda' => $total_income_in_acleda,
             'delivery' => $total_income_in_delivery
@@ -253,6 +279,25 @@ class SaleController extends Controller
         }
 
         return 0;
+    }
+
+    private function exchangeRielToUSD($riel){
+        $exchange_rate = Setting::first()->exchange_rate;
+        return number_format($riel / $exchange_rate, 2);
+    }
+
+    private function getTotalExpense(){
+        $expenses = Expense::where('date',Carbon::now()->format('Y-m-d'))->first()->items;
+        if(empty($expenses)){
+            return 0;
+        }
+
+        $total = 0;
+
+        foreach($expenses as $item){
+            $total += (float) $item['cost'];
+        }
+        return $total;
     }
 
 
