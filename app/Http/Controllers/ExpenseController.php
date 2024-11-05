@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Log;
 use App\Expense;
 use Carbon\Carbon;
 
-class ExpenseController extends Controller {
+class ExpenseController extends Controller
+{
 
     public function __construct()
     {
@@ -15,42 +16,46 @@ class ExpenseController extends Controller {
     }
 
 
-    public function show(){
+    public function show()
+    {
         $today = Carbon::now()->format('Y-m-d');
-        $expense = Expense::where('date',$today)->first();
+        $expense = Expense::where('date', $today)->first();
         $total = null;
-        if(!empty($expense)){
-          $total = $this->getTotalExpense($expense->items);  
+        if (!empty($expense)) {
+            $total = $this->getTotalExpense($expense->items);
         }
-        return view('expense',[
+        return view('expense', [
+            'date' => $today,
             'expense' => $expense,
             'total' => $total
         ]);
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
 
         $today = Carbon::now()->format('Y-m-d');
-        $expense = Expense::where('date',$today)->first();
-        if(empty($expense)){
+        $expense = Expense::where('date', $today)->first();
+        if (empty($expense)) {
             $data = [
                 "items" => $request->items,
                 "date" => $today
             ];
             Expense::create($data);
-        }else{
+        } else {
             $expense->setAttribute('items', array_merge($expense->items, $request->items));
             $expense->save();
         }
 
-        
+
 
         return response()->json([
             'code' => 200
         ]);
     }
 
-    public function destroy(Request $request){
+    public function destroy(Request $request)
+    {
         $id = (int)$request->id;
         Expense::destroy($id);
         return response()->json([
@@ -58,9 +63,10 @@ class ExpenseController extends Controller {
         ]);
     }
 
-    public function update(Request $request){
+    public function update(Request $request)
+    {
         $data = [
-            "name" => $request->name,
+            "items" => json_decode($request->items, true)
         ];
 
         $id = $request->id;
@@ -69,16 +75,31 @@ class ExpenseController extends Controller {
         return response()->json([
             'code' => 200,
             'data' => $data
-        ]);        
+        ]);
     }
 
-    private function getTotalExpense($items){
+    public function showCustomExpense(Request $request)
+    {
+        $date = $request->date;
+        $expense = Expense::where('date', $date)->first();
+        $total = null;
+        if (!empty($expense)) {
+            $total = $this->getTotalExpense($expense->items);
+        }
+        return view('expense', [
+            'date' => $date,
+            'expense' => $expense,
+            'total' => $total
+        ]);
+    }
+
+    private function getTotalExpense($items)
+    {
         $total = 0;
 
-        foreach($items as $item){
+        foreach ($items as $item) {
             $total += (float) $item['cost'];
         }
         return $total;
     }
-
 }
