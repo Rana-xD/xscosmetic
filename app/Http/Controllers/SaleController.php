@@ -62,31 +62,31 @@ class SaleController extends Controller
         $start_date = Carbon::now()->format('Y-m-d') . ' 00:00:00';
         $end_date = Carbon::now()->format('Y-m-d') . ' 23:59:59';
         if (auth()->user()->isAdmin()) {
-            $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->paginate(30);
+            $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->get();
         } else {
-            $orders = POS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->paginate(30);
+            $orders = POS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->get();
         }
         return view('invoice', [
-            'orders' => $orders
+            'orders' => $orders,
+            'date' => Carbon::now()->format('Y-m-d')
         ]);
     }
 
     public function showCustomInvoice(Request $request)
     {
-        $start_date = date($request->start_date) . ' 00:00:00';
-        $end_date = empty($request->end_date) ? Carbon::now()->format('Y-m-d') . ' 23:59:59' :  date($request->end_date) . ' 23:59:59';
+        $start_date = date($request->date) . ' 00:00:00';
+        $end_date = date($request->date) . ' 23:59:59';
 
 
         if (auth()->user()->isAdmin()) {
-            $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->paginate(30);
+            $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->get();
         } else {
-            $orders = POS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->paginate(30);
+            $orders = POS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->get();
         }
 
         return view('invoice', [
             'orders' => $orders,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date
+            'date' => $request->date
         ]);
     }
 
