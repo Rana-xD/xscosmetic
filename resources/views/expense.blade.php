@@ -130,6 +130,46 @@
       transform: rotate(.5turn)
     }
   }
+
+  .date-nav {
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+
+  .date-nav:hover {
+    background-color: #f0f0f0;
+  }
+
+  .input-group-addon {
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+
+  .input-group-addon:hover {
+    background-color: #f0f0f0;
+  }
+
+  .input-group.date {
+    width: 100%;
+  }
+
+  .input-group.date .form-control {
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+
+  .input-group.date .form-control:hover {
+    background-color: #f0f0f0;
+  }
+
+  .input-group {
+    display: flex;
+    gap: 10px;
+    margin-left: 10px;
+  }
 </style>
 <div class="container">
   <h3>Daily Expense</h3>
@@ -142,9 +182,16 @@
         <div class="calendar">
           <p class="label-text">Date:</p>
           <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
+            <div class="input-group-prepend">
+              <button class="btn btn-outline-secondary date-nav" type="button" id="date-prev">
+                <i class="fa fa-chevron-left"></i>
+              </button>
+            </div>
             <input type="text" class="form-control selected-date datepicker" value="{{ empty($date) ? '' : $date }}">
-            <div class="input-group-addon">
-              <span class="glyphicon glyphicon-th"></span>
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary date-nav" type="button" id="date-next">
+                <i class="fa fa-chevron-right"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -205,10 +252,55 @@
 
     $('.expense-btn').toggle($('.selected-date').val() === new Date().toISOString().split('T')[0]);
 
+    // Get the datepicker input element
+    const datepickerInput = document.getElementById('datepicker-input');
+
+    // Get the date navigation buttons
+    const datePrevButton = document.getElementById('date-prev');
+    const dateNextButton = document.getElementById('date-next');
+    const dateFormat = 'MM/DD/YYYY';
     $('.datepicker').datepicker({
       format: 'mm/dd/yyyy',
       startDate: 'today'
     });
+
+    // Function to change the date based on the click event of the datepicker
+    function changeDate(direction) {
+
+      const currentDate = new Date($('.selected-date').val());
+      const newDate = new Date(currentDate);
+
+      if (direction === 'prev') {
+        newDate.setDate(newDate.getDate() - 1);
+      } else if (direction === 'next') {
+        newDate.setDate(newDate.getDate() + 1);
+      }
+
+      const formattedDate = moment(newDate).format(dateFormat);
+      const convertedDate = moment(formattedDate, 'MM/DD/YYYY').format('YYYY-MM-DD');
+      $('.selected-date').val(convertedDate);
+
+
+      // Change the URL when the date is changed
+      const date = $('.selected-date').val();
+      let filter = `/expense/filter?date=${date}`;
+
+      window.location = filter;
+    }
+
+    // Add event listeners to the date navigation buttons
+    datePrevButton.addEventListener('click', () => {
+      changeDate('prev');
+    });
+
+    dateNextButton.addEventListener('click', () => {
+      changeDate('next');
+    });
+
+    $('.date-nav').click(function(event) {
+      event.preventDefault();
+    });
+
 
     $('#handleCustomExpenseSearch').on('click', (e) => {
       e.preventDefault();
