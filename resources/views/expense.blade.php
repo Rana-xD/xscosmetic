@@ -394,11 +394,11 @@
         <div class="modal-body">
           <div class="form-group">
             <label for="UnitName">Name</label>
-            <input type="text" name="name" maxlength="100" Required class="form-control" id="ExpenseName" placeholder="Name">
+            <input type="text" name="name" Required class="form-control" id="ExpenseName" placeholder="Name">
           </div>
           <div class="form-group">
             <label for="UnitName">Cost</label>
-            <input type="number" name="cost" maxlength="100" Required class="form-control" id="ExpenseCost" placeholder="Cost">
+            <input type="text" name="cost" Required class="form-control" id="ExpenseCost" placeholder="Cost">
           </div>
         </div>
         <div class="modal-footer">
@@ -432,7 +432,7 @@
           </div>
           <div class="form-group">
             <label for="expense-cost">Cost</label>
-            <input type="number" class="form-control" id="ExpenseCostEdit" placeholder="Enter cost">
+            <input type="text" class="form-control" id="ExpenseCostEdit" placeholder="Enter cost">
           </div>
     </form>
     <input type="hidden" name="expenseItemId" id="ExpenseItemId">

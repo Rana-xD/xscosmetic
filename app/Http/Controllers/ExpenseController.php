@@ -43,7 +43,27 @@ class ExpenseController extends Controller
             ];
             Expense::create($data);
         } else {
-            $expense->setAttribute('items', array_merge($expense->items, $request->items));
+            $existingItems = $expense->items;
+            $newItems = $request->items;
+
+            $mergedItems = array_merge($existingItems, $newItems);
+
+            $uniqueItems = [];
+            foreach ($mergedItems as $item) {
+                $found = false;
+                foreach ($uniqueItems as &$uniqueItem) {
+                    if ($uniqueItem['name'] === $item['name']) {
+                        $uniqueItem['cost'] = (float)$uniqueItem['cost'] + (float)$item['cost'];
+                        $found = true;
+                        break;
+                    }
+                }
+                if (!$found) {
+                    $uniqueItems[] = $item;
+                }
+            }
+
+            $expense->setAttribute('items', $uniqueItems);
             $expense->save();
         }
 
