@@ -6,8 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Product;
-use App\ProductIncome;
-use Mockery\Undefined;
+use App\ProductLog;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -60,13 +61,8 @@ class ProductController extends Controller
 
         $result = Product::create($data);
 
-        // $init_data = [
-        //     'product_id' => $result->id,
-        //     // 'unit_id' => $request->unit_id,
-        //     'product_name' => $request->name,
-        // ];
-
-        // ProductIncome::create($init_data);
+        $time = Carbon::now()->format('h:i A');
+        $this->createProductLog($result, 'CREATE', Auth::user()->username, $time);
 
         return response()->json([
             'code' => 200,
@@ -128,6 +124,37 @@ class ProductController extends Controller
             'code' => 200,
             'data' => $data
         ]);
+    }
+
+    private function createProductLog($product,$action,$creator, $time){
+        $today = Carbon::now()->format('Y-m-d');
+        $product_log = ProductLog::where('date', $today)->first();
+        if(empty($product_log)){
+            $item = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'action' => $action,
+                'creator' => $creator,
+                'time' => $time
+            ];
+            $data = [
+                'date' => $today,
+                'items' => [$item]
+            ];
+            ProductLog::create($data);
+        }else{
+            
+            $item = [
+                'id' => $product->id,
+                'name' => $product->name,
+                'action' => $action,
+                'creator' => $creator,
+                'time' => $time
+            ];
+            $product_log->items = array_merge($product_log->items, [$item]);
+            $product_log->save();
+        }
+        
     }
 
 }

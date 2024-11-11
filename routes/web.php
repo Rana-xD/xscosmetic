@@ -72,3 +72,6 @@ Route::get('/product-income', 'ProductIncomeController@show');
 
 Route::get('/setting', 'SettingController@show');
 Route::post('/setting/update', 'SettingController@update');
+
+Route::get('/product-log', 'ProductLogController@show');
+Route::get('/product-log/filter', 'ProductLogController@showCustomProductLog');

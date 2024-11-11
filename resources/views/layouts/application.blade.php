@@ -77,6 +77,7 @@
                            <ul class="dropdown-menu">
                               <li class="flat-box"><a href="/change"><i class="fa fa-money"></i> Change Log</a></li>
                               <li class="flat-box"><a href="/expense"><i class="fa fa-credit-card-alt"></i> Expense</a></li>
+                              <li class="flat-box"><a href="/product-log"><i class="fa fa-book"></i> Product Log</a></li>
                            </ul>
                      </li>
                   @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "MANAGER" || Auth::user()->role == "SUPERADMIN")
