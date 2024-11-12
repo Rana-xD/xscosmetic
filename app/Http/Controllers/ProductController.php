@@ -18,24 +18,26 @@ class ProductController extends Controller
         $this->middleware('adminormanager');
     }
 
-    public function show(){
+    public function show()
+    {
         $products = Product::with('category')->get();
 
-        return view('product.view',[
+        return view('product.view', [
             'products' => $products
         ]);
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
 
 
-        if($request->hasFile('photo')){
+        if ($request->hasFile('photo')) {
             $filenameWithExt = $request->file('photo')->getClientOriginalName();
             $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
             $extension = $request->file('photo')->getClientOriginalExtension();
-            $fileNameToStore = $filename.'_'.time().'.'.$extension;
-            $path = $request->file('photo')->storeAs('public/product_images',$fileNameToStore);
-        }else{
+            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+            $path = $request->file('photo')->storeAs('public/product_images', $fileNameToStore);
+        } else {
             $fileNameToStore = 'default.jpg';
         }
         $data = [
@@ -43,17 +45,17 @@ class ProductController extends Controller
             "product_barcode" => $request->product_barcode === '' ? null : $request->product_barcode,
             "category_id" => $request->category_id,
             // "unit_id" => $request->unit_id,
-            "stock" =>$request->stock,
-            "expire_date" =>$request->expire_date,
-            "price" =>$request->price === 0 ? 0 : $request->price,
+            "stock" => $request->stock,
+            "expire_date" => $request->expire_date,
+            "price" => $request->price === 0 ? 0 : $request->price,
             "cost" => $request->cost === 0 ? 0 : $request->cost,
             "cost_group" => $request->cost === 0 ? [] : [$request->cost],
             "photo" => $fileNameToStore
         ];
 
-        $product_exist = Product::where('product_barcode',$request->product_barcode)->where('name',$request->name)->first();
+        $product_exist = Product::where('product_barcode', $request->product_barcode)->where('name', $request->name)->first();
 
-        if($product_exist){
+        if ($product_exist) {
             return response()->json([
                 'code' => 404
             ]);
@@ -62,7 +64,7 @@ class ProductController extends Controller
         $result = Product::create($data);
 
         $time = Carbon::now()->format('h:i A');
-        $this->createProductLog($result, 'CREATE', Auth::user()->username, $time);
+        $this->createProductLog($result, 'create', $result->stock, $result->product_barcode);
 
         return response()->json([
             'code' => 200,
@@ -70,15 +72,22 @@ class ProductController extends Controller
         ]);
     }
 
-    public function destroy(Request $request){
+    public function destroy(Request $request)
+    {
         $id = (int)$request->id;
-        Product::destroy($id);
+        $product = Product::find($id);
+        $product->delete();
+
+        $time = Carbon::now()->format('h:i A');
+        $this->createProductLog($product, 'delete', $product->stock, $product->product_barcode);
+
         return response()->json([
             'code' => 200
         ]);
     }
 
-    public function update(Request $request){
+    public function update(Request $request)
+    {
 
         $default_img = 'default.jpg';
         $id = $request->id;
@@ -90,35 +99,59 @@ class ProductController extends Controller
             "category_id" => $request->category_id,
             // "unit_id" =>$request->unit_id,
             "stock" => $stock,
-            "expire_date" =>$request->expire_date,
-            "price" =>$request->price === 0 ? 0 : $request->price,
+            "expire_date" => $request->expire_date,
+            "price" => $request->price === 0 ? 0 : $request->price,
         ];
         $costGroupData = explode(', ', $request->cost);
         $data['cost_group'] = $costGroupData;
-        if($request->new_cost != 0){
+        if ($request->new_cost != 0) {
             $data['cost'] = $request->new_cost;
-            $costGroupData = array_filter(explode(', ', $request->cost), function($value) {
+            $costGroupData = array_filter(explode(', ', $request->cost), function ($value) {
                 return $value !== '0';
             });
             array_push($costGroupData, $request->new_cost);
             $data['cost_group'] = $costGroupData;
         }
 
-        if($request->hasFile('photo')){
-            if($product->photo != $default_img){    
-                unlink(storage_path('app/public/product_images/'.$product->photo));
+        if ($request->hasFile('photo')) {
+            if ($product->photo != $default_img) {
+                unlink(storage_path('app/public/product_images/' . $product->photo));
             }
-            
+
             $filenameWithExt = $request->file('photo')->getClientOriginalName();
             $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
             $extension = $request->file('photo')->getClientOriginalExtension();
-            $fileNameToStore = $filename.'_'.time().'.'.$extension;
-            $path = $request->file('photo')->storeAs('public/product_images',$fileNameToStore);
+            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+            $path = $request->file('photo')->storeAs('public/product_images', $fileNameToStore);
             $data['photo'] = $fileNameToStore;
         }
-        
-        
-        Product::find($id)->update($data);
+
+
+        $product = Product::find($id);
+
+        $isUpdatedName = $product->name !== $request->name;
+        $isUpdatedBarcode = $product->product_barcode !== $request->product_barcode;
+
+        $product->update($data);
+
+        $time = Carbon::now()->format('h:i A');
+
+        if ($isUpdatedName && $isUpdatedBarcode && intval($request->new_stock) > 0) {
+            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit name and product barcode and add stock');
+        } else if ($isUpdatedName && $isUpdatedBarcode) {
+            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit name and product barcode');
+        } else if ($isUpdatedName && intval($request->new_stock) > 0) {
+            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit name and add stock');
+        } else if ($isUpdatedBarcode && intval($request->new_stock) > 0) {
+            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit product barcode and add stock');
+        } else if ($isUpdatedName) {
+            $this->createProductLog($product, 'edit', 0, $product->product_barcode, 'edit name');
+        } else if ($isUpdatedBarcode) {
+            $this->createProductLog($product, 'edit', 0, $product->product_barcode, 'edit product barcode');
+        } else if (intval($request->new_stock) > 0) {
+            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'add stock');
+        }
+
         // ProductIncome::where('product_id',$id)->update(['product_name' => $request->name]);
         return response()->json([
             'code' => 200,
@@ -126,35 +159,36 @@ class ProductController extends Controller
         ]);
     }
 
-    private function createProductLog($product,$action,$creator, $time){
+    private function createProductLog($product, $action, $stock, $barcode, $additional_action = '')
+    {
         $today = Carbon::now()->format('Y-m-d');
         $product_log = ProductLog::where('date', $today)->first();
-        if(empty($product_log)){
+        if (empty($product_log)) {
             $item = [
                 'id' => $product->id,
                 'name' => $product->name,
                 'action' => $action,
-                'creator' => $creator,
-                'time' => $time
+                'stock' => $stock,
+                'barcode' => $barcode,
+                'additional_action' => $additional_action
             ];
             $data = [
                 'date' => $today,
                 'items' => [$item]
             ];
             ProductLog::create($data);
-        }else{
-            
+        } else {
+
             $item = [
                 'id' => $product->id,
                 'name' => $product->name,
                 'action' => $action,
-                'creator' => $creator,
-                'time' => $time
+                'stock' => $stock,
+                'barcode' => $barcode,
+                'additional_action' => $additional_action
             ];
             $product_log->items = array_merge($product_log->items, [$item]);
             $product_log->save();
         }
-        
     }
-
 }

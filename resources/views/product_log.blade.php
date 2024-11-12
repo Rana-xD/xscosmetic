@@ -170,6 +170,18 @@
     gap: 10px;
     margin-left: 10px;
   }
+
+  .action-delete {
+    color: red;
+  }
+
+  .action-edit {
+    color: #FF8000;
+  }
+
+  .action-create {
+    color: #8FD14F;
+  }
 </style>
 <div class="container">
   <h3>Product Daily Log</h3>
@@ -211,9 +223,11 @@
       <thead class="light-green">
         <tr>
           <th scope="col" class="item-no">#</th>
+          <th scope="col">Product ID</th>
           <th scope="col">Product Name</th>
-          <th scope="col">Creator</th>
-          <th scope="col">Time</th>
+          <th scope="col">Stock</th>
+          <th scope="col">Barcode</th>
+          <th scope="col">Action</th>
         </tr>
       </thead>
       <tbody>
@@ -221,9 +235,15 @@
         @foreach ($product_log->items as $index => $item)
         <tr id="product_log-row-{{ $index }}" class="product_log-item">
           <th scope="row">{{ ($index + 1) }}</th>
+          <td class="product_log-name">{{$item["id"]}}</td>
           <td class="product_log-name">{{$item["name"]}}</td>
-          <td class="product_log-cost">{{$item["creator"]}}</td>
-          <td class="product_log-cost">{{$item["time"]}}</td>
+          <td class="product_log-cost">{{$item["stock"]}}</td>
+          <td class="product_log-cost">{{$item["barcode"]}}</td>
+          @if ($item["action"] === 'edit')
+          <td class="action-{{$item['action']}}">{{ strtoupper($item["additional_action"]) }}</td>
+          @else
+          <td class="action-{{$item['action']}}">{{ strtoupper($item["action"]) }}</td>
+          @endif
         </tr>
         @endforeach
         @endif
