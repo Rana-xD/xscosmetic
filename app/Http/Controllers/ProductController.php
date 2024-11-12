@@ -62,8 +62,6 @@ class ProductController extends Controller
         }
 
         $result = Product::create($data);
-
-        $time = Carbon::now()->format('h:i A');
         $this->createProductLog($result, 'create', $result->stock, $result->product_barcode);
 
         return response()->json([
@@ -78,7 +76,6 @@ class ProductController extends Controller
         $product = Product::find($id);
         $product->delete();
 
-        $time = Carbon::now()->format('h:i A');
         $this->createProductLog($product, 'delete', $product->stock, $product->product_barcode);
 
         return response()->json([
@@ -134,8 +131,6 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        $time = Carbon::now()->format('h:i A');
-
         if ($isUpdatedName && $isUpdatedBarcode && intval($request->new_stock) > 0) {
             $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit name and product barcode and add stock');
         } else if ($isUpdatedName && $isUpdatedBarcode) {
@@ -152,7 +147,6 @@ class ProductController extends Controller
             $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'add stock');
         }
 
-        // ProductIncome::where('product_id',$id)->update(['product_name' => $request->name]);
         return response()->json([
             'code' => 200,
             'data' => $data
