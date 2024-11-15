@@ -14,6 +14,7 @@ use App\ProductIncome;
 use App\Events\NewOrder;
 use charlieuki\ReceiptPrinter\ReceiptPrinter as ReceiptPrinter;
 use Carbon\Carbon;
+use DB;
 
 class POSController extends Controller
 {
@@ -23,17 +24,19 @@ class POSController extends Controller
         // $this->middleware('admin');
     }
 
-    public function show(){
+    public function show()
+    {
         ini_set('max_execution_time', '300');
         $products = Product::with('category')->get();
         $setting = Setting::first();
-        return view('pos',[
+        return view('pos', [
             'products' => $products,
             'exchange_rate' => $setting->exchange_rate
         ]);
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $data = [
             "order_no" => $request->invoice_no,
             "items" => $request->data,
@@ -71,86 +74,75 @@ class POSController extends Controller
         $change_in_usd = $request->changeInUSD;
         $change_in_riel = $request->changeInRiel;
 
-        if(Auth::user()->role !== "SUPERADMIN"){
-            $this->printInvoice($invoice,Auth::user()->username,$total,$total_riel,$total_discount,$received_in_usd,$received_in_riel,$change_in_usd,$change_in_riel);
+        if (Auth::user()->role !== "SUPERADMIN") {
+            $this->printInvoice($invoice, Auth::user()->username, $total, $total_riel, $total_discount, $received_in_usd, $received_in_riel, $change_in_usd, $change_in_riel);
         }
-        
+
 
         $order = POS::create($data);
 
-        
 
-        if($this->isAddToTPosValid()){
+
+        if ($this->isAddToTPosValid()) {
             TPOS::create($temp_data);
         }
-        
 
-        $this->deductStock($data['items']);        
+
+        $this->deductStock($data['items']);
         // $this->updateProductIncome($data['items']);
         // NewOrder::dispatch($order);
-        
+
         return response()->json([
             'code' => 200,
             'data' => $invoice
         ]);
     }
 
-    public function getInvoiceNo(){
-        $start_time = Carbon::now()->format('Y-m-d').' 00:00:00';
-        $end_time = Carbon::now()->format('Y-m-d').' 23:59:59';
-        $results = POS::whereBetween('created_at',[$start_time,$end_time])->get()->count();
+    public function getInvoiceNo()
+    {
+        $start_time = Carbon::now()->format('Y-m-d') . ' 00:00:00';
+        $end_time = Carbon::now()->format('Y-m-d') . ' 23:59:59';
+        $results = POS::whereBetween('created_at', [$start_time, $end_time])->get()->count();
         return response()->json([
             'code' => 200,
             'data' => $results
         ]);
     }
 
-    private function deductStock($items){
+    private function deductStock($items)
+    {
 
-        foreach($items as $item){
+        foreach ($items as $item) {
             $product = Product::find($item['product_id']);
             $product->stock = $product->stock - (int)$item['quantity'];
             $product->save();
         }
     }
 
-    private function updateProductIncome($items){
-        foreach($items as $item){
-            $product = Product::find($item['product_id']);
 
-            $total_cost = $product->cost * (int)$item['quantity'];
-            $total_price = (float) str_replace('$','',$item['total']);
-            $profit = $total_price - $total_cost;
-            
-            $product_income = ProductIncome::where('product_id',$product->id)->first();
-
-            $product_income->quantity += (int)$item['quantity'];
-            $product_income->total_price += $total_price;
-            $product_income->total_cost += $total_cost;
-            $product_income->profit += $profit;
-            $product_income->save();          
-        }
-    }
-
-    private function getLocaleTime(){
+    private function getLocaleTime()
+    {
         $timezone = "Asia/Bangkok";
         $date = new DateTime('now', new DateTimeZone($timezone));
         return $date->format('h:i A');
     }
 
-    private function getLocaleTimestamp(){
+    private function getLocaleTimestamp()
+    {
         $timezone = "Asia/Bangkok";
         return $date = new DateTime('now', new DateTimeZone($timezone));
     }
 
-    private function getLocaleDateTime(){
+    private function getLocaleDateTime()
+    {
         $timezone = "Asia/Bangkok";
         $date = new DateTime('now', new DateTimeZone($timezone));
         return $date->format('j F Y h:i A');
     }
 
 
-    private function printInvoice($invoice,$cashier, $total,$total_riel,$total_discount,$received_in_usd,$received_in_riel,$change_in_usd,$change_in_riel){
+    private function printInvoice($invoice, $cashier, $total, $total_riel, $total_discount, $received_in_usd, $received_in_riel, $change_in_usd, $change_in_riel)
+    {
         $store_name = 'cosmetic';
 
         // Init printer
@@ -185,88 +177,135 @@ class POSController extends Controller
         }
 
         $printer->printXscometicReceipt();
-
     }
 
-    public function printTotalInvoiceDaily(){
+    public function printTotalInvoiceDaily()
+    {
         $items = [];
         $arrange_items = [];
         $invoice = [];
-        $start_time = Carbon::now()->format('Y-m-d').' 00:00:00';
-        $end_time = Carbon::now()->format('Y-m-d').' 23:59:59';
+        $start_time = Carbon::now()->format('Y-m-d') . ' 00:00:00';
+        $end_time = Carbon::now()->format('Y-m-d') . ' 23:59:59';
         $total = 0;
         $total_riel = 0;
 
-        $results = POS::whereBetween('created_at',[$start_time,$end_time])->pluck('items');
-    
-        foreach ($results as $result){
-            foreach($result as $item){
+        $results = POS::whereBetween('created_at', [$start_time, $end_time])->pluck('items');
+
+        foreach ($results as $result) {
+            foreach ($result as $item) {
                 $data = [
                     'product_name' => $item['product_name'],
-                    'quantity' => (int) str_replace("Can"," ",$item['quantity']),
+                    'quantity' => (int) str_replace("Can", " ", $item['quantity']),
                     'price' => (float) $item['price'],
                     'discount' => (float) $item['discount'],
-                    'total' => (float) str_replace("$"," ",$item['total'])
+                    'total' => (float) str_replace("$", " ", $item['total'])
                 ];
-                array_push($items,$data);
+                array_push($items, $data);
             }
         }
 
-        foreach($items as $item){
-            $index = $this->findExistingValueInArray($arrange_items,$item['product_name']);
+        foreach ($items as $item) {
+            $index = $this->findExistingValueInArray($arrange_items, $item['product_name']);
 
-            if($index){
-                $arrange_items[$index-1]['quantity'] += $item['quantity'];
+            if ($index) {
+                $arrange_items[$index - 1]['quantity'] += $item['quantity'];
                 // $arrange_items[$index-1]['price'] += $item['price'];
-                $arrange_items[$index-1]['discount'] += $item['discount'];
-                $arrange_items[$index-1]['total'] += $item['total'];
-            }else{
-                array_push($arrange_items,$item);
+                $arrange_items[$index - 1]['discount'] += $item['discount'];
+                $arrange_items[$index - 1]['total'] += $item['total'];
+            } else {
+                array_push($arrange_items, $item);
             }
         }
 
-        foreach($arrange_items as $item){
+        foreach ($arrange_items as $item) {
 
             $data = [
                 'product_name' => $item['product_name'],
                 'quantity' => strval($item['quantity']),
-                'price' => '$'.$item['price'],
-                'discount' => '$'.$item['discount'],
-                'total' => '$'.$item['total']
+                'price' => '$' . $item['price'],
+                'discount' => '$' . $item['discount'],
+                'total' => '$' . $item['total']
             ];
-            array_push($invoice,$data);
+            array_push($invoice, $data);
         }
 
-        foreach($arrange_items as $item){
+        foreach ($arrange_items as $item) {
             $total += $item['total'];
         }
 
-        $total_riel = 'R'.number_format($total * 4200);
-        
+        $total_riel = 'R' . number_format($total * 4200);
+
         // $this->printInvoice($invoice,'$'.$total,$total_riel);
         return response()->json([
             'code' => 200,
         ]);
     }
 
-    private function findExistingValueInArray($arrays, $value){
-        foreach($arrays as $key => $array){
-            if($array['product_name'] === $value){
-                return $key+1;
+    private function findExistingValueInArray($arrays, $value)
+    {
+        foreach ($arrays as $key => $array) {
+            if ($array['product_name'] === $value) {
+                return $key + 1;
             }
         }
 
         return 0;
     }
 
-    private function isAddToTPosValid(){
-        $start_date = Carbon::now()->format('Y-m-d').' 00:00:00';
-        $end_date = Carbon::now()->format('Y-m-d').' 23:59:59';
+    private function isAddToTPosValid()
+    {
+        $start_date = Carbon::now()->format('Y-m-d') . ' 00:00:00';
+        $end_date = Carbon::now()->format('Y-m-d') . ' 23:59:59';
 
-        $orders = TPOS::whereBetween('created_at',[$start_date,$end_date])->get()->count();
-        if($orders > 3){
+        $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])->get()->count();
+        if ($orders > 3) {
             return false;
-        } 
+        }
         return true;
+    }
+
+    public function destroy($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Find the invoice by ID
+            $invoice = POS::find($id);
+            if (!$invoice) {
+                return response()->json(['success' => false, 'message' => 'Invoice not found']);
+            }
+
+            $invoice_no = $invoice->order_no;
+
+            // Update product stock
+            foreach ($invoice->items as $item) {
+                $product = Product::where('name', $item['product_name'])->first();
+                if ($product) {
+                    $product->stock += intval($item['quantity']);
+                    $product->save();
+                }
+            }
+
+            // Delete the invoice
+            $invoice->delete();
+
+            // Reset invoice numbers for all invoices after this one
+            $laterInvoices = POS::where('order_no', '>', $invoice_no)
+                ->orderBy('order_no', 'asc')
+                ->get();
+
+            foreach ($laterInvoices as $laterInvoice) {
+                $currentNumber = intval(ltrim($laterInvoice->order_no, '0'));
+                $newNumber = str_pad($currentNumber - 1, 6, '0', STR_PAD_LEFT);
+                $laterInvoice->order_no = $newNumber;
+                $laterInvoice->save();
+            }
+
+            DB::commit();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 }
