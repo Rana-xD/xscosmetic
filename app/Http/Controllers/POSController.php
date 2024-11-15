@@ -279,7 +279,7 @@ class POSController extends Controller
 
             // Update product stock
             foreach ($invoice->items as $item) {
-                $product = Product::where('name', $item['product_name'])->first();
+                $product = Product::find($item['product_id']);
                 if ($product) {
                     $product->stock += intval($item['quantity']);
                     $product->save();
