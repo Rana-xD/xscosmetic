@@ -1180,7 +1180,7 @@
         } else {
             $('.payment-type-cash').css('display', 'none');
         }
-    };
+    });
 </script>
 
 
