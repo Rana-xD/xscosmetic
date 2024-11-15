@@ -171,7 +171,7 @@ class SaleController extends Controller
         $end_date = empty($date) ? Carbon::now()->format('Y-m-d') . ' 23:59:59' : date($date) . ' 23:59:59';
 
         $orders_in_cash = POS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'cash')->pluck('items');
-        $total_income_in_cash =  $this->getTotalAmount($orders_in_cash);
+        $total_income_in_cash = $this->getTotalAmount($orders_in_cash);
 
         $orders_in_aba = POS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'aba')->pluck('items');
         $total_income_in_aba = $this->getTotalAmount($orders_in_aba);
@@ -182,11 +182,18 @@ class SaleController extends Controller
         $orders_in_delivery = POS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'delivery')->pluck('items');
         $total_income_in_delivery = $this->getTotalAmount($orders_in_delivery);
 
-        $orders_in_50ABA = POS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', '50ABA')->pluck('items');
-        if ($orders_in_50ABA->count() > 0) {
-            $total_income_in_orders_in_50ABA = $this->getTotalAmount($orders_in_50ABA) / 2;
-            $total_income_in_cash += $total_income_in_orders_in_50ABA;
-            $total_income_in_aba += $total_income_in_orders_in_50ABA;
+        // Handle custom split payments
+        $custom_split_orders = POS::whereBetween('created_at', [$start_date, $end_date])
+            ->where('payment_type', 'custom')
+            ->get();
+            
+        foreach ($custom_split_orders as $order) {
+            if (isset($order->cash_amount)) {
+                $total_income_in_cash += floatval($order->cash_amount);
+            }
+            if (isset($order->aba_amount)) {
+                $total_income_in_aba += floatval($order->aba_amount);
+            }
         }
 
         $total_income_in_cash = $total_income_in_cash + $total_change - $total_expense;
@@ -220,12 +227,18 @@ class SaleController extends Controller
         $orders_in_delivery = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'delivery')->pluck('items');
         $total_income_in_delivery = $this->getTotalAmount($orders_in_delivery);
 
-        $orders_in_50ABA = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', '50ABA')->pluck('items');
-        $orders_in_50ABA = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', '50ABA')->pluck('items');
-        if ($orders_in_50ABA->count() > 0) {
-            $total_income_in_orders_in_50ABA = $this->getTotalAmount($orders_in_50ABA) / 2;
-            $total_income_in_cash += $total_income_in_orders_in_50ABA;
-            $total_income_in_aba += $total_income_in_orders_in_50ABA;
+        // Handle custom split payments
+        $custom_split_orders = TPOS::whereBetween('created_at', [$start_date, $end_date])
+            ->where('payment_type', 'custom')
+            ->get();
+            
+        foreach ($custom_split_orders as $order) {
+            if (isset($order->cash_amount)) {
+                $total_income_in_cash += floatval($order->cash_amount);
+            }
+            if (isset($order->aba_amount)) {
+                $total_income_in_aba += floatval($order->aba_amount);
+            }
         }
 
         $total_income_in_cash = $total_income_in_cash + $total_change - $total_expense;

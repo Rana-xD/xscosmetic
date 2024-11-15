@@ -144,8 +144,6 @@
                 <div class="order-loader"></div>
             </div>
 
-            <!-- <button type="button" class="btn btn-blue col-md-12 flat-box-btn print-invoice-daily-container" id="PrintDailyInvoice"><h5 class="text-bold">PRINT</h5></button> -->
-
 
         </div>
 
@@ -405,9 +403,10 @@
 
             totalItem();
             totalCash();
-        }
 
-        document.addEventListener('keypress', e => {
+        };
+
+        document.addEventListener('keypress', (e) => {
             //usually scanners throw an 'Enter' key at the end of read
             if (e.keyCode === 13) {
                 if (code.length > 10) {
@@ -498,7 +497,108 @@
             });
         });
 
+        $('#payment-type').on('change', function() {
+            let type = $(this).val();
+            resetReceivedCashAndChange();
+            if (type === 'aba' || type === 'acleda' || type === 'delivery') {
+                $('.payment-type-cash').css('display', 'none');
+                $('.custom-split').css('display', 'none');
+            } else if (type === 'custom') {
+                $('.custom-split').css('display', 'block');
+                handleCashPercentage($('#cash-percentage').val());
+            } else {
+                $('.payment-type-cash').css('display', 'block');
+                $('.custom-split').css('display', 'none');
+            }
+
+            if (type === 'delivery') {
+                $('.delivery').css('display', 'block');
+                depositDeliveryFee();
+            } else {
+                $('.delivery').css('display', 'none');
+                withdrawDeliveryFee();
+            }
+        });
+
+        function handleCashPercentage(value) {
+            let cashPercentage = parseInt(value) || 0;
+            if (cashPercentage > 100) {
+                $('#cash-percentage').val(100);
+                cashPercentage = 100;
+            }
+            if (cashPercentage < 0) {
+                $('#cash-percentage').val(0);
+                cashPercentage = 0;
+            }
+            $('#aba-percentage').val(100 - cashPercentage);
+
+            if (cashPercentage > 0) {
+                $('.payment-type-cash').css('display', 'block');
+            } else {
+                $('.payment-type-cash').css('display', 'none');
+            }
+        }
+
+        $('#cash-percentage').on('input', function() {
+            handleCashPercentage($(this).val());
+        });
+
+        $('#received-cash-in-usd').on('input', function(e) {
+            let value = $(this).val();
+            let totalUSD = $('#total-usd').attr('total-usd-data');
+            let paymentType = $('#payment-type').val();
+
+            if (paymentType === 'custom') {
+                let cashPercentage = parseInt($('#cash-percentage').val()) || 0;
+                let cashAmount = (totalUSD * (cashPercentage / 100)).toFixed(2);
+                let changeInUSD = value - cashAmount;
+                let changeInRiel = handleExchangeToRielCurrency(changeInUSD);
+                $('#change-in-riel').val(`${changeInRiel} ៛`);
+                $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
+            } else {
+                let changeInUSD = value - totalUSD;
+                let changeInRiel = handleExchangeToRielCurrency(changeInUSD);
+                $('#change-in-riel').val(`${changeInRiel} ៛`);
+                $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
+            }
+
+            if (value != '') {
+                $("#received-cash-in-riel").prop('disabled', true);
+            } else {
+                $("#received-cash-in-riel").prop('disabled', false);
+                $('#change-in-riel').val('');
+                $('#change-in-usd').val('');
+            }
+        });
+
+        $('#received-cash-in-riel').on('input', function(e) {
+            let value = $(this).val();
+            let totalUSD = $('#total-usd').attr('total-usd-data');
+            let totalRiel = handleRemoveCommafromRielCurrency($('#total-riel').attr('total-riel-data'));
+            let paymentType = $('#payment-type').val();
+
+            if (paymentType === 'custom') {
+                let cashPercentage = parseInt($('#cash-percentage').val()) || 0;
+                let cashAmountRiel = (totalRiel * (cashPercentage / 100));
+                let changeInRiel = addComma(value - cashAmountRiel);
+                $('#change-in-riel').val(`${changeInRiel} ៛`);
+            } else {
+                let changeInRiel = addComma(value - totalRiel);
+                $('#change-in-riel').val(`${changeInRiel} ៛`);
+            }
+
+            if (value != '') {
+                $("#received-cash-in-usd").prop('disabled', true);
+            } else {
+                $("#received-cash-in-usd").prop('disabled', false);
+                $('#change-in-riel').val('');
+                $('#change-in-usd').val('');
+            }
+        });
+
+
         $('#posOrder').on('submit', (e) => {
+
             e.preventDefault();
             let data = [];
             let temp_data = [];
@@ -508,85 +608,83 @@
             let cards = $('#productList').children();
             let invoiceNo = $('#invoice-no').val();
             let paymentType = $('#payment-type').val();
+            let cashPercentage = parseInt($('#cash-percentage').val()) || 0;
 
             total = handleRemoveZeroDecimal($('#total-in-usd-final').val());
             totalRiel = addComma($('#total-in-riel-final').val());
-            totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
-            receivedInUSD = $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val();
-            receivedInRiel = $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val();
-            changeInUSD = $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val();
-            changeInRiel = $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val();
+            let totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
+            let receivedInUSD = $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val();
+            let receivedInRiel = $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val();
+            let changeInUSD = $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val();
+            let changeInRiel = $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val();
 
-            if (paymentType === '50ABA') {
+            // Custom split validation
+            if (paymentType === 'custom' && cashPercentage > 0) {
+                let requiredCashAmountUSD = (parseFloat(total.replace('$', '')) * cashPercentage / 100).toFixed(2);
+                let requiredCashAmountRiel = (parseInt(totalRiel.replace(/,/g, '')) * cashPercentage / 100);
+
                 if (receivedInUSD != 0) {
-                    totalRawData = (parseFloat(total.replace('$', '')) / 2);
-                    receivedInUSDRawData = parseFloat(receivedInUSD);
-                    console.log(totalRawData, receivedInUSDRawData)
-                    if (receivedInUSDRawData < totalRawData) {
+                    let receivedInUSDRawData = parseFloat(receivedInUSD);
+                    if (receivedInUSDRawData < requiredCashAmountUSD) {
                         swal({
                             title: 'Error',
                             type: "error",
-                            text: "Amount of received cash is not enough",
+                            text: `Insufficient cash amount received in USD.\nRequired: $${requiredCashAmountUSD}\nReceived: $${receivedInUSDRawData.toFixed(2)}`,
                             timer: 2000,
                             showCancelButton: false,
                             showConfirmButton: false
                         });
-                        return;
+                        return false;
                     }
                 }
 
                 if (receivedInRiel != 0) {
-                    totalRielRawData = (parseInt(totalRiel.replace(/,/g, '')) / 2);
-                    receivedInRielData = parseInt(receivedInRiel.replace(/,/g, ''));
-                    if (receivedInRielData < totalRielRawData) {
+                    let receivedInRielData = parseInt(receivedInRiel.replace(/,/g, ''));
+                    if (receivedInRielData < requiredCashAmountRiel) {
                         swal({
                             title: 'Error',
                             type: "error",
-                            text: "Amount of received cash is not enough",
-                            timer: 2000,
+                            text: `Insufficient cash amount received in Riel.\nRequired: ${addComma(requiredCashAmountRiel.toString())} Riel\nReceived: ${addComma(receivedInRielData.toString())} Riel`,
+                            timer: 4000,
                             showCancelButton: false,
                             showConfirmButton: false
                         });
-                        return;
+                        return false;
                     }
                 }
-
-            } else {
+            } else if (paymentType === 'cash') {
                 if (receivedInUSD != 0) {
-                    totalRawData = parseFloat(total.replace('$', ''));
-                    receivedInUSDRawData = parseFloat(receivedInUSD);
+                    let totalRawData = parseFloat(total.replace('$', ''));
+                    let receivedInUSDRawData = parseFloat(receivedInUSD);
                     if (receivedInUSDRawData < totalRawData) {
                         swal({
                             title: 'Error',
                             type: "error",
-                            text: "Amount of received cash is not enough",
-                            timer: 2000,
+                            text: `Insufficient cash amount received in USD.\nRequired: $${totalRawData.toFixed(2)}\nReceived: $${receivedInUSDRawData.toFixed(2)}`,
+                            timer: 4000,
                             showCancelButton: false,
                             showConfirmButton: false
                         });
-                        return;
+                        return false;
                     }
                 }
 
                 if (receivedInRiel != 0) {
-                    totalRielRawData = parseInt(totalRiel.replace(/,/g, ''));
-                    receivedInRielData = parseInt(receivedInRiel.replace(/,/g, ''));
+                    let totalRielRawData = parseInt(totalRiel.replace(/,/g, ''));
+                    let receivedInRielData = parseInt(receivedInRiel.replace(/,/g, ''));
                     if (receivedInRielData < totalRielRawData) {
                         swal({
                             title: 'Error',
                             type: "error",
-                            text: "Amount of received cash is not enough",
-                            timer: 2000,
+                            text: `Insufficient cash amount received in Riel.\nRequired: ${addComma(totalRielRawData.toString())} Riel\nReceived: ${addComma(receivedInRielData.toString())} Riel`,
+                            timer: 4000,
                             showCancelButton: false,
                             showConfirmButton: false
                         });
-                        return;
+                        return false;
                     }
                 }
             }
-
-
-
 
             for (let i = 0; i < cards.length; i++) {
                 totalProduct(cards[i]);
@@ -634,7 +732,6 @@
                     discount = `${$(cards[i]).find('.discount-in-usd').val()}$`;
                 }
 
-
                 item = {
                     product_name: $(cards[i]).find('.product-name').val(),
                     quantity: `${quantity}`,
@@ -644,16 +741,8 @@
                 };
                 invoice.push(item);
             }
-            // total = handleRemoveZeroDecimal($('#total-usd').attr('total-usd-data'));
-            // totalRiel = $('#total-riel').attr('total-riel');
 
             if (data.length == 0) return;
-
-
-
-
-
-
 
             let formData = {
                 "data": data,
@@ -669,6 +758,18 @@
                 "changeInUSD": changeInUSD,
                 "changeInRiel": changeInRiel
             };
+
+            // Add percentage data for custom split payment
+            if (paymentType === 'custom') {
+                formData.cashPercentage = cashPercentage;
+                formData.abaPercentage = 100 - cashPercentage;
+
+                // Calculate the actual amounts for each payment method
+                let totalAmount = parseFloat(total.replace('$', ''));
+                formData.cashAmount = (totalAmount * (cashPercentage / 100)).toFixed(2);
+                formData.abaAmount = (totalAmount * ((100 - cashPercentage) / 100)).toFixed(2);
+            }
+
             showSpinner();
             $.ajax({
                 url: '/pos/add',
@@ -691,78 +792,12 @@
                     }, function(data) {
                         location.reload(true);
                     });
-
-
                 },
                 error: function(err) {
                     console.log(err);
                 }
             });
-        })
-
-        $('#payment-type').on('change', function() {
-            let type = $(this).val();
-            resetReceivedCashAndChange();
-            if (type === 'aba' || type === 'acleda' || type === 'delivery' || type === '50ABA') {
-                $('.payment-type-cash').css('display', 'none');
-            } else {
-                $('.payment-type-cash').css('display', 'block');
-            }
-
-            if (type === 'delivery') {
-                $('.delivery').css('display', 'block');
-                depositDeliveryFee();
-            } else {
-                $('.delivery').css('display', 'none');
-                withdrawDeliveryFee();
-            }
         });
-
-        $('#received-cash-in-usd').on('input', function(e) {
-
-            let value = $(this).val();
-
-            let totalUSD = $('#total-usd').attr('total-usd-data');
-
-            let changeInUSD = value - totalUSD;
-            let changeInRiel = handleExchangeToRielCurrency(changeInUSD);
-            $('#change-in-riel').val(`${changeInRiel} ៛`);
-            $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
-
-            if (value != '') {
-                $("#received-cash-in-riel").prop('disabled', true);
-            } else {
-                $("#received-cash-in-riel").prop('disabled', false);
-                $('#change-in-riel').val('');
-                $('#change-in-usd').val('');
-            }
-        });
-
-        $('#received-cash-in-riel').on('input', function(e) {
-
-            let value = $(this).val();
-
-
-            let totalUSD = $('#total-usd').attr('total-usd-data');
-            let totalRiel = handleRemoveCommafromRielCurrency($('#total-riel').attr('total-riel-data'));
-
-            let changeInRiel = addComma(value - totalRiel);
-
-
-            $('#change-in-riel').val(`${changeInRiel} ៛`);
-
-
-            if (value != '') {
-                $("#received-cash-in-usd").prop('disabled', true);
-            } else {
-                $("#received-cash-in-usd").prop('disabled', false);
-                $('#change-in-riel').val('');
-                $('#change-in-usd').val('');
-            }
-        });
-
-
-
     });
 
     function depositDeliveryFee() {
@@ -874,32 +909,6 @@
         totalCash();
     }
 
-
-    $('#PrintDailyInvoice').on('click', (e) => {
-        e.preventDefault();
-        $.ajax({
-            url: '/pos/daily',
-            type: "GET",
-            contentType: false,
-            processData: false,
-            success: function(res) {
-                swal({
-                    title: 'DONE',
-                    text: 'Print Complete',
-                    type: "success",
-                    timer: 1500,
-                    showCancelButton: false,
-                    showConfirmButton: false
-                }, function(data) {
-                    location.reload(true);
-                });
-            },
-            error: function(err) {
-                console.log(err);
-            }
-        });
-    });
-
     function handleRemoveZeroDecimal(value) {
         let intValue = parseInt(value)
         return intValue == parseFloat(value).toFixed(2) ? `$${intValue}` : `$${parseFloat(value).toFixed(2)}`;
@@ -943,10 +952,7 @@
             return;
         }
 
-        // discontPrice = (initDiscountPrice - discount).toFixed(2);
         discountPrice = (totalPrice - ((totalPrice * discount) / 100)).toFixed(2);
-        // totalDiscountPrice = (totalPrice - discountPrice).toFixed(2);
-
         $(e).parents('.product-card').find('.subtotal').text(`$ ${discountPrice}`);
         $(e).parents('.product-card').find('.product-discount-price').val(discountPrice);
         totalCash();
@@ -978,19 +984,9 @@
         $(e).parents('.product-card').find('.product-discount-price').val(discountPrice);
         totalCash();
     }
-    let searchTimeout;
 
     function handleProductOverallDiscount(e) {
 
-        clearTimeout(searchTimeout); // Clear any existing timeout to prevent it from executing
-
-        searchTimeout = setTimeout(() => {
-            productOverallDiscount(); // Execute the productOverallDiscount() function after the delay
-        }, 500);
-
-    }
-
-    function productOverallDiscount(e) {
         let parentDiv = $(e).parents('.cashier-section');
         total = $('#total-usd').attr('') === '' ? 0 : $('#total-usd').attr('total-usd-data'),
             totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
@@ -1030,15 +1026,6 @@
         let result = quantity + 1;
         $(card).find('.quantity').val(result);
         editQuantity(e);
-    }
-
-    function addExtra(name) {
-        if ($('#productList').children().length == 0) return;
-        let card = $('#productList').children().last();
-        $(card).find('.extra').append(`${name}, `);
-        let price = parseFloat($(card).find('.extra-price').val()) + 1.00;
-        $(card).find('.extra-price').val(price);
-        editQuantity(card);
     }
 
     function editQuantity(e) {
@@ -1175,6 +1162,25 @@
 
 
     });
+
+    $('#cash-percentage').on('input', function() {
+        let cashPercentage = parseInt($(this).val()) || 0;
+        if (cashPercentage > 100) {
+            $(this).val(100);
+            cashPercentage = 100;
+        }
+        if (cashPercentage < 0) {
+            $(this).val(0);
+            cashPercentage = 0;
+        }
+        $('#aba-percentage').val(100 - cashPercentage);
+
+        if (cashPercentage > 0) {
+            $('.payment-type-cash').css('display', 'block');
+        } else {
+            $('.payment-type-cash').css('display', 'none');
+        }
+    };
 </script>
 
 
@@ -1209,7 +1215,7 @@
                             <option value="aba" selected>ABA</option>
                             <option value="cash">Cash</option>
                             <option value="acleda">Acleda</option>
-                            <option value="50ABA">50% Cash 50% ABA</option>
+                            <option value="custom">Custom Split</option>
                             <option value="delivery">Delivery</option>
                         </select>
                     </div>
@@ -1224,7 +1230,16 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="modal-body modal-body-pos custom-split" style="display: none;">
+                    <div class="form-group form-group-flex">
+                        <label for="cash-percentage">Cash Percentage (%)</label>
+                        <input type="number" name="cash-percentage" class="form-control" id="cash-percentage" min="0" max="100" value="50">
+                    </div>
+                    <div class="form-group form-group-flex">
+                        <label for="aba-percentage">ABA Percentage (%)</label>
+                        <input type="number" name="aba-percentage" class="form-control" id="aba-percentage" min="0" max="100" value="50" disabled>
+                    </div>
+                </div>
                 <div class="modal-body modal-body-pos payment-type-cash">
                     <div class="form-group form-group-flex">
                         <label for="received-cash-in-usd">Received Cash In USD</label>
@@ -1243,6 +1258,7 @@
                         <input type="text" name="change-in-riel" maxlength="100" class="form-control" id="change-in-riel" disabled>
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default cancel-pos" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-add"></span>Submit</button>

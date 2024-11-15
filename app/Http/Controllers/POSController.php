@@ -44,6 +44,14 @@ class POSController extends Controller
             'updated_at' => $this->getLocaleTimestamp()
         ];
 
+        // Add custom split payment data if available
+        if ($request->payment_type === 'custom') {
+            $data['cash_percentage'] = $request->cashPercentage;
+            $data['aba_percentage'] = $request->abaPercentage;
+            $data['cash_amount'] = $request->cashAmount;
+            $data['aba_amount'] = $request->abaAmount;
+        }
+
         $temp_data = [
             "order_no" => $request->invoice_no,
             "items" => $request->temp_data,
