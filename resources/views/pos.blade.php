@@ -505,10 +505,14 @@
                 $('.custom-split').css('display', 'none');
             } else if (type === 'custom') {
                 $('.custom-split').css('display', 'block');
-                handleCashPercentage($('#cash-percentage').val());
+                $('.delivery').css('display', 'none');
+                // Reset the cash input and percentages
+                $('#cash-in-usd').val('');
+                $('#cash-percentage').val('0');
+                $('#aba-percentage').val('0');
             } else {
-                $('.payment-type-cash').css('display', 'block');
                 $('.custom-split').css('display', 'none');
+                $('.delivery').css('display', 'none');
             }
 
             if (type === 'delivery') {
@@ -517,6 +521,40 @@
             } else {
                 $('.delivery').css('display', 'none');
                 withdrawDeliveryFee();
+            }
+        });
+
+        $('#cash-in-usd').on('input', function() {
+            let cashAmount = parseFloat($(this).val()) || 0;
+            let totalAmount = parseFloat($('#total-in-usd-final').val()) || 0;
+            
+            if (totalAmount > 0 && cashAmount >= 0) {
+                // Ensure cash amount doesn't exceed total
+                cashAmount = Math.min(cashAmount, totalAmount);
+                
+                // Calculate ABA amount directly
+                let abaAmount = totalAmount - cashAmount;
+                
+                // Calculate percentages for display
+                let cashPercentage = (cashAmount / totalAmount) * 100;
+                let abaPercentage = (abaAmount / totalAmount) * 100;
+                
+                // Format with up to 6 decimal places, removing trailing zeros
+                $('#cash-percentage').val(Number(cashPercentage.toFixed(6)).toString());
+                $('#aba-percentage').val(Number(abaPercentage.toFixed(6)).toString());
+                
+                // Set ABA amount directly without percentage calculation
+                $('#aba-amount-usd').val(abaAmount.toFixed(2));
+                
+                // Store the exact amounts for form submission
+                $('#cash-in-usd').attr('data-exact-amount', cashAmount.toFixed(2));
+                $('#aba-amount-usd').attr('data-exact-amount', abaAmount.toFixed(2));
+            } else {
+                $('#cash-percentage').val('0');
+                $('#aba-percentage').val('0');
+                $('#aba-amount-usd').val('0');
+                $('#cash-in-usd').attr('data-exact-amount', '0');
+                $('#aba-amount-usd').attr('data-exact-amount', '0');
             }
         });
 
@@ -598,93 +636,17 @@
 
 
         $('#posOrder').on('submit', (e) => {
-
             e.preventDefault();
             let data = [];
             let temp_data = [];
             let invoice = [];
-            let total = 0;
-            let totalRiel = 0;
             let cards = $('#productList').children();
-            let invoiceNo = $('#invoice-no').val();
-            let paymentType = $('#payment-type').val();
-            let cashPercentage = parseInt($('#cash-percentage').val()) || 0;
 
-            total = handleRemoveZeroDecimal($('#total-in-usd-final').val());
-            totalRiel = addComma($('#total-in-riel-final').val());
-            let totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
-            let receivedInUSD = $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val();
-            let receivedInRiel = $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val();
-            let changeInUSD = $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val();
-            let changeInRiel = $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val();
-
-            // Custom split validation
-            if (paymentType === 'custom' && cashPercentage > 0) {
-                let requiredCashAmountUSD = (parseFloat(total.replace('$', '')) * cashPercentage / 100).toFixed(2);
-                let requiredCashAmountRiel = (parseInt(totalRiel.replace(/,/g, '')) * cashPercentage / 100);
-
-                if (receivedInUSD != 0) {
-                    let receivedInUSDRawData = parseFloat(receivedInUSD);
-                    if (receivedInUSDRawData < requiredCashAmountUSD) {
-                        swal({
-                            title: 'Error',
-                            type: "error",
-                            text: `Insufficient cash amount received in USD.\nRequired: $${requiredCashAmountUSD}\nReceived: $${receivedInUSDRawData.toFixed(2)}`,
-                            timer: 2000,
-                            showCancelButton: false,
-                            showConfirmButton: false
-                        });
-                        return false;
-                    }
-                }
-
-                if (receivedInRiel != 0) {
-                    let receivedInRielData = parseInt(receivedInRiel.replace(/,/g, ''));
-                    if (receivedInRielData < requiredCashAmountRiel) {
-                        swal({
-                            title: 'Error',
-                            type: "error",
-                            text: `Insufficient cash amount received in Riel.\nRequired: ${addComma(requiredCashAmountRiel.toString())} Riel\nReceived: ${addComma(receivedInRielData.toString())} Riel`,
-                            timer: 4000,
-                            showCancelButton: false,
-                            showConfirmButton: false
-                        });
-                        return false;
-                    }
-                }
-            } else if (paymentType === 'cash') {
-                if (receivedInUSD != 0) {
-                    let totalRawData = parseFloat(total.replace('$', ''));
-                    let receivedInUSDRawData = parseFloat(receivedInUSD);
-                    if (receivedInUSDRawData < totalRawData) {
-                        swal({
-                            title: 'Error',
-                            type: "error",
-                            text: `Insufficient cash amount received in USD.\nRequired: $${totalRawData.toFixed(2)}\nReceived: $${receivedInUSDRawData.toFixed(2)}`,
-                            timer: 4000,
-                            showCancelButton: false,
-                            showConfirmButton: false
-                        });
-                        return false;
-                    }
-                }
-
-                if (receivedInRiel != 0) {
-                    let totalRielRawData = parseInt(totalRiel.replace(/,/g, ''));
-                    let receivedInRielData = parseInt(receivedInRiel.replace(/,/g, ''));
-                    if (receivedInRielData < totalRielRawData) {
-                        swal({
-                            title: 'Error',
-                            type: "error",
-                            text: `Insufficient cash amount received in Riel.\nRequired: ${addComma(totalRielRawData.toString())} Riel\nReceived: ${addComma(receivedInRielData.toString())} Riel`,
-                            timer: 4000,
-                            showCancelButton: false,
-                            showConfirmButton: false
-                        });
-                        return false;
-                    }
-                }
-            }
+            // Get the exact amounts for custom split
+            let cashAmount = $('#cash-in-usd').attr('data-exact-amount') || '0';
+            let abaAmount = $('#aba-amount-usd').attr('data-exact-amount') || '0';
+            let cashPercentage = $('#cash-percentage').val() || '0';
+            let abaPercentage = $('#aba-percentage').val() || '0';
 
             for (let i = 0; i < cards.length; i++) {
                 totalProduct(cards[i]);
@@ -748,24 +710,24 @@
                 "data": data,
                 "temp_data": temp_data,
                 "invoice": invoice,
-                "invoice_no": invoiceNo,
-                "total": total,
-                "total_riel": totalRiel,
-                "payment_type": paymentType,
-                "totalDiscount": totalDiscount,
-                "receivedInUSD": receivedInUSD,
-                "receivedInRiel": receivedInRiel,
-                "changeInUSD": changeInUSD,
-                "changeInRiel": changeInRiel
+                "invoice_no": $('#invoice-no').val(),
+                "total": $('#total-usd').attr('total-usd-data'),
+                "total_riel": $('#total-riel').attr('total-riel-data'),
+                "payment_type": $('#payment-type').val(),
+                "totalDiscount": $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val(),
+                "receivedInUSD": $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val(),
+                "receivedInRiel": $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val(),
+                "changeInUSD": $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val(),
+                "changeInRiel": $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val()
             };
 
             // Add percentage data for custom split payment
-            if (paymentType === 'custom') {
+            if ($('#payment-type').val() === 'custom') {
                 formData.cashPercentage = cashPercentage;
-                formData.abaPercentage = 100 - cashPercentage;
+                formData.abaPercentage = abaPercentage;
 
                 // Calculate the actual amounts for each payment method
-                let totalAmount = parseFloat(total.replace('$', ''));
+                let totalAmount = parseFloat($('#total-usd').attr('total-usd-data').replace('$', ''));
                 formData.cashAmount = (totalAmount * (cashPercentage / 100)).toFixed(2);
                 formData.abaAmount = (totalAmount * ((100 - cashPercentage) / 100)).toFixed(2);
             }
@@ -1181,6 +1143,26 @@
             $('.payment-type-cash').css('display', 'none');
         }
     });
+
+    $('#payment-type').on('change', function() {
+        let selectedType = $(this).val();
+        
+        if (selectedType === 'custom') {
+            $('.custom-split').show();
+            $('.delivery').hide();
+            // Reset the cash input and percentages
+            $('#cash-in-usd').val('');
+            $('#cash-percentage').val('0');
+            $('#aba-percentage').val('0');
+            $('#aba-amount-usd').val('0');
+        } else if (selectedType === 'delivery') {
+            $('.delivery').show();
+            $('.custom-split').hide();
+        } else {
+            $('.custom-split').hide();
+            $('.delivery').hide();
+        }
+    });
 </script>
 
 
@@ -1232,12 +1214,20 @@
                 </div>
                 <div class="modal-body modal-body-pos custom-split" style="display: none;">
                     <div class="form-group form-group-flex">
+                        <label for="cash-in-usd">Cash Amount (USD)</label>
+                        <input type="number" name="cash-in-usd" class="form-control" id="cash-in-usd" min="0" step="0.01">
+                    </div>
+                    <div class="form-group form-group-flex">
+                        <label for="aba-amount-usd">ABA Amount (USD)</label>
+                        <input type="number" name="aba-amount-usd" class="form-control" id="aba-amount-usd" readonly>
+                    </div>
+                    <div class="form-group form-group-flex">
                         <label for="cash-percentage">Cash Percentage (%)</label>
-                        <input type="number" name="cash-percentage" class="form-control" id="cash-percentage" min="0" max="100" value="50">
+                        <input type="text" name="cash-percentage" class="form-control" id="cash-percentage" readonly>
                     </div>
                     <div class="form-group form-group-flex">
                         <label for="aba-percentage">ABA Percentage (%)</label>
-                        <input type="number" name="aba-percentage" class="form-control" id="aba-percentage" min="0" max="100" value="50" disabled>
+                        <input type="text" name="aba-percentage" class="form-control" id="aba-percentage" readonly>
                     </div>
                 </div>
                 <div class="modal-body modal-body-pos payment-type-cash">
