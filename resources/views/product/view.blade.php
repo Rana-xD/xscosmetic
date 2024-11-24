@@ -53,20 +53,20 @@
     <table id="Table" class="table table-striped table-bordered" cellspacing="0" width="100%">
       <thead>
         <tr>
-          <th class="hidden-xs">No</th>
-          <th>Input Date</th>
-          <th>Name</th>
-          <th>Code</th>
-          <th>Total Stock</th>
-          <th>Sell Price</th>
+          <th class="hidden-xs">{{ __('messages.sale_table_number') }}</th>
+          <th>{{ __('messages.input_date') }}</th>
+          <th>{{ __('messages.name') }}</th>
+          <th>{{ __('messages.product_code') }}</th>
+          <th>{{ __('messages.total_stock') }}</th>
+          <th>{{ __('messages.sell_price') }}</th>
           @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
-          <th>Cost</th>
+          <th>{{ __('messages.cost') }}</th>
           @else
-          <th style="display: none;">Cost</th>
+          <th style="display: none;">{{ __('messages.cost') }}</th>
           @endif
-          <th>Product Type</th>
-          <th>Expire Date</th>
-          <th>Action</th>
+          <th>{{ __('messages.product_type') }}</th>
+          <th>{{ __('messages.expire_date') }}</th>
+          <th>{{ __('messages.action') }}</th>
         </tr>
       </thead>
 
@@ -105,7 +105,7 @@
     </table>
   </div>
   <!-- Button trigger modal -->
-  <button type="button" class="btn btn-add btn-lg" data-toggle="modal" id="handleAddProduct">Add Product</button>
+  <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addproduct">{{ __('messages.add_product') }}</button>
 </div>
 <!-- /.container -->
 
@@ -167,7 +167,7 @@
     $("body").on("change", "#Image", function(e) {
       var self = e.target;
       if (self.files[0].size / 1024 / 1024 > 5) {
-        html = `<h2 class="text-danger">*Image Should not bigger than 5MB</h2>`
+        html = `<h2 class="text-danger">*{{ __('messages.image_size_error') }}</h2>`
         $('.image-content').append(html);
         $('#Image').val(null);
         return;
@@ -233,9 +233,9 @@
           hideSpinner();
           if (res.code === 404) {
             swal({
-              title: 'Error',
+              title: '{{ __("messages.error") }}',
               type: "error",
-              text: "That Product Already Exists. Please find it and update it instead",
+              text: "{{ __('messages.product_exists') }}",
               timer: 2500,
               showCancelButton: false,
               showConfirmButton: false
@@ -254,12 +254,12 @@
 
     $(".delete-product").on("click", (e) => {
       swal({
-          title: 'Are you sure?',
-          text: 'Delete Product',
+          title: '{{ __("messages.are_you_sure") }}',
+          text: '{{ __("messages.delete_confirm") }}',
           type: "warning",
           showCancelButton: true,
           confirmButtonColor: "#DD6B55",
-          confirmButtonText: 'YES',
+          confirmButtonText: '{{ __("messages.yes") }}',
           closeOnConfirm: false
         },
         function() {
@@ -379,33 +379,33 @@
         @csrf
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="myModalLabel">Add Product</h4>
+          <h4 class="modal-title" id="myModalLabel">{{ __('messages.add_product') }}</h4>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="ProductName">Product Name</label>
-            <input type="text" name="name" maxlength="100" Required class="form-control" id="ProductName" placeholder="ProductName">
+            <label for="ProductName">{{ __('messages.name') }}</label>
+            <input type="text" name="name" maxlength="100" Required class="form-control" id="ProductName" placeholder="{{ __('messages.name') }}">
           </div>
           <div class="form-group">
-            <label for="ProductName">Product Barcode</label>
-            <input type="text" name="barcode" maxlength="100" Required class="form-control" id="ProductBarcode" placeholder="ProductBarcode">
+            <label for="ProductBarcode">{{ __('messages.product_barcode') }}</label>
+            <input type="text" name="product_barcode" maxlength="100" Required class="form-control" id="ProductBarcode" placeholder="{{ __('messages.product_barcode') }}">
           </div>
           <div class="form-group">
-            <label for="ProductName">Stock</label>
-            <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock" placeholder="Stock">
+            <label for="ProductName">{{ __('messages.stock') }}</label>
+            <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock" placeholder="{{ __('messages.stock') }}">
           </div>
           @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
           <div class="form-group">
-            <label for="ProductName">Sell Price</label>
-            <input type="text" name="price" maxlength="100" class="form-control" id="price" placeholder="price">
+            <label for="ProductName">{{ __('messages.sell_price') }}</label>
+            <input type="text" name="price" maxlength="100" class="form-control" id="price" placeholder="{{ __('messages.sell_price') }}">
           </div>
           <div class="form-group">
-            <label for="ProductName">Cost</label>
-            <input type="text" name="cost" maxlength="100" class="form-control" id="cost" placeholder="cost">
+            <label for="ProductName">{{ __('messages.product_cost') }}</label>
+            <input type="text" name="cost" maxlength="100" class="form-control" id="cost" placeholder="{{ __('messages.product_cost') }}">
           </div>
           @endif
           <div class="form-group">
-            <label for="Category">Brand</label>
+            <label for="Category">{{ __('messages.product_type') }}</label>
             <select class="form-control selectpicker" id="Category" name="filtertype" data-live-search="true">
               @foreach (App\Category::orderBy('name', 'ASC')->get() as $category)
               <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -413,7 +413,7 @@
             </select>
           </div>
           <!-- <div class="form-group">
-            <label for="Category">Unit</label>
+            <label for="Category">{{ __('messages.unit') }}</label>
              <select class="form-control" id="Unit" name="filtertype">
                @foreach (App\Unit::all() as $unit)
                  <option value="{{ $unit->id }}">{{ $unit->name }}</option>
@@ -421,7 +421,7 @@
              </select>
           </div> -->
           <div class="form-group">
-            <label for="Category">Expired Date</label>
+            <label for="Category">{{ __('messages.expire_date') }}</label>
             <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
               <input type="text" class="form-control expired-date datepicker" id="expire-data">
               <div class="input-group-addon">
@@ -430,9 +430,9 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="Image">Image</label>
+            <label for="Image">{{ __('messages.product_image') }}</label>
             <a id="openFileInput">Browse</a>
-            <input type="file" name="logo" id="Image" style="display:none">
+            <input type="file" name="photo" id="Image" style="display:none">
             <input type="hidden" name="crop_image" id="crop_image">
           </div>
           <div class="form-group">
@@ -442,8 +442,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-add modal-btn">Submit</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
+          <button type="submit" class="btn btn-add modal-btn">{{ __('messages.submit') }}</button>
           <div class="loader"></div>
         </div>
       </form>
@@ -461,46 +461,46 @@
         @csrf
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="myModalLabel">Add Product</h4>
+          <h4 class="modal-title" id="myModalLabel">{{ __('messages.add_product') }}</h4>
         </div>
         <div class="modal-body">
           <input type="hidden" name="" id="productID">
           <div class="form-group">
-            <label for="ProductName">Product Name</label>
-            <input type="text" name="name" maxlength="100" Required class="form-control" id="ProductName-edit" placeholder="ProductName">
+            <label for="ProductName">{{ __('messages.name') }}</label>
+            <input type="text" name="name" maxlength="100" Required class="form-control" id="ProductName-edit" placeholder="{{ __('messages.name') }}">
           </div>
           <div class="form-group">
-            <label for="ProductName">Product Barcode</label>
-            <input type="text" name="barcode" maxlength="100" class="form-control" id="ProductBarcode-edit" placeholder="ProductBarcode">
+            <label for="ProductBarcode">{{ __('messages.product_barcode') }}</label>
+            <input type="text" name="product_barcode" maxlength="100" class="form-control" id="ProductBarcode-edit" placeholder="{{ __('messages.product_barcode') }}">
           </div>
           <div class="form-group">
-            <label for="ProductName">Current Stock</label>
-            <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock-edit" placeholder="Stock" readonly="readonly">
+            <label for="ProductName">{{ __('messages.current_stock') }}</label>
+            <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock-edit" placeholder="{{ __('messages.stock') }}" readonly="readonly">
           </div>
           <div class="form-group">
-            <label for="ProductName">New Stock</label>
-            <input type="number" name="stock" maxlength="100" class="form-control" id="new-stock-edit" placeholder="New Stock">
+            <label for="ProductName">{{ __('messages.new_stock') }}</label>
+            <input type="number" name="stock" maxlength="100" class="form-control" id="new-stock-edit" placeholder="{{ __('messages.new_stock') }}">
           </div>
           @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
           <div class="form-group">
-            <label for="ProductName">Sell Price</label>
-            <input type="text" name="price" maxlength="100" class="form-control" id="price-edit" placeholder="price">
+            <label for="ProductName">{{ __('messages.sell_price') }}</label>
+            <input type="text" name="price" maxlength="100" class="form-control" id="price-edit" placeholder="{{ __('messages.sell_price') }}">
           </div>
           <div class="form-group">
-            <label for="ProductName">Cost</label>
-            <input type="text" name="cost" maxlength="100" class="form-control" id="cost-edit" placeholder="cost">
+            <label for="ProductName">{{ __('messages.product_cost') }}</label>
+            <input type="text" name="cost" maxlength="100" class="form-control" id="cost-edit" placeholder="{{ __('messages.product_cost') }}">
           </div>
           <div class="form-group">
-            <label for="ProductName">New Cost</label>
-            <input type="text" name="new-cost" maxlength="100" class="form-control" id="newCost" placeholder="new cost">
+            <label for="ProductName">{{ __('messages.new_cost') }}</label>
+            <input type="text" name="new-cost" maxlength="100" class="form-control" id="newCost" placeholder="{{ __('messages.new_cost') }}">
           </div>
           @else
-          <input type="hidden" name="price" maxlength="100" class="form-control" id="price-edit" placeholder="price">
-          <input type="hidden" name="cost" maxlength="100" class="form-control" id="cost-edit" placeholder="cost">
-          <input type="hidden" name="new-cost" maxlength="100" class="form-control" id="newCost" placeholder="new cost">
+          <input type="hidden" name="price" maxlength="100" class="form-control" id="price-edit" placeholder="{{ __('messages.sell_price') }}">
+          <input type="hidden" name="cost" maxlength="100" class="form-control" id="cost-edit" placeholder="{{ __('messages.product_cost') }}">
+          <input type="hidden" name="new-cost" maxlength="100" class="form-control" id="newCost" placeholder="{{ __('messages.new_cost') }}">
           @endif
           <div class="form-group">
-            <label for="Category">Brand</label>
+            <label for="Category">{{ __('messages.product_type') }}</label>
             <select class="form-control" id="Category-edit" name="filtertype">
               @foreach (App\Category::orderBy('name', 'ASC')->get() as $category)
               <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -508,7 +508,7 @@
             </select>
           </div>
           <!-- <div class="form-group">
-             <label for="Category">Unit</label>
+             <label for="Category">{{ __('messages.unit') }}</label>
               <select class="form-control" id="Unit-edit" name="filtertype">
                 @foreach (App\Unit::all() as $unit)
                   <option value="{{ $unit->id }}">{{ $unit->name }}</option>
@@ -516,7 +516,7 @@
               </select>
            </div> -->
           <div class="form-group">
-            <label for="Category">Expired Date</label>
+            <label for="Category">{{ __('messages.expire_date') }}</label>
             <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
               <input type="text" class="form-control expired-date datepicker" id="expire-date-edit">
               <div class="input-group-addon">
@@ -525,7 +525,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="Image">Image</label>
+            <label for="Image">{{ __('messages.product_image') }}</label>
             <a id="openFileInputEdit">Browse</a>
             <input type="file" name="logo" id="ImageEdit" style="display:none">
           </div>
@@ -536,8 +536,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-add modal-btn">Submit</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
+          <button type="submit" class="btn btn-add modal-btn">{{ __('messages.submit') }}</button>
           <div class="loader"></div>
         </div>
       </form>
@@ -552,13 +552,13 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Product Image</h4>
+        <h4 class="modal-title" id="myModalLabel">{{ __('messages.view_image') }}</h4>
       </div>
       <div class="modal-body">
         <img id="ProductimageView" src="" class="img-responsive center" alt="" />
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
       </div>
     </div>
   </div>

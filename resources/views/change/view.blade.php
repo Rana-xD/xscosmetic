@@ -37,11 +37,11 @@
       <table id="Table" class="table table-striped table-bordered" cellspacing="0" width="100%">
           <thead>
               <tr>
-                  <th class="hidden-xs">No</th>
-                  <th>Date</th>
-                  <th>USD</th>
-                  <th>RIEL</th>
-                  <th>Action</th>
+                  <th class="hidden-xs">{{ __('messages.sale_table_number') }}</th>
+                  <th>{{ __('messages.date') }}</th>
+                  <th>{{ __('messages.usd_amount') }}</th>
+                  <th>{{ __('messages.riel_amount') }}</th>
+                  <th>{{ __('messages.edit') }}</th>
               </tr>
           </thead>
 
@@ -67,7 +67,7 @@
       </table>
    </div>
    <!-- Button trigger modal -->
-   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addchange">Add Change Log</button>
+   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addchange">{{ __('messages.add_change_log') }}</button>
 </div>
 <!-- /.container -->
 
@@ -106,9 +106,9 @@
             hideSpinner();
             if(res.code === 400){
               swal({
-                title: 'Error',
+                title: '{{ __("messages.are_you_sure") }}',
                 type: "error",
-                text: "Duplicate Date",
+                text: '{{ __("messages.delete_confirm") }}',
                 timer: 2500,
                 showCancelButton: false,
                 showConfirmButton: false
@@ -130,8 +130,8 @@
       });
 
       $(".delete-change").on("click",(e)=>{
-        swal({   title: 'Are you sure?',
-          text: 'Delete Change Log',
+        swal({   title: '{{ __("messages.are_you_sure") }}',
+          text: '{{ __("messages.delete_confirm") }}',
           type: "warning",
           showCancelButton: true,
           confirmButtonColor: "#DD6B55",
@@ -208,21 +208,21 @@
         @csrf
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Add Change Log</h4>
+        <h4 class="modal-title" id="myModalLabel">{{ __('messages.add_change_log') }}</h4>
       </div>
       <div class="modal-body">
            <div class="form-group">
-             <label for="usdCurrency">USD Currency Quantity</label>
-             <input type="number" name="usd" Required class="form-control" id="usdCurrency" placeholder="USD Currency Quantity">
+             <label for="usdCurrency">{{ __('messages.usd_amount') }}</label>
+             <input type="number" name="usd" Required class="form-control" id="usdCurrency" placeholder="{{ __('messages.usd_amount') }}">
            </div>
            <div class="form-group">
-             <label for="rielCurrency">Riel Currency Quantity</label>
-             <input type="number" name="riel" Required class="form-control" id="rielCurrency" placeholder="Riel Currency Quantity">
+             <label for="rielCurrency">{{ __('messages.riel_amount') }}</label>
+             <input type="number" name="riel" Required class="form-control" id="rielCurrency" placeholder="{{ __('messages.riel_amount') }}">
            </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-add">Submit</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
+        <button type="submit" class="btn btn-add">{{ __('messages.submit') }}</button>
         <div class="loader"></div>
       </div>
     </form>
@@ -239,22 +239,22 @@
          @csrf
        <div class="modal-header">
          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-         <h4 class="modal-title" id="myModalLabel">Edit Change Log</h4>
+         <h4 class="modal-title" id="myModalLabel">{{ __('messages.edit_change_log') }}</h4>
        </div>
        <div class="modal-body">
        <div class="form-group">
-             <label for="usdCurrency">USD Currency Quantity</label>
-             <input type="number" name="usd" Required class="form-control" id="usdCurrencyEdit" placeholder="USD Currency Quantity">
+             <label for="usdCurrency">{{ __('messages.usd_amount') }}</label>
+             <input type="number" name="usd" Required class="form-control" id="usdCurrencyEdit" placeholder="{{ __('messages.usd_amount') }}">
            </div>
            <div class="form-group">
-             <label for="rielCurrency">Riel Currency Quantity</label>
-             <input type="number" name="riel" Required class="form-control" id="rielCurrencyEdit" placeholder="Riel Currency Quantity">
+             <label for="rielCurrency">{{ __('messages.riel_amount') }}</label>
+             <input type="number" name="riel" Required class="form-control" id="rielCurrencyEdit" placeholder="{{ __('messages.riel_amount') }}">
            </div>
            <input type="hidden"  name="change-id" id="ChangeId">
        </div>
        <div class="modal-footer">
-         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-         <button type="submit" class="btn btn-add">Submit</button>
+         <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
+         <button type="submit" class="btn btn-add">{{ __('messages.submit') }}</button>
          <div class="loader"></div>
        </div>
      </form>

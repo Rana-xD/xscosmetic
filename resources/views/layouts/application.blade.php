@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
    <head>
       <meta charset="utf-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -71,47 +71,52 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                
                <ul class="nav navbar-nav">
-                  <li class="flat-box"><a href="/pos"><i class="fa fa-credit-card"></i> POS</a></li>
+                  <li class="flat-box"><a href="/pos"><i class="fa fa-credit-card"></i> {{ __('messages.pos') }}</a></li>
                   <li class="dropdown">
-                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-thumb-tack"></i> Tracking <span class="caret"></span></a>
+                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-thumb-tack"></i> {{ __('messages.tracking') }} <span class="caret"></span></a>
                            <ul class="dropdown-menu">
-                              <li class="flat-box"><a href="/change"><i class="fa fa-money"></i> Change Log</a></li>
-                              <li class="flat-box"><a href="/expense"><i class="fa fa-credit-card-alt"></i> Expense</a></li>
+                              <li class="flat-box"><a href="/change"><i class="fa fa-money"></i> {{ __('messages.change_log') }}</a></li>
+                              <li class="flat-box"><a href="/expense"><i class="fa fa-credit-card-alt"></i> {{ __('messages.expense') }}</a></li>
                               @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "MANAGER" || Auth::user()->role == "SUPERADMIN")
-                              <li class="flat-box"><a href="/product-log"><i class="fa fa-book"></i> Product Log</a></li>
+                              <li class="flat-box"><a href="/product-log"><i class="fa fa-book"></i> {{ __('messages.product_log') }}</a></li>
                               @endif
                            </ul>
                      </li>
                   @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "MANAGER" || Auth::user()->role == "SUPERADMIN")
                      <li class="dropdown">
-                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-archive"></i> Product <span class="caret"></span></a>
+                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-archive"></i> {{ __('messages.product') }} <span class="caret"></span></a>
                            <ul class="dropdown-menu">
-                              <li class="flat-box"><a href="/product"><i class="fa fa-archive"></i> Product (Stock) </a></li>
-                              <li class="flat-box"><a href="/category"><i class="fa fa-cog"></i> Brand</a></li>
-                              <!-- <li class="flat-box"><a href="/unit"><i class="fa fa-bullseye"></i> Unit</a></li> -->
+                              <li class="flat-box"><a href="/product"><i class="fa fa-archive"></i> {{ __('messages.product_stock') }}</a></li>
+                              <li class="flat-box"><a href="/category"><i class="fa fa-cog"></i> {{ __('messages.brand') }}</a></li>
                            </ul>
                      </li>
                   @endif
                   @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
                      <li class="dropdown">
-                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ticket"></i> Report <span class="caret"></span></a>
+                        <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ticket"></i> {{ __('messages.report') }} <span class="caret"></span></a>
                            <ul class="dropdown-menu">
-                              <li class="flat-box"><a href="/income-report"><i class="fa fa-money"></i>  Daily Income </a></li>
-                              <li class="flat-box"><a href="/invoice"><i class="fa fa-file-text-o"></i>  Invoice </a></li>
-                              <!-- @if (Auth::user()->role == "SUPERADMIN")
-                                 <li class="flat-box"><a href="/product-income"><i class="fa fa-file-archive-o"></i>  Product Income</a></li>
-                              @endif -->
+                              <li class="flat-box"><a href="/income-report"><i class="fa fa-money"></i> {{ __('messages.daily_income') }}</a></li>
+                              <li class="flat-box"><a href="/invoice"><i class="fa fa-file-text-o"></i> {{ __('messages.invoice') }}</a></li>
                         </ul>
                      </li>
-                     <li class="flat-box"><a href="/delivery"><i class="fa fa-motorcycle"></i> Delivery</a></li>
-                     <li class="flat-box"><a href="/user"><i class="fa fa-users"></i> User</a></li>
-                     <li class="flat-box"><a href="/setting"><i class="fa fa-cogs"></i> Setting</a></li>
+                     <li class="flat-box"><a href="/delivery"><i class="fa fa-motorcycle"></i> {{ __('messages.delivery') }}</a></li>
+                     <li class="flat-box"><a href="/user"><i class="fa fa-users"></i> {{ __('messages.user') }}</a></li>
+                     <li class="flat-box"><a href="/setting"><i class="fa fa-cogs"></i> {{ __('messages.setting') }}</a></li>
                   @endif
                  
                  
                  {{-- <li class="flat-box"><a href="#"><i class="fa fa-line-chart"></i>Reports</a></li> --}}
                </ul>
                <ul class="nav navbar-nav navbar-right">
+                  <li class="dropdown">
+                     <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-language fa-lg"></i> {{ app()->getLocale() == 'en' ? 'English' : 'ខ្មែរ' }} <span class="caret"></span>
+                     </a>
+                     <ul class="dropdown-menu">
+                        <li class="flat-box"><a href="{{ url('locale/en') }}"><i class="fa fa-flag"></i> English</a></li>
+                        <li class="flat-box"><a href="{{ url('locale/kh') }}"><i class="fa fa-flag"></i> ខ្មែរ</a></li>
+                     </ul>
+                  </li>
                   <li class="flat-box"><a href="{{ route('logout') }}" title="LogOut"><i class="fa fa-sign-out fa-lg"></i></a></li>
                </ul>
             </div>

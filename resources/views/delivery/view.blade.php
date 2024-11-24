@@ -9,9 +9,9 @@
       <table id="Table" class="table table-striped table-bordered" cellspacing="0" width="100%">
           <thead>
               <tr>
-                  <th class="hidden-xs">No</th>
-                  <th>Delivery Name</th>
-                  <th>Action</th>
+                  <th class="hidden-xs">{{ __('messages.sale_table_number') }}</th>
+                  <th>{{ __('messages.delivery_name') }}</th>
+                  <th>{{ __('messages.edit') }}</th>
               </tr>
           </thead>
 
@@ -35,7 +35,7 @@
       </table>
    </div>
    <!-- Button trigger modal -->
-   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Adddelivery">Add Delivery</button>
+   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Adddelivery">{{ __('messages.add_delivery') }}</button>
 </div>
 <!-- /.container -->
 
@@ -67,34 +67,35 @@
       });
 
       $(".delete-delivery").on("click",(e)=>{
-        swal({   title: 'Are you sure?',
-          text: 'Delete Product',
-          type: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#DD6B55",
-          confirmButtonText: 'YES',
-          closeOnConfirm: false },
-          function(){
-            console.log(e.target)
-            let id = e.target.getAttribute('data-id');
-            let formData = {
-              "id" : id
-            };
-            console.log(formData);
-            $.ajax({
-              url: '/delivery/delete',
-              type: "GET", 
-              data: formData,
-              contentType: false,
-              processData: true,
-              success: function(res){
-                location.reload();
-              },
-              error: function(err){
-                console.log(err);
-              } 
-            });
-          })
+        swal({   
+            title: '{{ __("messages.are_you_sure") }}',
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: '{{ __("messages.yes") }}',
+            cancelButtonText: '{{ __("messages.cancel") }}',
+            closeOnConfirm: true,
+        }, function(confirmed) {
+            if (confirmed) {
+                let id = e.target.getAttribute('data-id');
+                let formData = {
+                  "id" : id
+                };
+                $.ajax({
+                  url: '/delivery/delete',
+                  type: "GET", 
+                  data: formData,
+                  contentType: false,
+                  processData: true,
+                  success: function(res){
+                    location.reload();
+                  },
+                  error: function(err){
+                    console.log(err);
+                  } 
+                });
+            }
+        });
       });
 
       $(".edit-delivery").on("click",(e)=>{
@@ -139,17 +140,17 @@
         @csrf
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Add Delivery</h4>
+        <h4 class="modal-title" id="myModalLabel">{{ __('messages.add_delivery') }}</h4>
       </div>
       <div class="modal-body">
            <div class="form-group">
-             <label for="delivery-name">Unit Name</label>
-             <input type="text" name="name" maxlength="100" Required class="form-control" id="delivery-name" placeholder="Delivery Name">
+             <label for="delivery-name">{{ __('messages.delivery_name') }}</label>
+             <input type="text" name="name" Required class="form-control" id="delivery-name" placeholder="{{ __('messages.delivery_name') }}">
            </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-add">Submit</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
+        <button type="submit" class="btn btn-add">{{ __('messages.submit') }}</button>
       </div>
     </form>
     </div>
@@ -165,18 +166,18 @@
          @csrf
        <div class="modal-header">
          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-         <h4 class="modal-title" id="myModalLabel">Edit Delivery</h4>
+         <h4 class="modal-title" id="myModalLabel">{{ __('messages.edit_delivery') }}</h4>
        </div>
        <div class="modal-body">
             <div class="form-group">
-              <label for="delivery-name-edit">Delivery Name</label>
-              <input type="text" name="name" maxlength="100" Required class="form-control" id="delivery-name-edit" placeholder="Delivery Name">
+              <label for="delivery-name-edit">{{ __('messages.delivery_name') }}</label>
+              <input type="text" name="name" Required class="form-control" id="delivery-name-edit" placeholder="{{ __('messages.delivery_name') }}">
               <input type="hidden"  name="delivery-id" id="DeliveryId">
             </div>
        </div>
        <div class="modal-footer">
-         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-         <button type="submit" class="btn btn-add">Submit</button>
+         <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
+         <button type="submit" class="btn btn-add">{{ __('messages.submit') }}</button>
        </div>
      </form>
      </div>

@@ -36,27 +36,120 @@ $(document).ready(function () {
     });
     // tooltip intialisation
     $('[data-toggle="tooltip"]').tooltip();
+
     // datatable options
-    var table = $("#Table").DataTable({
-        dom: 'T<"clear">lfrtip',
-        lengthMenu: [
-            [10, 25, 50, -1],
-            [10, 25, 50, "All"],
-        ],
-        tableTools: {
-            sSwfPath:
-                "https://cdn.datatables.net/tabletools/2.2.4/swf/copy_csv_xls_pdf.swf",
-            bProcessing: true,
-            aButtons: [
-                "xls",
-                {
-                    sExtends: "pdf",
-                    sPdfOrientation: "landscape",
-                    sPdfMessage: "",
-                },
-                "print",
+    function initializeDataTable() {
+        var currentLang = $('html').attr('lang') || 'en';
+        
+        return $("#Table").DataTable({
+            dom: 'T<"clear">lfrtip',
+            lengthMenu: [
+                [10, 25, 50, -1],
+                [10, 25, 50, currentLang === 'kh' ? 'ទាំងអស់' : 'All'],
             ],
-        },
+            language: currentLang === 'kh' ? {
+                processing: "ដំណើរការ...",
+                search: "ស្វែងរក:",
+                lengthMenu: "បង្ហាញ _MENU_ ធាតុ",
+                info: "បង្ហាញ _START_ ដល់ _END_ នៃ _TOTAL_ ធាតុ",
+                infoEmpty: "បង្ហាញ 0 ដល់ 0 នៃ 0 ធាតុ",
+                infoFiltered: "(បានចម្រាញ់ចេញពី _MAX_ ធាតុសរុប)",
+                infoPostFix: "",
+                loadingRecords: "កំពុងផ្ទុកទិន្នន័យ...",
+                zeroRecords: "មិនមានទិន្នន័យត្រូវបង្ហាញ",
+                emptyTable: "មិនមានទិន្នន័យក្នុងតារាង",
+                paginate: {
+                    first: "ទំព័រដំបូង",
+                    previous: "មុន",
+                    next: "បន្ទាប់",
+                    last: "ទំព័រចុងក្រោយ"
+                },
+                aria: {
+                    sortAscending: ": ធ្វើការតម្រៀបតាមលំដាប់ឡើង",
+                    sortDescending: ": ធ្វើការតម្រៀបតាមលំដាប់ចុះ"
+                }
+            } : {},
+            tableTools: {
+                sSwfPath: "https://cdn.datatables.net/tabletools/2.2.4/swf/copy_csv_xls_pdf.swf",
+                bProcessing: true,
+                aButtons: [
+                    "xls",
+                    {
+                        sExtends: "pdf",
+                        sPdfOrientation: "landscape",
+                        sPdfMessage: "",
+                    },
+                    "print",
+                ],
+            },
+        });
+    }
+
+    // Initialize DataTable
+    var table = initializeDataTable();
+
+    // Function to update DataTable language
+    function updateDataTableLanguage() {
+        if (table) {
+            table.destroy();
+        }
+        table = initializeDataTable();
+    }
+
+    // Handle language change clicks
+    $('.nav.navbar-nav.navbar-right .dropdown-menu a').on('click', function(e) {
+        var lang = $(this).attr('href').split('/').pop();
+        localStorage.setItem('appLanguage', lang);
+    });
+
+    // Check language on page load
+    $(document).ready(function() {
+        var currentLang = $('html').attr('lang') || 'en';
+    });
+
+    // Listen for language change event
+    $(document).on('languageChanged', function(e, lang) {
+        updateDataTableLanguage();
+    });
+
+    // Function to get SweetAlert button text based on language
+    function getSweetAlertButtons() {
+        var currentLang = $('html').attr('lang') || 'en';
+        return {
+            yes: currentLang === 'kh' ? 'យល់ព្រម' : 'Yes',
+            cancel: currentLang === 'kh' ? 'បោះបង់' : 'Cancel'
+        };
+    }
+
+    // Handle confirm dialogs
+    $(document).on('click', '[data-confirm]', function(e) {
+        e.preventDefault();
+        var form = $(this).closest("form");
+        var link = $(this).attr("href");
+        var buttons = getSweetAlertButtons();
+        
+        swal({
+            title: $(this).attr("data-confirm"),
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: buttons.yes,
+            cancelButtonText: buttons.cancel,
+            closeOnConfirm: true,
+        }, function(confirmed) {
+            if (confirmed) {
+                if (form.length > 0) {
+                    form.submit();
+                } else if (link) {
+                    window.location.href = link;
+                }
+            }
+        });
+    });
+
+    // Update DataTable when language changes
+    $(document).on('languageChanged', function(e, lang) {
+        updateDataTableLanguage();
     });
 });
 

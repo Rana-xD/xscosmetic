@@ -5,18 +5,32 @@
     color: #fff;
     background-color: #059DC0;
     border-color: #059DC0;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+    white-space: nowrap;
+  }
+
+  .table td {
+    vertical-align: middle;
+    text-align: center;
+    padding: 12px 8px;
   }
 
   .cashier-name {
     font-weight: bold;
     font-size: 18px;
     color: black;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .calendar {
     display: flex;
-    justify-content: space-between;
-    align-items: center
+    align-items: center;
+    gap: 10px;
   }
 
   .container-fluid {
@@ -24,9 +38,12 @@
   }
 
   .label-text {
-    margin-bottom: 0;
+    margin: 0;
     font-size: 16px;
     font-weight: bold;
+    min-width: max-content;
+    display: flex;
+    align-items: center;
   }
 
   .date {
@@ -47,11 +64,13 @@
   .delete-invoice {
     padding: 6px 14px !important;
     font-size: 14px !important;
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
 
   .delete-invoice i {
     font-size: 14px;
-    margin-right: 5px;
   }
 
   .date-nav {
@@ -97,9 +116,40 @@
   .invoice-container {
     margin-top: 50px;
   }
+
+  .invoice-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .invoice-info span {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: max-content;
+  }
+
+  .search-wrapper {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .btn-add {
+    padding: 8px 20px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+  }
 </style>
 <div class="container">
-  <h3>Invoice</h3>
+  <h3>{{ __('messages.invoice_title') }}</h3>
   <br />
   <br />
 
@@ -107,7 +157,7 @@
     <div class="row">
       <div class="col-md-4" style="padding-left: 0">
         <div class="calendar">
-          <p class="label-text">Date:</p>
+          <p class="label-text">{{ __('messages.date') }}:</p>
           <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
             <div class="input-group-prepend">
               <button class="btn btn-outline-secondary date-nav" type="button" id="date-prev">
@@ -124,31 +174,44 @@
         </div>
       </div>
       <div class="col-md-4">
-        <button type="button" class="btn btn-add" id="handleCustomInvoiceSearch">Search</button>
+        <div class="search-wrapper">
+          <button type="button" class="btn btn-add" id="handleCustomInvoiceSearch">{{ __('messages.search') }}</button>
+        </div>
       </div>
     </div>
   </div>
 
-
   <div class="invoice-container">
     @foreach ($orders as $order)
-    <p class="cashier-name">Cashier: {{$order->cashier}}</p>
-    <div class="invoice-info" style="display: flex; justify-content: space-between">
-      <span style="font-weight: bold;">Order: {{$order->order_no}}</span>
-      <span style="font-weight: bold;">Date: {{ date("d M Y", strtotime($order->created_at)) }} | {{$order->time}}</span>
-      <span style="font-weight: bold;">Payment Type: {{ $order->payment_type === 'aba' || $order->payment_type === 'acleda' ? strtoupper($order->payment_type) : ucfirst($order->payment_type)}}</span>
+    <p class="cashier-name">
+      <span>{{ __('messages.cashier') }}:</span>
+      <span>{{$order->cashier}}</span>
+    </p>
+    <div class="invoice-info">
+      <span>
+        <span>{{ __('messages.order') }}:</span>
+        <span>{{$order->order_no}}</span>
+      </span>
+      <span>
+        <span>{{ __('messages.date') }}:</span>
+        <span>{{ date("d M Y", strtotime($order->created_at)) }} | {{$order->time}}</span>
+      </span>
+      <span>
+        <span>{{ __('messages.payment_type') }}:</span>
+        <span>{{ $order->payment_type === 'aba' || $order->payment_type === 'acleda' ? strtoupper($order->payment_type) : ucfirst($order->payment_type)}}</span>
+      </span>
     </div>
     <table class="table table-striped">
       <thead class="thead-dark">
         <tr>
-          <th scope="col">#</th>
-          <th scope="col">Name</th>
-          <th scope="col">Qty</th>
-          <th scope="col">Price</th>
-          <th scope="col">Discount</th>
-          <th scope="col">Total</th>
-          <th scope="col">Cost</th>
-          <th scope="col">Profit</th>
+          <th scope="col">{{ __('messages.invoice_table_number') }}</th>
+          <th scope="col">{{ __('messages.invoice_table_name') }}</th>
+          <th scope="col">{{ __('messages.invoice_table_qty') }}</th>
+          <th scope="col">{{ __('messages.invoice_table_price') }}</th>
+          <th scope="col">{{ __('messages.invoice_table_discount') }}</th>
+          <th scope="col">{{ __('messages.invoice_table_total') }}</th>
+          <th scope="col">{{ __('messages.invoice_table_cost') }}</th>
+          <th scope="col">{{ __('messages.invoice_table_profit') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -168,7 +231,8 @@
     </table>
     <div class="delete-button-container">
       <button class="btn btn-danger delete-invoice" data-invoice="{{ $order->id }}" data-order-no="{{ $order->order_no }}">
-        <i class="fa fa-trash"></i> Delete Invoice
+        <i class="fa fa-trash"></i>
+        <span>{{ __('messages.delete_invoice') }}</span>
       </button>
     </div>
     @endforeach

@@ -18,8 +18,10 @@
 
   .calendar {
     display: flex;
-    justify-content: space-between;
-    align-items: center
+    justify-content: flex-start;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
   }
 
   .container-fluid {
@@ -30,6 +32,8 @@
     margin-bottom: 0;
     font-size: 16px;
     font-weight: bold;
+    min-width: max-content;
+    white-space: nowrap;
   }
 
   .date {
@@ -151,24 +155,22 @@
     background-color: #f0f0f0;
   }
 
+  .input-group {
+    display: flex;
+    gap: 10px;
+    flex: 1;
+  }
+
   .input-group.date {
     width: 100%;
+    margin-left: 0;
   }
 
   .input-group.date .form-control {
     padding: 6px 8px;
     border-radius: 4px;
     border: 1px solid #ccc;
-  }
-
-  .input-group.date .form-control:hover {
-    background-color: #f0f0f0;
-  }
-
-  .input-group {
-    display: flex;
-    gap: 10px;
-    margin-left: 10px;
+    flex: 1;
   }
 
   .action-delete {
@@ -182,9 +184,25 @@
   .action-create {
     color: #8FD14F;
   }
+
+  /* Khmer text specific adjustments */
+  [lang="kh"] .label-text {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  [lang="kh"] .table th {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  [lang="kh"] .table td {
+    font-size: 14px;
+    line-height: 1.5;
+  }
 </style>
 <div class="container">
-  <h3>Product Daily Log</h3>
+  <h3>{{ __('messages.product_daily_log') }}</h3>
   <br />
   <br />
 
@@ -192,7 +210,7 @@
     <div class="row">
       <div class="col-md-4" style="padding-left: 0">
         <div class="calendar">
-          <p class="label-text">Date:</p>
+          <p class="label-text">{{ __('messages.select_date') }}:</p>
           <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
             <div class="input-group-prepend">
               <button class="btn btn-outline-secondary date-nav" type="button" id="date-prev">
@@ -223,11 +241,11 @@
       <thead class="light-green">
         <tr>
           <th scope="col" class="item-no">#</th>
-          <th scope="col">Product ID</th>
-          <th scope="col">Product Name</th>
-          <th scope="col">Stock</th>
-          <th scope="col">Barcode</th>
-          <th scope="col">Action</th>
+          <th scope="col">{{ __('messages.product_id') }}</th>
+          <th scope="col">{{ __('messages.product_name') }}</th>
+          <th scope="col">{{ __('messages.stock') }}</th>
+          <th scope="col">{{ __('messages.barcode') }}</th>
+          <th scope="col">{{ __('messages.action') }}</th>
         </tr>
       </thead>
       <tbody>

@@ -18,18 +18,46 @@
 
   .calendar {
     display: flex;
-    justify-content: space-between;
-    align-items: center
+    align-items: center;
+    gap: 10px;
+  }
+
+  .calendar-wrapper {
+    display: flex;
+    flex: 1;
+  }
+
+  .label-text {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+    min-width: max-content;
+    display: flex;
+    align-items: center;
+  }
+
+  .date-control-group {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-wrapper {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .btn-add {
+    padding: 8px 20px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .container-fluid {
     margin-bottom: -50px;
-  }
-
-  .label-text {
-    margin-bottom: 0;
-    font-size: 16px;
-    font-weight: bold;
   }
 
   .date {
@@ -170,9 +198,28 @@
     gap: 10px;
     margin-left: 10px;
   }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px;
+  }
+
+  .modal-footer .btn {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+  }
+
+  .modal-footer .loader {
+    margin-left: 10px;
+  }
 </style>
 <div class="container">
-  <h3>Daily Expense</h3>
+  <h3>{{ __('messages.daily_expense') }}</h3>
   <br />
   <br />
 
@@ -180,27 +227,31 @@
     <div class="row">
       <div class="col-md-4" style="padding-left: 0">
         <div class="calendar">
-          <p class="label-text">Date:</p>
-          <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
-            <div class="input-group-prepend">
-              <button class="btn btn-outline-secondary date-nav" type="button" id="date-prev">
-                <i class="fa fa-chevron-left"></i>
-              </button>
-            </div>
-            <input type="text" class="form-control selected-date datepicker" value="{{ empty($date) ? '' : $date }}">
-            <div class="input-group-append">
-              <button class="btn btn-outline-secondary date-nav" type="button" id="date-next">
-                <i class="fa fa-chevron-right"></i>
-              </button>
+          <p class="label-text">{{ __('messages.date') }}:</p>
+          <div class="date-control-group">
+            <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
+              <div class="input-group-prepend">
+                <button class="btn btn-outline-secondary date-nav" type="button" id="date-prev">
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+              </div>
+              <input type="text" class="form-control selected-date datepicker" value="{{ empty($date) ? '' : $date }}">
+              <div class="input-group-append">
+                <button class="btn btn-outline-secondary date-nav" type="button" id="date-next">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
       <div class="col-md-4">
-        <button type="button" class="btn btn-add" id="handleCustomExpenseSearch">Search</button>
+        <div class="search-wrapper">
+          <button type="button" class="btn btn-add" id="handleCustomExpenseSearch">{{ __('messages.search') }}</button>
+        </div>
       </div>
       <div class="col-md-4 expense-container">
-        <button type="button" class="btn expense-btn btn-primary btn-lg" data-toggle="modal" data-target="#addExpense">Add Expense</button>
+        <button type="button" class="btn expense-btn btn-primary btn-lg" data-toggle="modal" data-target="#addExpense">{{ __('messages.add_expense') }}</button>
       </div>
     </div>
   </div>
@@ -214,8 +265,8 @@
       <thead class="light-yellow">
         <tr>
           <th scope="col" class="item-no">#</th>
-          <th scope="col">Name</th>
-          <th scope="col">Cost</th>
+          <th scope="col">{{ __('messages.name') }}</th>
+          <th scope="col">{{ __('messages.cost') }}</th>
           @if (Auth::user()->role == "SUPERADMIN")
           <th scope="col"></th>
           @endif
@@ -415,12 +466,12 @@
 
     $(".delete-expense").on("click", (e) => {
       swal({
-          title: 'Are you sure?',
-          text: 'Delete Expense Item',
+          title: '{{ __('messages.delete_expense_confirm') }}',
+          text: '{{ __('messages.delete_expense_text') }}',
           type: "warning",
           showCancelButton: true,
           confirmButtonColor: "#DD6B55",
-          confirmButtonText: 'YES',
+          confirmButtonText: '{{ __('messages.yes') }}',
           closeOnConfirm: false
         },
         function() {
@@ -481,21 +532,21 @@
         @csrf
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="myModalLabel">New Expense</h4>
+          <h4 class="modal-title" id="myModalLabel">{{ __('messages.add_expense') }}</h4>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="UnitName">Name</label>
-            <input type="text" name="name" Required class="form-control" id="ExpenseName" placeholder="Name">
+            <label for="UnitName">{{ __('messages.name') }}</label>
+            <input type="text" name="name" Required class="form-control" id="ExpenseName" placeholder="{{ __('messages.enter_name') }}">
           </div>
           <div class="form-group">
-            <label for="UnitName">Cost</label>
-            <input type="text" name="cost" Required class="form-control" id="ExpenseCost" placeholder="Cost">
+            <label for="UnitName">{{ __('messages.cost') }}</label>
+            <input type="text" name="cost" Required class="form-control" id="ExpenseCost" placeholder="{{ __('messages.enter_cost') }}">
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-add">Submit</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('messages.cancel') }}</button>
+          <button type="submit" class="btn btn-add">{{ __('messages.save') }}</button>
           <div class="loader"></div>
         </div>
       </form>
@@ -512,26 +563,26 @@
 
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="editExpenseModalLabel">Edit Expense</h5>
+          <h5 class="modal-title" id="editExpenseModalLabel">{{ __('messages.edit_expense') }}</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="expense-name">Name</label>
-            <input type="text" class="form-control" id="ExpenseNameEdit" placeholder="Enter name">
+            <label for="expense-name">{{ __('messages.name') }}</label>
+            <input type="text" class="form-control" id="ExpenseNameEdit" placeholder="{{ __('messages.enter_name') }}">
           </div>
           <div class="form-group">
-            <label for="expense-cost">Cost</label>
-            <input type="text" class="form-control" id="ExpenseCostEdit" placeholder="Enter cost">
+            <label for="expense-cost">{{ __('messages.cost') }}</label>
+            <input type="text" class="form-control" id="ExpenseCostEdit" placeholder="{{ __('messages.enter_cost') }}">
           </div>
     </form>
     <input type="hidden" name="expenseItemId" id="ExpenseItemId">
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-    <button type="submit" class="btn btn-primary">Update</button>
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('messages.cancel') }}</button>
+    <button type="submit" class="btn btn-primary">{{ __('messages.update') }}</button>
     <div class="loader"></div>
   </div>
 </div>

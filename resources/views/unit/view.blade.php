@@ -67,34 +67,35 @@
       });
 
       $(".delete-unit").on("click",(e)=>{
-        swal({   title: 'Are you sure?',
-          text: 'Delete Product',
-          type: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#DD6B55",
-          confirmButtonText: 'YES',
-          closeOnConfirm: false },
-          function(){
-            console.log(e.target)
-            let id = e.target.getAttribute('data-id');
-            let formData = {
-              "id" : id
-            };
-            console.log(formData);
-            $.ajax({
-              url: '/unit/delete',
-              type: "GET", 
-              data: formData,
-              contentType: false,
-              processData: true,
-              success: function(res){
-                location.reload();
-              },
-              error: function(err){
-                console.log(err);
-              } 
-            });
-          })
+        swal({   
+            title: '{{ __("messages.are_you_sure") }}',
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: '{{ __("messages.yes") }}',
+            cancelButtonText: '{{ __("messages.cancel") }}',
+            closeOnConfirm: true,
+        }, function(confirmed) {
+            if (confirmed) {
+                let id = e.target.getAttribute('data-id');
+                let formData = {
+                  "id" : id
+                };
+                $.ajax({
+                  url: '/unit/delete',
+                  type: "GET", 
+                  data: formData,
+                  contentType: false,
+                  processData: true,
+                  success: function(res){
+                    location.reload();
+                  },
+                  error: function(err){
+                    console.log(err);
+                  } 
+                });
+            }
+        });
       });
 
       $(".edit-unit").on("click",(e)=>{

@@ -9,9 +9,9 @@
       <table id="Table" class="table table-striped table-bordered" cellspacing="0" width="100%">
           <thead>
               <tr>
-                  <th class="hidden-xs">No</th>
-                  <th>Brand Name</th>
-                  <th>Action</th>
+                  <th class="hidden-xs">{{ __('messages.sale_table_number') }}</th>
+                  <th>{{ __('messages.brand_name') }}</th>
+                  <th>{{ __('messages.action') }}</th>
               </tr>
           </thead>
 
@@ -35,7 +35,7 @@
       </table>
    </div>
    <!-- Button trigger modal -->
-   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addcategory">Add Brand</button>
+   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addcategory">{{ __('messages.add_brand') }}</button>
 </div>
 <!-- /.container -->
 
@@ -67,34 +67,35 @@
       });
 
       $(".delete-category").on("click",(e)=>{
-        swal({   title: 'Are you sure?',
-          text: 'Delete Product',
-          type: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#DD6B55",
-          confirmButtonText: 'YES',
-          closeOnConfirm: false },
-          function(){
-            console.log(e.target)
-            let id = e.target.getAttribute('data-id');
-            let formData = {
-              "id" : id
-            };
-            console.log(formData);
-            $.ajax({
-              url: '/category/delete',
-              type: "GET", 
-              data: formData,
-              contentType: false,
-              processData: true,
-              success: function(res){
-                location.reload();
-              },
-              error: function(err){
-                console.log(err);
-              } 
-            });
-          })
+        swal({   
+            title: '{{ __("messages.are_you_sure") }}',
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: '{{ __("messages.yes") }}',
+            cancelButtonText: '{{ __("messages.cancel") }}',
+            closeOnConfirm: true,
+        }, function(confirmed) {
+            if (confirmed) {
+                let id = e.target.getAttribute('data-id');
+                let formData = {
+                  "id" : id
+                };
+                $.ajax({
+                  url: '/category/delete',
+                  type: "GET", 
+                  data: formData,
+                  contentType: false,
+                  processData: true,
+                  success: function(res){
+                    location.reload();
+                  },
+                  error: function(err){
+                    console.log(err);
+                  } 
+                });
+            }
+        });
       });
 
       $(".edit-category").on("click",(e)=>{
@@ -139,17 +140,17 @@
         @csrf
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Add Brand</h4>
+        <h4 class="modal-title" id="myModalLabel">{{ __('messages.add_brand') }}</h4>
       </div>
       <div class="modal-body">
            <div class="form-group">
-             <label for="CategoryName">Brand Name</label>
-             <input type="text" name="name" maxlength="100" Required class="form-control" id="CategoryName" placeholder="Brand Name">
+             <label for="CategoryName">{{ __('messages.brand_name') }}</label>
+             <input type="text" name="name" Required class="form-control" id="CategoryName" placeholder="{{ __('messages.enter_brand_name') }}">
            </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-add">Submit</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
+        <button type="submit" class="btn btn-add">{{ __('messages.submit') }}</button>
       </div>
     </form>
     </div>
@@ -165,18 +166,18 @@
          @csrf
        <div class="modal-header">
          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-         <h4 class="modal-title" id="myModalLabel">Edit Brand</h4>
+         <h4 class="modal-title" id="myModalLabel">{{ __('messages.edit_brand') }}</h4>
        </div>
        <div class="modal-body">
             <div class="form-group">
-              <label for="CategoryName">Brand Name</label>
-              <input type="text" name="name" maxlength="100" Required class="form-control" id="CategoryNameEdit" placeholder="Brand Name">
+              <label for="CategoryName">{{ __('messages.brand_name') }}</label>
+              <input type="text" name="name" Required class="form-control" id="CategoryNameEdit" placeholder="{{ __('messages.enter_brand_name') }}">
               <input type="hidden"  name="category-id" id="CategoryId">
             </div>
        </div>
        <div class="modal-footer">
-         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-         <button type="submit" class="btn btn-add">Submit</button>
+         <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
+         <button type="submit" class="btn btn-add">{{ __('messages.submit') }}</button>
        </div>
      </form>
      </div>

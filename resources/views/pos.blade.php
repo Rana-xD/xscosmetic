@@ -90,22 +90,22 @@
     <div class="row">
         <div class="col-md-6 left-side">
             <div class="col-xs-3 table-header">
-                <h3>Product</h3>
+                <h3>{{ __('messages.product') }}</h3>
             </div>
             <div class="col-xs-1 table-header">
-                <h3 class="text-left">Price</h3>
+                <h3 class="text-left">{{ __('messages.price') }}</h3>
             </div>
             <div class="col-xs-2 table-header nopadding">
-                <h3 class="text-left">Quantity</h3>
+                <h3 class="text-left">{{ __('messages.quantity') }}</h3>
             </div>
             <div class="col-xs-2 table-header">
-                <h3>Discount %</h3>
+                <h3>{{ __('messages.discount_percent') }}</h3>
             </div>
             <div class="col-xs-2 table-header">
-                <h3>Discount USD</h3>
+                <h3>{{ __('messages.discount_usd') }}</h3>
             </div>
             <div class="col-xs-2 table-header nopadding">
-                <h3>Total</h3>
+                <h3>{{ __('messages.total') }}</h3>
             </div>
             <div id="productList">
 
@@ -114,32 +114,32 @@
                 <div class="table-responsive col-sm-12 totalTab">
                     <table class="table cashier-section">
                         <tr>
-                            <td class="active" width="40%">Total Items</td>
+                            <td class="active" width="40%">{{ __('messages.total_items') }}</td>
                             <td class="whiteBg" width="60%"><span id="Subtot"></span>
-                                <span class="float-right"><b id="ItemsNum"><span></span>item</b></span>
+                                <span class="float-right"><b id="ItemsNum"><span></span> {{ __('messages.items') }}</b></span>
                             </td>
                         </tr>
                         <tr>
-                            <td class="active" width="40%">Discount All %</td>
+                            <td class="active" width="40%">{{ __('messages.discount_all') }}</td>
                             <td class="whiteBg" width="60%"><span id="Subtot"></span>
                                 <input type="text" class="form-control discount-input overall-discount" value="" placeholder="0" maxlength="3" onkeyup="handleProductOverallDiscount(this)">
                             </td>
                         </tr>
                         <tr>
-                            <td class="active">Total in USD</td>
+                            <td class="active">{{ __('messages.total_in_usd') }}</td>
                             <td class="whiteBg light-blue text-bold"><span id="total-usd" total-usd-data="">$</td>
                         </tr>
                         <tr>
-                            <td class="active">Total in KHR</td>
+                            <td class="active">{{ __('messages.total_in_khr') }}</td>
                             <td class="whiteBg red text-bold"><span id="total-riel" total-riel-data="">៛</td>
                         </tr>
                     </table>
                 </div>
                 <button type="button" onclick="cancelPOS()" class="btn btn-red col-md-6 flat-box-btn">
-                    <h5 class="text-bold">CANCEL</h5>
+                    <h5 class="text-bold">{{ __('messages.cancel') }}</h5>
                 </button>
                 <button type="button" class="btn btn-green col-md-6 flat-box-btn" data-toggle="modal" id="Order">
-                    <h5 class="text-bold">ORDER</h5>
+                    <h5 class="text-bold">{{ __('messages.order') }}</h5>
                 </button>
                 <div class="order-loader"></div>
             </div>
@@ -159,7 +159,7 @@
             <div class="col-sm-12">
                 <div id="searchContainer">
                     <div class="input-group stylish-input-group">
-                        <input type="text" id="searchBrand" class="form-control" placeholder="Search Brand">
+                        <input type="text" id="searchBrand" class="form-control" placeholder="{{ __('messages.search_brand') }}">
                         <span class="input-group-addon">
                             <button type="submit">
                                 <span class="glyphicon glyphicon-search"></span>
@@ -167,7 +167,7 @@
                         </span>
                     </div>
                     <div class="input-group stylish-input-group">
-                        <input type="text" id="searchProd" class="form-control" placeholder="Search Product Name">
+                        <input type="text" id="searchProd" class="form-control" placeholder="{{ __('messages.search_product_name') }}">
                         <span class="input-group-addon">
                             <button type="submit">
                                 <span class="glyphicon glyphicon-search"></span>
@@ -175,7 +175,7 @@
                         </span>
                     </div>
                     <div class="input-group stylish-input-group">
-                        <input type="text" id="searchBarcode" class="form-control" placeholder="Search Product Barcode">
+                        <input type="text" id="searchBarcode" class="form-control" placeholder="{{ __('messages.search_product_barcode') }}">
                         <span class="input-group-addon">
                             <button type="submit">
                                 <span class="glyphicon glyphicon-search"></span>
@@ -1174,36 +1174,36 @@
                 @csrf
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">PAYMENT</h4>
+                    <h4 class="modal-title" id="myModalLabel">{{ __('messages.payment') }}</h4>
                 </div>
                 <div class="modal-body modal-body-pos">
                     <div class="form-group form-group-flex">
-                        <label for="invoice-no">Invoice No</label>
+                        <label for="invoice-no">{{ __('messages.invoice_no') }}</label>
                         <input type="text" name="invoice-no" maxlength="100" class="form-control" id="invoice-no" disabled>
                     </div>
                     <div class="form-group form-group-flex">
-                        <label for="total-in-usd-modal">Total In USD</label>
+                        <label for="total-in-usd-modal">{{ __('messages.total_in_usd') }}</label>
                         <input type="text" name="total-in-usd-modal" maxlength="100" class="form-control" id="total-in-usd-modal" disabled>
                         <input type="hidden" name="total-in-usd-final" maxlength="100" class="form-control" id="total-in-usd-final">
                     </div>
                     <div class="form-group form-group-flex">
-                        <label for="total-in-riel-moda">Total In KHR</label>
+                        <label for="total-in-riel-moda">{{ __('messages.total_in_khr') }}</label>
                         <input type="text" name="total-in-riel-modal" maxlength="100" class="form-control" id="total-in-riel-modal" disabled>
                         <input type="hidden" name="total-in-riel-final" maxlength="100" class="form-control" id="total-in-riel-final">
                     </div>
                     <div class="form-group form-group-flex">
-                        <label for="payment-type">Payment Type</label>
+                        <label for="payment-type">{{ __('messages.payment_type') }}</label>
                         <select class="form-control" id="payment-type" name="filtertype">
-                            <option value="aba" selected>ABA</option>
-                            <option value="cash">Cash</option>
-                            <option value="acleda">Acleda</option>
-                            <option value="custom">Custom Split</option>
-                            <option value="delivery">Delivery</option>
+                            <option value="aba" selected>{{ __('messages.aba') }}</option>
+                            <option value="cash">{{ __('messages.cash') }}</option>
+                            <option value="acleda">{{ __('messages.acleda') }}</option>
+                            <option value="custom">{{ __('messages.custom_split') }}</option>
+                            <option value="delivery">{{ __('messages.delivery') }}</option>
                         </select>
                     </div>
                     <div class="delivery">
                         <div class="form-group form-group-flex">
-                            <label for="delivery-type">Delivery Type</label>
+                            <label for="delivery-type">{{ __('messages.delivery_type') }}</label>
                             <select class="form-control" id="delivery-type" name="filtertype">
                                 @foreach (App\Delivery::orderBy('name', 'ASC')->get() as $delivery)
                                 <option value="{{ $delivery->name }}">{{ $delivery->name }}</option>
@@ -1214,44 +1214,44 @@
                 </div>
                 <div class="modal-body modal-body-pos custom-split" style="display: none;">
                     <div class="form-group form-group-flex">
-                        <label for="cash-in-usd">Cash Amount (USD)</label>
+                        <label for="cash-in-usd">{{ __('messages.cash_amount_usd') }}</label>
                         <input type="number" name="cash-in-usd" class="form-control" id="cash-in-usd" min="0" step="0.01">
                     </div>
                     <div class="form-group form-group-flex">
-                        <label for="aba-amount-usd">ABA Amount (USD)</label>
+                        <label for="aba-amount-usd">{{ __('messages.aba_amount_usd') }}</label>
                         <input type="number" name="aba-amount-usd" class="form-control" id="aba-amount-usd" readonly>
                     </div>
                     <div class="form-group form-group-flex">
-                        <label for="cash-percentage">Cash Percentage (%)</label>
+                        <label for="cash-percentage">{{ __('messages.cash_percentage') }}</label>
                         <input type="text" name="cash-percentage" class="form-control" id="cash-percentage" readonly>
                     </div>
                     <div class="form-group form-group-flex">
-                        <label for="aba-percentage">ABA Percentage (%)</label>
+                        <label for="aba-percentage">{{ __('messages.aba_percentage') }}</label>
                         <input type="text" name="aba-percentage" class="form-control" id="aba-percentage" readonly>
                     </div>
                 </div>
                 <div class="modal-body modal-body-pos payment-type-cash">
                     <div class="form-group form-group-flex">
-                        <label for="received-cash-in-usd">Received Cash In USD</label>
+                        <label for="received-cash-in-usd">{{ __('messages.received_cash_in_usd') }}</label>
                         <input type="number" name="received-cash-in-usd" class="form-control" id="received-cash-in-usd">
                     </div>
                     <div class="form-group form-group-flex">
-                        <label for="received-cash-in-riel">Received Cash In Riel</label>
+                        <label for="received-cash-in-riel">{{ __('messages.received_cash_in_riel') }}</label>
                         <input type="number" name="received-cash-in-riel" class="form-control" id="received-cash-in-riel">
                     </div>
                     <div class="form-group form-group-flex">
-                        <label for="change-in-usd">Change In USD</label>
+                        <label for="change-in-usd">{{ __('messages.change_in_usd') }}</label>
                         <input type="text" name="change-in-usd" maxlength="100" class="form-control" id="change-in-usd" disabled>
                     </div>
                     <div class="form-group form-group-flex">
-                        <label for="change-in-riel">Change In Riel</label>
+                        <label for="change-in-riel">{{ __('messages.change_in_riel') }}</label>
                         <input type="text" name="change-in-riel" maxlength="100" class="form-control" id="change-in-riel" disabled>
                     </div>
                 </div>
 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default cancel-pos" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-add"></span>Submit</button>
+                    <button type="button" class="btn btn-default cancel-pos" data-dismiss="modal">{{ __('messages.close') }}</button>
+                    <button type="submit" class="btn btn-add">{{ __('messages.submit') }}</button>
                     <div class="loader"></div>
                 </div>
             </form>

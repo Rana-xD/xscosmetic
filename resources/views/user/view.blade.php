@@ -9,10 +9,10 @@
       <table id="Table" class="table table-striped table-bordered" cellspacing="0" width="100%">
           <thead>
               <tr>
-                  <th class="hidden-xs">No</th>
-                  <th>User Name</th>
-                  <th>Role</th>
-                  <th>Action</th>
+                  <th class="hidden-xs">{{ __('messages.sale_table_number') }}</th>
+                  <th>{{ __('messages.user_name') }}</th>
+                  <th>{{ __('messages.user_role') }}</th>
+                  <th>{{ __('messages.edit') }}</th>
               </tr>
           </thead>
 
@@ -39,7 +39,7 @@
       </table>
    </div>
    <!-- Button trigger modal -->
-   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Adduser">Add User</button>
+   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Adduser">{{ __('messages.add_user') }}</button>
 </div>
 <!-- /.container -->
 
@@ -75,34 +75,35 @@
       });
 
       $(".delete-user").on("click",(e)=>{
-        swal({   title: 'Are you sure?',
-          text: 'Delete Product',
-          type: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#DD6B55",
-          confirmButtonText: 'YES',
-          closeOnConfirm: false },
-          function(){
-            console.log(e.target)
-            let id = e.target.getAttribute('data-id');
-            let formData = {
-              "id" : id
-            };
-            console.log(formData);
-            $.ajax({
-              url: '/user/delete',
-              type: "GET", 
-              data: formData,
-              contentType: false,
-              processData: true,
-              success: function(res){
-                location.reload();
-              },
-              error: function(err){
-                console.log(err);
-              } 
-            });
-          })
+        swal({   
+            title: '{{ __("messages.are_you_sure") }}',
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: '{{ __("messages.yes") }}',
+            cancelButtonText: '{{ __("messages.cancel") }}',
+            closeOnConfirm: true,
+        }, function(confirmed) {
+            if (confirmed) {
+                let id = e.target.getAttribute('data-id');
+                let formData = {
+                  "id" : id
+                };
+                $.ajax({
+                  url: '/user/delete',
+                  type: "GET", 
+                  data: formData,
+                  contentType: false,
+                  processData: true,
+                  success: function(res){
+                    location.reload();
+                  },
+                  error: function(err){
+                    console.log(err);
+                  } 
+                });
+            }
+        });
       });
 
       $(".edit-user").on("click",(e)=>{
@@ -152,29 +153,29 @@
         @csrf
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="myModalLabel">Add User</h4>
+        <h4 class="modal-title" id="myModalLabel">{{ __('messages.add_user') }}</h4>
       </div>
       <div class="modal-body">
            <div class="form-group">
-             <label for="UnitName">User Name</label>
-             <input type="text" name="username" maxlength="100" Required class="form-control" id="username" placeholder="User Name">
+             <label for="username">{{ __('messages.user_name') }}</label>
+             <input type="text" name="username" Required class="form-control" id="username" placeholder="{{ __('messages.user_name') }}">
            </div>
            <div class="form-group">
-             <label for="UnitName">Password</label>
-             <input type="text" name="user-password" maxlength="100" Required class="form-control" id="user-password" placeholder="Password">
+             <label for="user-password">{{ __('messages.password') }}</label>
+             <input type="password" name="password" Required class="form-control" id="user-password" placeholder="{{ __('messages.password') }}">
            </div>
            <div class="form-group">
-             <label for="role">Role</label>
-              <select class="form-control" id="role" name="filtertype">
-                  <option value="ADMIN" selected>Admin</option>
-                  <option value="MANAGER">Manager</option>
-                  <option value="STAFF">Staff</option>
+             <label for="role">{{ __('messages.user_role') }}</label>
+              <select class="form-control" id="role" name="role">
+                  <option value="ADMIN" selected>{{ __('messages.admin') }}</option>
+                  <option value="MANAGER">{{ __('messages.manager') }}</option>
+                  <option value="STAFF">{{ __('messages.staff') }}</option>
               </select>
            </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-add">Submit</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
+        <button type="submit" class="btn btn-add">{{ __('messages.submit') }}</button>
       </div>
     </form>
     </div>
@@ -190,30 +191,30 @@
          @csrf
        <div class="modal-header">
          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-         <h4 class="modal-title" id="myModalLabel">Edit User</h4>
+         <h4 class="modal-title" id="myModalLabel">{{ __('messages.edit_user') }}</h4>
        </div>
        <div class="modal-body">
           <div class="form-group">
-             <label for="UnitName">User Name</label>
-             <input type="text" name="username-edit" maxlength="100" Required class="form-control" id="username-edit" placeholder="User Name">
+             <label for="username">{{ __('messages.user_name') }}</label>
+             <input type="text" name="username-edit" Required class="form-control" id="username-edit" placeholder="{{ __('messages.user_name') }}">
            </div>
            <div class="form-group">
-             <label for="UnitName">Password</label>
-             <input type="text" name="user-password-edit" maxlength="100" class="form-control" id="user-password-edit" placeholder="Password">
+             <label for="user-password">{{ __('messages.password') }}</label>
+             <input type="password" name="password-edit" class="form-control" id="user-password-edit" placeholder="{{ __('messages.password') }}">
            </div>
            <div class="form-group">
-             <label for="role">Role</label>
-              <select class="form-control" id="role-edit" name="filtertype">
-                  <option value="ADMIN" selected>Admin</option>
-                  <option value="MANAGER">Manager</option>
-                  <option value="STAFF">Staff</option>
+             <label for="role">{{ __('messages.user_role') }}</label>
+              <select class="form-control" id="role-edit" name="role-edit">
+                  <option value="ADMIN" selected>{{ __('messages.admin') }}</option>
+                  <option value="MANAGER">{{ __('messages.manager') }}</option>
+                  <option value="STAFF">{{ __('messages.staff') }}</option>
               </select>
            </div>
            <input type="hidden"  name="user-id-edit" id="user-id-edit">
        </div>
        <div class="modal-footer">
-         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-         <button type="submit" class="btn btn-add">Submit</button>
+         <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
+         <button type="submit" class="btn btn-add">{{ __('messages.submit') }}</button>
        </div>
      </form>
      </div>

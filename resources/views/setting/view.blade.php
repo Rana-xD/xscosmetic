@@ -13,11 +13,11 @@
    <div class="row" style="margin-top:100px;">
    <div class="col-md-4" style="padding-left: 0">
           <div class="calendar">
-            <p class="label-text">Exchange Rate 1$:</p>
+            <p class="label-text">{{ __('messages.exchange_rate') }}:</p>
             <div class="input-group">
               <input type="text" class="form-control exchange-rate" value="{{ $setting->exchange_rate == null ? 0 : $setting->exchange_rate }}" placeholder="42000">
             </div>
-            <button type="button" class="btn btn-add" id="handleUpdateSetting">Update</button>
+            <button type="button" class="btn btn-add" id="handleUpdateSetting">{{ __('messages.update_settings') }}</button>
           </div>
         </div>
         
@@ -44,7 +44,7 @@
           processData: false,
           success: function(res){
             swal({
-                title: 'DONE',
+                title: '{{ __("messages.done") }}',
                 type: "success",
                 timer: 1500,
                 showCancelButton: false,

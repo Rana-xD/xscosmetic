@@ -49,6 +49,10 @@ Route::post('/unit/update', 'UnitController@update');
 
 Route::get('/change', 'ChangeController@show');
 Route::post('/change/add', 'ChangeController@store');
+
+// Language Switch Route
+Route::get('locale/{lang}', 'LanguageController@switchLang')->name('locale.switch');
+
 Route::get('/change/delete', 'ChangeController@destroy');
 Route::post('/change/update', 'ChangeController@update');
 
