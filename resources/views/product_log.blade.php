@@ -332,7 +332,7 @@
       if (date === '') {
         return;
       }
-      let filter = `/product_log/filter?date=${date}`;
+      let filter = `/product-log/filter?date=${date}`;
 
       window.location = filter;
     })

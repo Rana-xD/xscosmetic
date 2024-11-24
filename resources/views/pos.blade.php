@@ -219,6 +219,22 @@
         e.keyCode = 13; // enter
         $('#searchBrand').trigger(e);
 
+        // Payment type selection handler
+        $('#payment-type').on('change', function() {
+            let selectedType = $(this).val();
+            $('.payment-type-cash, .custom-split, .delivery').hide();
+            if (selectedType === 'cash') {
+                $('.payment-type-cash').show();
+            } else if (selectedType === 'custom') {
+                $('.custom-split').show();
+            } else if (selectedType === 'delivery') {
+                $('.delivery').show();
+            }
+        });
+
+        // Initialize payment type section
+        $('#payment-type').trigger('change');
+
         $('.addPct').on('click', (e) => {
             let self = e.target,
                 card = $(self).parents('.div');
