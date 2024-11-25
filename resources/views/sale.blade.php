@@ -238,7 +238,7 @@
         @foreach ($data['items'] as $index => $item)
         <tr>
           <th scope="row">{{ ($index + 1) }}</th>
-          <td>{{$item["name"]}}</td>
+          <td>{{$item["product_name"]}}</td>
           <td>{{$item["quantity"]}}</td>
           <td>{{$item["total"]}}$</td>
         </tr>
