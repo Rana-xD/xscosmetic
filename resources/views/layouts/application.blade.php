@@ -77,7 +77,7 @@
                            <ul class="dropdown-menu">
                               <li class="flat-box"><a href="/change"><i class="fa fa-money"></i> {{ __('messages.change_log') }}</a></li>
                               <li class="flat-box"><a href="/expense"><i class="fa fa-credit-card-alt"></i> {{ __('messages.expense') }}</a></li>
-                              @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "MANAGER" || Auth::user()->role == "SUPERADMIN")
+                              @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
                               <li class="flat-box"><a href="/product-log"><i class="fa fa-book"></i> {{ __('messages.product_log') }}</a></li>
                               @endif
                            </ul>

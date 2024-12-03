@@ -11,7 +11,9 @@
               <tr>
                   <th class="hidden-xs">{{ __('messages.sale_table_number') }}</th>
                   <th>{{ __('messages.brand_name') }}</th>
+                  @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
                   <th>{{ __('messages.action') }}</th>
+                  @endif
               </tr>
           </thead>
 
@@ -21,21 +23,25 @@
               <tr class="category-data">
                  <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
                  <td class="category-name">{{ $category->name }}</td>
-                 <td><div class="btn-group">
-                  <a class="btn btn-default delete-btn delete-category" data-id="{{ $category->id }}" ><i class="fa fa-times" data-id="{{ $category->id }}"></i></a>
-                  
-                     </div>
-                     <div class="btn-group">
+                 @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
+                 <td>
+                    <div class="btn-group">
+                      <a class="btn btn-default delete-btn delete-category" data-id="{{ $category->id }}" ><i class="fa fa-times" data-id="{{ $category->id }}"></i></a>
+                    </div>
+                    <div class="btn-group">
                       <a class="btn btn-default edit-category" data-id="{{ $category->id }}" ><i class="fa fa-pencil-square-o" data-id="{{ $category->id }}"></i></a>
-                     </div>
+                    </div>
                   </td>
+                  @endif
               </tr>
               @endforeach
           </tbody>
       </table>
    </div>
    <!-- Button trigger modal -->
+   @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
    <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Addcategory">{{ __('messages.add_brand') }}</button>
+   @endif
 </div>
 <!-- /.container -->
 
