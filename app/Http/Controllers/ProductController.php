@@ -157,31 +157,41 @@ class ProductController extends Controller
     {
         $today = Carbon::now()->format('Y-m-d');
         $product_log = ProductLog::where('date', $today)->first();
+        
+        $item = [
+            'id' => $product->id,
+            'name' => $product->name,
+            'action' => $action,
+            'stock' => $stock,
+            'barcode' => $barcode,
+            'additional_action' => $additional_action
+        ];
+
         if (empty($product_log)) {
-            $item = [
-                'id' => $product->id,
-                'name' => $product->name,
-                'action' => $action,
-                'stock' => $stock,
-                'barcode' => $barcode,
-                'additional_action' => $additional_action
-            ];
             $data = [
                 'date' => $today,
                 'items' => [$item]
             ];
             ProductLog::create($data);
         } else {
-
-            $item = [
-                'id' => $product->id,
-                'name' => $product->name,
-                'action' => $action,
-                'stock' => $stock,
-                'barcode' => $barcode,
-                'additional_action' => $additional_action
-            ];
-            $product_log->items = array_merge($product_log->items, [$item]);
+            $items = $product_log->items;
+            $found = false;
+            
+            foreach ($items as &$existing_item) {
+                if ($existing_item['id'] === $product->id) {
+                    $existing_item['stock'] += $stock;
+                    $existing_item['action'] = $action;
+                    $existing_item['additional_action'] = $additional_action;
+                    $found = true;
+                    break;
+                }
+            }
+            
+            if (!$found) {
+                $items[] = $item;
+            }
+            
+            $product_log->items = $items;
             $product_log->save();
         }
     }
