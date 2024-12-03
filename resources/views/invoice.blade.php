@@ -200,6 +200,10 @@
         <span>{{ __('messages.payment_type') }}:</span>
         <span>{{ $order->payment_type === 'aba' || $order->payment_type === 'acleda' ? strtoupper($order->payment_type) : ucfirst($order->payment_type)}}</span>
       </span>
+      <span>
+        <span>{{ __('messages.total') }}:</span>
+        <span>${{$order->total}}</span>
+      </span>
     </div>
     <table class="table table-striped">
       <thead class="thead-dark">
@@ -210,8 +214,6 @@
           <th scope="col">{{ __('messages.invoice_table_price') }}</th>
           <th scope="col">{{ __('messages.invoice_table_discount') }}</th>
           <th scope="col">{{ __('messages.invoice_table_total') }}</th>
-          <th scope="col">{{ __('messages.invoice_table_cost') }}</th>
-          <th scope="col">{{ __('messages.invoice_table_profit') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -220,11 +222,9 @@
           <th scope="row">{{ ($index + 1) }}</th>
           <td>{{$item["product_name"]}}</td>
           <td>{{$item["quantity"]}}</td>
-          <td>{{$item["price"]}}</td>
+          <td>$ {{$item["price"]}}</td>
           <td>{{$item["discount"]}}</td>
           <td>{{$item["total"]}}</td>
-          <td>{{$item["cost"]}}</td>
-          <td>{{$item["profit"]}}</td>
         </tr>
         @endforeach
       </tbody>

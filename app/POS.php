@@ -31,4 +31,17 @@ class POS extends Model
     protected $casts = [
         'items' => 'array',
     ];
+
+    /**
+     * Get the total amount of all items.
+     *
+     * @return float
+     */
+    public function getTotalAttribute()
+    {
+        return collect($this->items)->sum(function ($item) {
+            // Remove currency symbol and spaces, then convert to float
+            return (float) str_replace(['$', ' '], '', $item['total']);
+        });
+    }
 }
