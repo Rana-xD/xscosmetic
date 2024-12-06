@@ -396,11 +396,13 @@
             <label for="ProductName">{{ __('messages.stock') }}</label>
             <input type="number" name="stock" maxlength="100" Required class="form-control" id="stock" placeholder="{{ __('messages.stock') }}">
           </div>
-          @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
+          @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN" || Auth::user()->role == "MANAGER")
           <div class="form-group">
             <label for="ProductName">{{ __('messages.sell_price') }}</label>
             <input type="text" name="price" maxlength="100" class="form-control" id="price" placeholder="{{ __('messages.sell_price') }}">
           </div>
+          @endif
+          @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
           <div class="form-group">
             <label for="ProductName">{{ __('messages.product_cost') }}</label>
             <input type="text" name="cost" maxlength="100" class="form-control" id="cost" placeholder="{{ __('messages.product_cost') }}">
@@ -483,11 +485,13 @@
             <label for="ProductName">{{ __('messages.new_stock') }}</label>
             <input type="number" name="stock" maxlength="100" class="form-control" id="new-stock-edit" placeholder="{{ __('messages.new_stock') }}">
           </div>
-          @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
+          @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN" || Auth::user()->role == "MANAGER")
           <div class="form-group">
             <label for="ProductName">{{ __('messages.sell_price') }}</label>
             <input type="text" name="price" maxlength="100" class="form-control" id="price-edit" placeholder="{{ __('messages.sell_price') }}">
           </div>
+          @endif
+          @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
           <div class="form-group">
             <label for="ProductName">{{ __('messages.product_cost') }}</label>
             <input type="text" name="cost" maxlength="100" class="form-control" id="cost-edit" placeholder="{{ __('messages.product_cost') }}">
