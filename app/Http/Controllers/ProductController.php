@@ -131,20 +131,20 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        if ($isUpdatedName && $isUpdatedBarcode && intval($request->new_stock) > 0) {
-            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit name and product barcode and add stock');
+        if ($isUpdatedName && $isUpdatedBarcode && intval($request->new_stock) != 0) {
+            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit name and product barcode and update stock');
         } else if ($isUpdatedName && $isUpdatedBarcode) {
             $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit name and product barcode');
-        } else if ($isUpdatedName && intval($request->new_stock) > 0) {
-            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit name and add stock');
-        } else if ($isUpdatedBarcode && intval($request->new_stock) > 0) {
-            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit product barcode and add stock');
+        } else if ($isUpdatedName && intval($request->new_stock) != 0) {
+            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit name and update stock');
+        } else if ($isUpdatedBarcode && intval($request->new_stock) != 0) {
+            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit product barcode and update stock');
         } else if ($isUpdatedName) {
             $this->createProductLog($product, 'edit', 0, $product->product_barcode, 'edit name');
         } else if ($isUpdatedBarcode) {
             $this->createProductLog($product, 'edit', 0, $product->product_barcode, 'edit product barcode');
-        } else if (intval($request->new_stock) > 0) {
-            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'add stock');
+        } else if (intval($request->new_stock) != 0) {
+            $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'update stock');
         }
 
         return response()->json([
@@ -179,6 +179,8 @@ class ProductController extends Controller
             
             foreach ($items as &$existing_item) {
                 if ($existing_item['id'] === $product->id) {
+                    $existing_item['name'] = $product->name;
+                    $existing_item['barcode'] = $product->product_barcode;
                     $existing_item['stock'] += $stock;
                     $existing_item['action'] = $action;
                     $existing_item['additional_action'] = $additional_action;
