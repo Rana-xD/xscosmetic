@@ -24,12 +24,14 @@ class POS extends Model
         'aba_percentage',
         'cash_amount',
         'aba_amount',
+        'additional_info',
         'created_at',
         'updated_at'
     ];
 
     protected $casts = [
         'items' => 'array',
+        'additional_info' => 'array'
     ];
 
     /**

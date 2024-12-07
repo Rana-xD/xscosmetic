@@ -43,6 +43,7 @@ class POSController extends Controller
             "cashier" => Auth::user()->username,
             "time" => $this->getLocaleTime(),
             "payment_type" => $request->payment_type,
+            "additional_info" => $request->additional_info,
             'created_at' => $this->getLocaleTimestamp(),
             'updated_at' => $this->getLocaleTimestamp()
         ];
@@ -66,31 +67,29 @@ class POSController extends Controller
         ];
 
         $invoice = $request->invoice;
-        $total = $request->total;
-        $total_riel = $request->total_riel;
-        $total_discount = $request->totalDiscount;
-        $received_in_usd = $request->receivedInUSD;
-        $received_in_riel = $request->receivedInRiel;
-        $change_in_usd = $request->changeInUSD;
-        $change_in_riel = $request->changeInRiel;
+        $additional_info = $request->additional_info;
 
         if (Auth::user()->role !== "SUPERADMIN") {
-            $this->printInvoice($invoice, Auth::user()->username, $total, $total_riel, $total_discount, $received_in_usd, $received_in_riel, $change_in_usd, $change_in_riel);
+            $this->printInvoice(
+                $invoice,
+                Auth::user()->username,
+                $additional_info['total'],
+                $additional_info['total_riel'],
+                $additional_info['total_discount'],
+                $additional_info['received_in_usd'],
+                $additional_info['received_in_riel'],
+                $additional_info['change_in_usd'],
+                $additional_info['change_in_riel']
+            );
         }
 
-
         $order = POS::create($data);
-
-
 
         if ($this->isAddToTPosValid()) {
             TPOS::create($temp_data);
         }
 
-
         $this->deductStock($data['items']);
-        // $this->updateProductIncome($data['items']);
-        // NewOrder::dispatch($order);
 
         return response()->json([
             'code' => 200,

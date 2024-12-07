@@ -723,18 +723,27 @@
             if (data.length == 0) return;
 
             let formData = {
+                "invoice_no": $('#invoice-no').val(),
                 "data": data,
                 "temp_data": temp_data,
                 "invoice": invoice,
-                "invoice_no": $('#invoice-no').val(),
+                "payment_type": $('#payment-type').val(),
                 "total": $('#total-usd').attr('total-usd-data'),
                 "total_riel": $('#total-riel').attr('total-riel-data'),
-                "payment_type": $('#payment-type').val(),
                 "totalDiscount": $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val(),
                 "receivedInUSD": $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val(),
                 "receivedInRiel": $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val(),
                 "changeInUSD": $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val(),
-                "changeInRiel": $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val()
+                "changeInRiel": $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val(),
+                "additional_info": {
+                    total: $('#total-usd').attr('total-usd-data'),
+                    total_riel: $('#total-riel').attr('total-riel-data'),
+                    total_discount: $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val(),
+                    received_in_usd: $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val(),
+                    received_in_riel: $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val(),
+                    change_in_usd: $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val(),
+                    change_in_riel: $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val()
+                }
             };
 
             // Add percentage data for custom split payment

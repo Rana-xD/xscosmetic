@@ -147,6 +147,9 @@
     justify-content: center;
     min-width: 80px;
   }
+  .print-invoice {
+    margin-left: 10px;
+  }
 </style>
 <div class="container">
   <h3>{{ __('messages.invoice_title') }}</h3>
@@ -233,6 +236,10 @@
       <button class="btn btn-danger delete-invoice" data-invoice="{{ $order->id }}" data-order-no="{{ $order->order_no }}">
         <i class="fa fa-trash"></i>
         <span>{{ __('messages.delete_invoice') }}</span>
+      </button>
+      <button class="btn btn-primary print-invoice" data-invoice="{{ $order->id }}">
+        <i class="fa fa-print"></i>
+        <span>{{ __('messages.print_invoice') }}</span>
       </button>
     </div>
     @endforeach
@@ -343,6 +350,44 @@
             error: function(xhr) {
               swal("Error!", "Something went wrong!", "error");
             }
+          });
+        }
+      });
+    });
+
+    // Print invoice handler
+    $('.print-invoice').on('click', function() {
+      const invoiceId = $(this).data('invoice');
+      
+      $.ajax({
+        url: '/order/print-invoice',
+        method: 'GET',
+        data: {
+          id: invoiceId,
+          _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+          if (response.success) {
+            swal({
+              title: "Success!",
+              text: '{{ __("messages.print_success") }}',
+              type: "success",
+              timer: 2000,
+              showConfirmButton: false
+            });
+          } else {
+            swal({
+              title: "Error!",
+              text: '{{ __("messages.print_error") }}',
+              type: "error"
+            });
+          }
+        },
+        error: function() {
+          swal({
+            title: "Error!",
+            text: '{{ __("messages.print_error") }}',
+            type: "error"
           });
         }
       });
