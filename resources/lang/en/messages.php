@@ -163,6 +163,7 @@ return [
     'new_cost' => 'New Cost',
     'daily_summary_printed_successfully' => 'Daily summary printed successfully',
     'error_printing_daily_summary' => 'Error printing daily summary',
+    'no_invoices_found' => 'No invoices found for this date',
 
     // Brand/Category Page
     'brand_name' => 'Brand Name',

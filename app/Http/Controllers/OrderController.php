@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\POS;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use charlieuki\ReceiptPrinter\ReceiptPrinter;
 
 class OrderController extends Controller
@@ -38,26 +37,7 @@ class OrderController extends Controller
             return response()->json(['error' => 'Invoice not found'], 404);
         }
 
-        $printer = new ReceiptPrinter;
-        $printer->init(
-            config('receiptprinter.connector_type'),
-            config('receiptprinter.connector_descriptor')
-        );
-
-        $additional_info = $order->additional_info;
-
-        // Set store info
-        $printer->setStore('cosmetic');
-        $printer->setCashier($order->cashier);
-        $printer->setTotal($additional_info['total']);
-        $printer->setTotalRiel($additional_info['total_riel']);
-        $printer->setTotalDiscount($additional_info['total_discount']);
-        $printer->setReceivedInUsd($additional_info['received_in_usd']);
-        $printer->setReceivedInRiel($additional_info['received_in_riel']);
-        $printer->setChangeInUsd($additional_info['change_in_usd']);
-        $printer->setChangeInRiel($additional_info['change_in_riel']);
-        $printer->setLogo(public_path('img/logo.png'));
-        $printer->setNote(public_path('img/invoice_image.png'));
+        $printer = $this->initializePrinter($order->additional_info, $order->cashier);
 
         // Add items
         foreach ($order->items as $item) {
@@ -133,14 +113,13 @@ class OrderController extends Controller
             if ($order->additional_info) {
                 $additional_info = $order->additional_info;
                 $total += floatval($additional_info['total']);
-                // Remove commas before converting to float for total_riel
-                $total_riel += floatval(str_replace(',', '', $additional_info['total_riel']));
+                $total_riel += floatval($additional_info['total_riel']);
             }
         }
 
         return [
-            'total' => number_format($total, 2, '.', ''),
-            'total_riel' => number_format($total_riel, 0, '.', ',')
+            'total' => $total,
+            'total_riel' => $total_riel
         ];
     }
 
@@ -195,7 +174,7 @@ class OrderController extends Controller
             if ($orders->isEmpty()) {
                 return response()->json([
                     'success' => false, 
-                    'message' => 'No invoices found for this date'
+                    'message' => __('messages.no_invoices_found')
                 ], 404);
             }
 
@@ -220,11 +199,14 @@ class OrderController extends Controller
             // Print the receipt
             $printer->printXscometicReceipt();
 
-            return response()->json(['success' => true]);
+            return response()->json([
+                'success' => true,
+                'message' => __('messages.daily_summary_printed_successfully')
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error printing daily invoice: ' . $e->getMessage()
+                'message' => __('messages.error_printing_daily_summary') . ': ' . $e->getMessage()
             ], 500);
         }
     }

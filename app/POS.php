@@ -41,9 +41,18 @@ class POS extends Model
      */
     public function getTotalAttribute()
     {
-        return collect($this->items)->sum(function ($item) {
-            // Remove currency symbol and spaces, then convert to float
+        if (is_array($this->additional_info) && isset($this->additional_info['total'])) {
+            return number_format((float) $this->additional_info['total'], 2, '.', '');
+        }
+
+        if (!is_array($this->items)) {
+            return number_format(0, 2, '.', '');
+        }
+        
+        $total = collect($this->items)->sum(function ($item) {
             return (float) str_replace(['$', ' '], '', $item['total']);
         });
+        
+        return number_format($total, 2, '.', '');
     }
 }

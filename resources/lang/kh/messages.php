@@ -103,6 +103,7 @@ return [
     'invoice_table_profit' => 'ប្រាក់ចំណេញ',
     'daily_summary_printed_successfully' => 'បានបោះពុម្ពរបាយការណ៍ប្រចាំថ្ងៃដោយជោគជ័យ',
     'error_printing_daily_summary' => 'មានបញ្ហាក្នុងការបោះពុម្ពរបាយការណ៍ប្រចាំថ្ងៃ',
+    'no_invoices_found' => 'រកមិនឃើញវិក្កយបត្រសម្រាប់កាលបរិច្ឆេទនេះទេ',
 
     // Sale/Income Page
     'daily_income' => 'ចំណូលប្រចាំថ្ងៃ',
