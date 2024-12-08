@@ -147,8 +147,33 @@
     justify-content: center;
     min-width: 80px;
   }
+  .print-daily-invoice {
+    padding: 8px 20px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+  }
+
+  .print-daily-invoice i {
+    margin-right: 5px;
+  }
+
   .print-invoice {
     margin-left: 10px;
+  }
+
+  .print-invoice {
+    padding: 6px 14px !important;
+    font-size: 14px !important;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .print-invoice i {
+    font-size: 14px;
   }
 </style>
 <div class="container">
@@ -167,7 +192,7 @@
                 <i class="fa fa-chevron-left"></i>
               </button>
             </div>
-            <input type="text" class="form-control selected-date datepicker" value="{{ empty($date) ? '' : $date }}">
+            <input type="text" class="form-control selected-date datepicker" value="{{ empty($date) ? '' : $date }}" id="date">
             <div class="input-group-append">
               <button class="btn btn-outline-secondary date-nav" type="button" id="date-next">
                 <i class="fa fa-chevron-right"></i>
@@ -180,6 +205,12 @@
         <div class="search-wrapper">
           <button type="button" class="btn btn-add" id="handleCustomInvoiceSearch">{{ __('messages.search') }}</button>
         </div>
+      </div>
+      <div class="col-md-4">
+        <button type="button" class="btn btn-success print-daily-invoice" id="print-daily-invoice">
+            <i class="fa fa-print"></i>
+            {{ __('messages.print_daily_invoice') }}
+          </button>
       </div>
     </div>
   </div>
@@ -391,6 +422,80 @@
           });
         }
       });
+    });
+
+    // Handle print daily invoice click
+    $('.print-daily-invoice').on('click', function() {
+        const selectedDate = $('#date').val();
+        
+        if (!selectedDate) {
+            swal({
+                title: "{{ __('messages.warning') }}",
+                text: "{{ __('messages.please_select_date') }}",
+                type: "warning"
+            });
+            return;
+        }
+
+        swal({
+            title: "{{ __('messages.confirm_print') }}",
+            text: "{{ __('messages.print_daily_invoice_confirm') }}",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "{{ __('messages.yes') }}",
+            cancelButtonText: "{{ __('messages.no') }}",
+            closeOnConfirm: false,
+            closeOnCancel: true
+        }, function(isConfirm) {
+            if (isConfirm) {
+                swal({
+                    title: "{{ __('messages.printing') }}",
+                    text: "{{ __('messages.please_wait') }}",
+                    type: "info",
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+
+                $.ajax({
+                    url: '/order/print-daily-invoice',
+                    type: 'GET',
+                    data: {
+                        date: selectedDate,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            swal({
+                                title: "Success!",
+                                text: '{{ __("messages.daily_summary_printed_successfully") }}',
+                                type: "success",
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            swal({
+                                title: "Error!",
+                                text: response.message || '{{ __("messages.error_printing_daily_summary") }}',
+                                type: "error"
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMessage = '{{ __("messages.error_printing_daily_summary") }}';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+                        
+                        swal({
+                            title: "Error!",
+                            text: errorMessage,
+                            type: "error"
+                        });
+                    }
+                });
+            }
+        });
     });
   });
 </script>

@@ -33,6 +33,12 @@ return [
     'date' => 'កាលបរិច្ឆេទ',
     'yes' => 'យល់ព្រម',
     'no' => 'មិនយល់ព្រម',
+    'ok' => 'យល់ព្រម',
+    'warning' => 'ការព្រមាន',
+    'error' => 'កំហុស',
+    'success' => 'ជោគជ័យ',
+    'printing' => 'កំពុងបោះពុម្ព',
+    'please_wait' => 'សូមរង់ចាំ...',
 
     // POS Page
     'price' => 'តម្លៃ',
@@ -95,6 +101,8 @@ return [
     'invoice_table_total' => 'សរុប',
     'invoice_table_cost' => 'ថ្លៃដើម',
     'invoice_table_profit' => 'ប្រាក់ចំណេញ',
+    'daily_summary_printed_successfully' => 'បានបោះពុម្ពរបាយការណ៍ប្រចាំថ្ងៃដោយជោគជ័យ',
+    'error_printing_daily_summary' => 'មានបញ្ហាក្នុងការបោះពុម្ពរបាយការណ៍ប្រចាំថ្ងៃ',
 
     // Sale/Income Page
     'daily_income' => 'ចំណូលប្រចាំថ្ងៃ',
@@ -172,4 +180,12 @@ return [
     'product_price' => 'តម្លៃផលិតផល',
     'choose_image' => 'ជ្រើសរើសរូបភាព',
     'view_image' => 'មើលរូបភាព',
+
+    // Print Daily Invoice
+    'print_daily_invoice' => 'បោះពុម្ពសង្ខេបប្រចាំថ្ងៃ',
+    'print_daily_success' => 'បោះពុម្ពសង្ខេបប្រចាំថ្ងៃបានជោគជ័យ',
+    'print_daily_error' => 'មានបញ្ហាក្នុងការបោះពុម្ពសង្ខេបប្រចាំថ្ងៃ',
+    'please_select_date' => 'សូមជ្រើសរើសកាលបរិច្ឆេទ',
+    'confirm_print' => 'បញ្ជាក់ការបោះពុម្ព',
+    'print_daily_invoice_confirm' => 'តើអ្នកប្រាកដថាចង់បោះពុម្ពសង្ខេបប្រចាំថ្ងៃនេះទេ?',
 ];

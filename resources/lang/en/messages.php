@@ -32,6 +32,13 @@ return [
     'cost' => 'Cost',
     'date' => 'Date',
     'yes' => 'Yes',
+    'ok' => 'OK',
+    'warning' => 'Warning',
+    'error' => 'Error',
+    'success' => 'Success',
+    'printing' => 'Printing',
+    'please_wait' => 'Please wait...',
+    'no' => 'No',
 
     // POS Page
     'price' => 'Price',
@@ -94,6 +101,12 @@ return [
     'invoice_table_total' => 'Total',
     'invoice_table_cost' => 'Cost',
     'invoice_table_profit' => 'Profit',
+    'print_daily_invoice' => 'Print Daily Summary',
+    'print_daily_success' => 'Daily summary printed successfully',
+    'print_daily_error' => 'Error printing daily summary',
+    'please_select_date' => 'Please select a date',
+    'confirm_print' => 'Confirm Print',
+    'print_daily_invoice_confirm' => 'Are you sure you want to print the daily summary?',
 
     // Sale/Income Page
     'daily_income' => 'Daily Income',
@@ -148,6 +161,8 @@ return [
     'current_stock' => 'Current Stock',
     'new_stock' => 'New Stock',
     'new_cost' => 'New Cost',
+    'daily_summary_printed_successfully' => 'Daily summary printed successfully',
+    'error_printing_daily_summary' => 'Error printing daily summary',
 
     // Brand/Category Page
     'brand_name' => 'Brand Name',

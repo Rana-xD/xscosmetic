@@ -36,6 +36,7 @@ Route::delete('/pos/delete/{id}', 'POSController@destroy')->name('pos.delete');
 Route::get('/order', 'OrderController@show');
 Route::get('/order/update', 'OrderController@update');
 Route::get('/order/print-invoice', 'OrderController@printInvoice')->name('order.print-invoice');
+Route::get('/order/print-daily-invoice', 'OrderController@printDailyInvoice')->name('order.print-daily-invoice');
 
 Route::get('/category', 'CategoryController@show');
 Route::post('/category/add', 'CategoryController@store');
