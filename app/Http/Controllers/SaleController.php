@@ -174,6 +174,10 @@ class SaleController extends Controller
 
         $total = $total + $total_change - $total_expense;
 
+        // Get exchange rate from settings
+        $setting = Setting::first();
+        $exchange_rate = $setting ? floatval($setting->exchange_rate) : 4100; // Default to 4100 if not set
+
         if (auth()->user()->isAdmin()) {
             $payment_type_income = $this->generateIncomeDataFromTPosForPaymentType($date, $total_change, $total_expense);
         } else {
@@ -183,7 +187,8 @@ class SaleController extends Controller
         $income_data = [
             'items' => $invoice,
             'payment_type_income' => $payment_type_income,
-            'total' => number_format($total, 2, '.', '')
+            'total' => number_format($total, 2, '.', ''),
+            'total_in_riel' => number_format($total * $exchange_rate, 0, '.', ',')
         ];
         return $income_data;
     }

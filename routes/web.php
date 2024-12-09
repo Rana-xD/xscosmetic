@@ -81,3 +81,6 @@ Route::post('/setting/update', 'SettingController@update');
 
 Route::get('/product-log', 'ProductLogController@show');
 Route::get('/product-log/filter', 'ProductLogController@showCustomProductLog');
+
+Route::get('/exchange-rate', 'SettingController@show');
+Route::post('/exchange-rate/update', 'SettingController@update');

@@ -101,7 +101,7 @@
                      </li>
                      <li class="flat-box"><a href="/delivery"><i class="fa fa-motorcycle"></i> {{ __('messages.delivery') }}</a></li>
                      <li class="flat-box"><a href="/user"><i class="fa fa-users"></i> {{ __('messages.user') }}</a></li>
-                     <li class="flat-box"><a href="/setting"><i class="fa fa-cogs"></i> {{ __('messages.setting') }}</a></li>
+                     <li class="flat-box"><a href="/exchange-rate"><i class="fa fa-cogs"></i> {{ __('messages.exchange_rate') }}</a></li>
                   @endif
                  
                  

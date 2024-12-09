@@ -200,7 +200,12 @@
   <div>
     <div class="income-info">
       <p class="date-text">{{ empty($date) ? Carbon\Carbon::now()->format('Y-m-d') : $date }}</p>
-      <p class="total-income">{{$data["total"] === 0 ? '' : "{$data["total"]}$"}}</p>
+      <p class="total-income">
+        {{$data["total"] === 0 ? '' : "{$data["total"]}$"}}
+        @if($data["total"] !== 0)
+          <span style="margin-left: 10px;font-size: 26px; color:black;"> |</span><span style="margin-left: 10px; font-size: 26px; color:red;">{{$data["total_in_riel"]}}៛</span>
+        @endif
+      </p>
     </div>
     <table class="table table-payment-type-income">
       <thead class="light-pink">

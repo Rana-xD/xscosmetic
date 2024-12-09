@@ -16,6 +16,7 @@ return [
     'delivery' => 'ដឹកជញ្ជូន',
     'user' => 'អ្នកប្រើប្រាស់',
     'setting' => 'ការកំណត់',
+    'exchange_rate' => 'អត្រាប្តូរប្រាក់',
     'logout' => 'ចាកចេញ',
 
     // Common

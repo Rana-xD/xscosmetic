@@ -16,6 +16,7 @@ return [
     'delivery' => 'Delivery',
     'user' => 'User',
     'setting' => 'Setting',
+    'exchange_rate' => 'Exchange Rate',
     'logout' => 'Logout',
 
     // Common
@@ -133,7 +134,6 @@ return [
     'add_delivery' => 'Add Delivery',
 
     // Settings Page
-    'exchange_rate' => 'Exchange Rate 1$',
     'update_settings' => 'Update',
 
     // User Page
