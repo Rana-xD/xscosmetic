@@ -15,10 +15,11 @@ class TPOS extends Model
      * @var array
      */
     protected $fillable = [
-        'order_no', 'items', 'cashier','time','payment_type','created_at','updated_at'
+        'order_no', 'items', 'cashier','time','payment_type','created_at','updated_at', 'additional_info'
     ];
 
     protected $casts = [
         'items' => 'array',
+        'additional_info' => 'array'
     ];
 }

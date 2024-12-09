@@ -206,7 +206,7 @@
           <button type="button" class="btn btn-add" id="handleCustomInvoiceSearch">{{ __('messages.search') }}</button>
         </div>
       </div>
-      <div class="col-md-4" style="display: none;">
+      <div class="col-md-4">
         <button type="button" class="btn btn-success print-daily-invoice" id="print-daily-invoice">
             <i class="fa fa-print"></i>
             {{ __('messages.print_daily_invoice') }}

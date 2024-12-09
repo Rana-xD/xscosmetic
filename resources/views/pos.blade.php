@@ -949,14 +949,15 @@
     function handleProductDiscountInUSD(e) {
 
         console.log(`handleProductDiscountInUSD`);
-        let price = parseFloat($(e).parents('.product-card').find('.product-price').val()),
-            quantity = parseInt($(e).parents('.product-card').find('.quantity').val()),
-            initDiscountPrice = parseFloat($(e).parents('.product-card').find('.product-price').val()),
-            totalPrice = parseFloat((price) * quantity).toFixed(2),
+        let price = parseFloat($(e).parents('.product-card').find('.product-price').val());
+        let quantity = parseInt($(e).parents('.product-card').find('.quantity').val());
+        let initDiscountPrice = parseFloat($(e).parents('.product-card').find('.product-price').val());
+        let totalPrice = parseFloat((price) * quantity).toFixed(2),
             discountInUSD = ($(e).parents('.product-card').find('.discount-in-usd').val()) === '' ? 0 : parseInt($(e).parents('.product-card').find('.discount-in-usd').val());
 
 
         if (!discountInUSD) {
+
             let card = $(e).parents('.product-card');
             $(e).parents('.product-card').find('.product-discount-price').val(price);
             editQuantity(e);
@@ -973,29 +974,57 @@
     }
 
     function handleProductOverallDiscount(e) {
+        // Get the original total from data attribute
+        let originalTotal = parseFloat($('#total-usd').attr('original-total-data'));
+        if (!originalTotal || isNaN(originalTotal)) {
+            // If original total is not set, get it from current total and store it
+            originalTotal = parseFloat($('#total-usd').attr('total-usd-data'));
+            if (!originalTotal || isNaN(originalTotal)) {
+                return;
+            }
+            $('#total-usd').attr('original-total-data', originalTotal);
+        }
 
-        let parentDiv = $(e).parents('.cashier-section');
-        total = $('#total-usd').attr('') === '' ? 0 : $('#total-usd').attr('total-usd-data'),
-            totalDiscount = $('.overall-discount').val() === '' ? 0 : $('.overall-discount').val();
-
-        if (!total) {
+        // Get discount value
+        let input = $('.overall-discount').val();
+        if (!input || input === '') {
+            $('#total-usd').text(`$ ${originalTotal.toFixed(2)}`);
+            $('#total-usd').attr('total-usd-data', originalTotal.toFixed(2));
+            let totalRielPrice = handleExchangeToRielCurrency(originalTotal.toFixed(2));
+            $('#total-riel').text(`៛ ${totalRielPrice}`);
+            $('#total-riel').attr('total-riel-data', totalRielPrice);
             return;
         }
 
-        if (!totalDiscount) {
-            totalCash();
+        let totalDiscount = parseFloat(input);
+        if (isNaN(totalDiscount)) {
+            return;
+        }
+
+        // Handle invalid discount values
+        if (totalDiscount <= 0) {
+            $('#total-usd').text(`$ ${originalTotal.toFixed(2)}`);
+            $('#total-usd').attr('total-usd-data', originalTotal.toFixed(2));
+            let totalRielPrice = handleExchangeToRielCurrency(originalTotal.toFixed(2));
+            $('#total-riel').text(`៛ ${totalRielPrice}`);
+            $('#total-riel').attr('total-riel-data', totalRielPrice);
             return;
         }
 
         if (totalDiscount > 100) {
-            return;
+            $('.overall-discount').val('100');
+            totalDiscount = 100;
         }
-        let totalDiscountPrice = (total - ((total * totalDiscount) / 100)).toFixed(2);
-        totalRielDiscountPrice = handleExchangeToRielCurrency(totalDiscountPrice);
 
-        $('#total-usd').text(`$ ${totalDiscountPrice}`)
+        // Calculate discounted price using original total
+        let discountAmount = (originalTotal * totalDiscount) / 100;
+        let totalDiscountPrice = (originalTotal - discountAmount).toFixed(2);
+        let totalRielDiscountPrice = handleExchangeToRielCurrency(totalDiscountPrice);
+
+        // Update display
+        $('#total-usd').text(`$ ${totalDiscountPrice}`);
         $('#total-usd').attr('total-usd-data', totalDiscountPrice);
-        $('#total-riel').text(`៛ ${totalRielDiscountPrice}`)
+        $('#total-riel').text(`៛ ${totalRielDiscountPrice}`);
         $('#total-riel').attr('total-riel-data', totalRielDiscountPrice);
     }
 

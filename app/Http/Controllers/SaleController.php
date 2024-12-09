@@ -26,9 +26,11 @@ class SaleController extends Controller
         $end_date = Carbon::now()->format('Y-m-d') . ' 23:59:59';
 
         if (auth()->user()->isAdmin()) {
-            $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])->pluck('items');
+            $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])
+                            ->get();
         } else {
-            $orders = POS::whereBetween('created_at', [$start_date, $end_date])->pluck('items');
+            $orders = POS::whereBetween('created_at', [$start_date, $end_date])
+                            ->get();
         }
         $data = $this->generateIncomeData($orders);
         return view('sale', [
@@ -44,12 +46,15 @@ class SaleController extends Controller
 
 
         if (auth()->user()->isAdmin()) {
-            $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])->pluck('items');
+            $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])
+                            ->get();
         } else {
-            $orders = POS::whereBetween('created_at', [$start_date, $end_date])->pluck('items');
+            $orders = POS::whereBetween('created_at', [$start_date, $end_date])
+                            ->get();
         }
         $data = $this->generateIncomeData($orders, $request->date);
 
+        
         return view('sale', [
             'data' => $data,
             'date' => $request->date
@@ -98,11 +103,30 @@ class SaleController extends Controller
         $total = 0;
 
         foreach ($orders as $result) {
-            foreach ($result as $item) {
+            // Get discount for this order
+            $discount_percentage = 0;
+            if (isset($result->additional_info) && isset($result->additional_info['total_discount'])) {
+                $discount_percentage = floatval($result->additional_info['total_discount']);
+            }
+
+            // Check if items exists and is not null
+            if (!$result->items) {
+                continue;
+            }
+
+            foreach ($result->items as $item) {
+                $item_total = floatval(str_replace("$", "", trim($item['total'])));
+                
+                // Apply discount if this order has one
+                if ($discount_percentage > 0) {
+                    $discount_amount = $item_total * ($discount_percentage / 100);
+                    $item_total = $item_total - $discount_amount;
+                }
+                
                 $data = [
                     'product_name' => $item['product_name'],
-                    'quantity' => (int) str_replace("Can", " ", $item['quantity']),
-                    'total' => (float) str_replace("$", " ", $item['total'])
+                    'quantity' => (int) str_replace("Can", "", trim($item['quantity'])),
+                    'total' => $item_total
                 ];
                 array_push($items, $data);
             }
@@ -113,20 +137,15 @@ class SaleController extends Controller
 
             if ($index) {
                 $arrange_items[$index - 1]['quantity'] += $item['quantity'];
-                $arrange_items[$index - 1]['total'] += $item['total'];
+                $arrange_items[$index - 1]['total'] = floatval($arrange_items[$index - 1]['total']) + floatval($item['total']);
             } else {
                 array_push($arrange_items, $item);
             }
         }
 
+        // Calculate total
         foreach ($arrange_items as $item) {
-
-            $data = [
-                'product_name' => $item['product_name'],
-                'quantity' => strval($item['quantity']),
-                'total' => '$' . $item['total']
-            ];
-            array_push($invoice, $data);
+            $total += floatval($item['total']);
         }
 
         $change = Change::where('date', empty($date) ? Carbon::now()->format('Y-m-d') : $date)->first();
@@ -140,13 +159,18 @@ class SaleController extends Controller
             $total_change = $change_in_riel + $change_in_usd;
         }
 
-
-        foreach ($arrange_items as $item) {
-            $total += $item['total'];
-        }
-
         $expenses = Expense::where('date', empty($date) ? Carbon::now()->format('Y-m-d') : $date)->first();
         $total_expense = $this->getTotalExpense($expenses);
+
+        // Prepare invoice items
+        foreach ($arrange_items as $item) {
+            $data = [
+                'product_name' => $item['product_name'],
+                'quantity' => strval($item['quantity']),
+                'total' => '$' . number_format($item['total'], 2, '.', '')
+            ];
+            array_push($invoice, $data);
+        }
 
         $total = $total + $total_change - $total_expense;
 
@@ -156,11 +180,10 @@ class SaleController extends Controller
             $payment_type_income = $this->generateIncomeDataForPaymentType($date, $total_change, $total_expense);
         }
 
-
         $income_data = [
             'items' => $invoice,
             'payment_type_income' => $payment_type_income,
-            'total' => $total
+            'total' => number_format($total, 2, '.', '')
         ];
         return $income_data;
     }
@@ -170,16 +193,25 @@ class SaleController extends Controller
         $start_date = empty($date) ? Carbon::now()->format('Y-m-d') . ' 00:00:00' : date($date) . ' 00:00:00';
         $end_date = empty($date) ? Carbon::now()->format('Y-m-d') . ' 23:59:59' : date($date) . ' 23:59:59';
 
-        $orders_in_cash = POS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'cash')->pluck('items');
+        // Get orders with both items and additional_info
+        $orders_in_cash = POS::whereBetween('created_at', [$start_date, $end_date])
+            ->where('payment_type', 'cash')
+            ->get();
         $total_income_in_cash = $this->getTotalAmount($orders_in_cash);
 
-        $orders_in_aba = POS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'aba')->pluck('items');
+        $orders_in_aba = POS::whereBetween('created_at', [$start_date, $end_date])
+            ->where('payment_type', 'aba')
+            ->get();
         $total_income_in_aba = $this->getTotalAmount($orders_in_aba);
 
-        $orders_in_acleda = POS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'acleda')->pluck('items');
+        $orders_in_acleda = POS::whereBetween('created_at', [$start_date, $end_date])
+            ->where('payment_type', 'acleda')
+            ->get();
         $total_income_in_acleda = $this->getTotalAmount($orders_in_acleda);
 
-        $orders_in_delivery = POS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'delivery')->pluck('items');
+        $orders_in_delivery = POS::whereBetween('created_at', [$start_date, $end_date])
+            ->where('payment_type', 'delivery')
+            ->get();
         $total_income_in_delivery = $this->getTotalAmount($orders_in_delivery);
 
         // Handle custom split payments
@@ -215,16 +247,16 @@ class SaleController extends Controller
         $start_date = empty($date) ? Carbon::now()->format('Y-m-d') . ' 00:00:00' : date($date) . ' 00:00:00';
         $end_date = empty($date) ? Carbon::now()->format('Y-m-d') . ' 23:59:59' : date($date) . ' 23:59:59';
 
-        $orders_in_cash = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'cash')->pluck('items');
+        $orders_in_cash = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'cash')->get();
         $total_income_in_cash =  $this->getTotalAmount($orders_in_cash);
 
-        $orders_in_aba = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'aba')->pluck('items');
+        $orders_in_aba = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'aba')->get();
         $total_income_in_aba = $this->getTotalAmount($orders_in_aba);
 
-        $orders_in_acleda = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'acleda')->pluck('items');
+        $orders_in_acleda = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'acleda')->get();
         $total_income_in_acleda = $this->getTotalAmount($orders_in_acleda);
 
-        $orders_in_delivery = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'delivery')->pluck('items');
+        $orders_in_delivery = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'delivery')->get();
         $total_income_in_delivery = $this->getTotalAmount($orders_in_delivery);
 
         // Handle custom split payments
@@ -266,11 +298,30 @@ class SaleController extends Controller
         $total = 0;
 
         foreach ($orders as $result) {
-            foreach ($result as $item) {
+            // Get discount for this order
+            $discount_percentage = 0;
+            if (isset($result->additional_info) && isset($result->additional_info['total_discount'])) {
+                $discount_percentage = floatval($result->additional_info['total_discount']);
+            }
+
+            // Check if items exists and is not null
+            if (!$result->items) {
+                continue;
+            }
+
+            foreach ($result->items as $item) {
+                $item_total = floatval(str_replace("$", "", trim($item['total'])));
+                
+                // Apply discount if this order has one
+                if ($discount_percentage > 0) {
+                    $discount_amount = $item_total * ($discount_percentage / 100);
+                    $item_total = $item_total - $discount_amount;
+                }
+                
                 $data = [
                     'product_name' => $item['product_name'],
-                    'quantity' => (int) str_replace("Can", " ", $item['quantity']),
-                    'total' => (float) str_replace("$", " ", $item['total'])
+                    'quantity' => (int) str_replace("Can", "", trim($item['quantity'])),
+                    'total' => $item_total
                 ];
                 array_push($items, $data);
             }
@@ -281,17 +332,18 @@ class SaleController extends Controller
 
             if ($index) {
                 $arrange_items[$index - 1]['quantity'] += $item['quantity'];
-                $arrange_items[$index - 1]['total'] += $item['total'];
+                $arrange_items[$index - 1]['total'] = floatval($arrange_items[$index - 1]['total']) + floatval($item['total']);
             } else {
                 array_push($arrange_items, $item);
             }
         }
 
+        // Calculate final total
         foreach ($arrange_items as $item) {
-            $total += $item['total'];
+            $total += floatval($item['total']);
         }
 
-        return $total;
+        return number_format($total, 2, '.', '');
     }
 
     private function findExistingValueInArray($arrays, $value)

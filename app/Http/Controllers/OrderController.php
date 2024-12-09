@@ -37,7 +37,27 @@ class OrderController extends Controller
             return response()->json(['error' => 'Invoice not found'], 404);
         }
 
-        $printer = $this->initializePrinter($order->additional_info, $order->cashier);
+        // Create and configure printer
+        $printer = new ReceiptPrinter;
+        $printer->init(
+            config('receiptprinter.connector_type'),
+            config('receiptprinter.connector_descriptor')
+        );
+
+        // Configure printer settings
+        $printer->setStore('cosmetic');
+        $printer->setCashier($order->cashier);
+        $printer->setTotal($order->additional_info['total']);
+        $printer->setTotalRiel($order->additional_info['total_riel']);
+        $printer->setTotalDiscount($order->additional_info['total_discount']);
+        $printer->setReceivedInUsd($order->additional_info['received_in_usd']);
+        $printer->setReceivedInRiel($order->additional_info['received_in_riel']);
+        $printer->setChangeInUsd($order->additional_info['change_in_usd']);
+        $printer->setChangeInRiel($order->additional_info['change_in_riel']);
+        
+        // Set logo and note images
+        $printer->setLogo(public_path('img/logo.png'));
+        $printer->setNote(public_path('img/invoice_image.png'));
 
         // Add items
         foreach ($order->items as $item) {
@@ -68,13 +88,27 @@ class OrderController extends Controller
 
         // First loop: Extract items from each order and standardize their format
         foreach ($orders as $order) {
+            // Get discount percentage from additional_info if it exists
+            $discount_percentage = 0;
+            if ($order->additional_info && isset($order->additional_info['total_discount'])) {
+                $discount_percentage = floatval($order->additional_info['total_discount']);
+            }
+
             foreach ($order->items as $item) {
+                $item_total = floatval(str_replace("$", " ", $item['total']));
+                
+                // Apply discount if it exists
+                if ($discount_percentage > 0) {
+                    $discount_amount = $item_total * ($discount_percentage / 100);
+                    $item_total = $item_total - $discount_amount;
+                }
+
                 $data = [
                     'product_name' => $item['product_name'],
                     'quantity' => (int) str_replace("Can", " ", $item['quantity']), // Convert quantity to integer, remove 'Can' text
                     'price' => number_format((float) $item['price'], 2, '.', ''),
-                    'discount' => 0,
-                    'total' => number_format((float) str_replace("$", " ", $item['total']), 2, '.', '') // Convert total to float with 2 decimals
+                    'discount' => $discount_percentage,
+                    'total' => number_format($item_total, 2, '.', '') // Now includes the discount
                 ];
                 array_push($items, $data);
             }
@@ -88,7 +122,17 @@ class OrderController extends Controller
             if ($index) {
                 // If product exists, add quantities and totals
                 $arrange_items[$index - 1]['quantity'] += $item['quantity'];
-                $arrange_items[$index - 1]['total'] = number_format($arrange_items[$index - 1]['total'] + $item['total'], 2, '.', '');
+                $arrange_items[$index - 1]['total'] = number_format(
+                    floatval($arrange_items[$index - 1]['total']) + floatval($item['total']), 
+                    2, 
+                    '.', 
+                    ''
+                );
+                // Keep the highest discount percentage
+                $arrange_items[$index - 1]['discount'] = max(
+                    $arrange_items[$index - 1]['discount'],
+                    $item['discount']
+                );
             } else {
                 // If product is new, add it to arranged items
                 array_push($arrange_items, $item);
@@ -113,14 +157,49 @@ class OrderController extends Controller
             if ($order->additional_info) {
                 $additional_info = $order->additional_info;
                 $total += floatval($additional_info['total']);
-                $total_riel += floatval($additional_info['total_riel']);
+                // Remove commas before adding
+                $riel_amount = str_replace(',', '', $additional_info['total_riel']);
+                $total_riel += floatval($riel_amount);
             }
         }
 
         return [
-            'total' => $total,
-            'total_riel' => $total_riel
+            'total' => number_format($total, 2, '.', ''),  // Format USD with 2 decimal places
+            'total_riel' => number_format($total_riel, 0, '.', ',')  // Add commas back to Riel
         ];
+    }
+
+    /**
+     * Initialize and configure the receipt printer for a single invoice
+     * 
+     * @param array $info Order information
+     * @param string $cashier Cashier name
+     * @return ReceiptPrinter Configured printer instance
+     */
+    private function setupInvoicePrinter($info, $cashier) {
+        // Create new printer instance
+        $printer = new ReceiptPrinter;
+        $printer->init(
+            config('receiptprinter.connector_type'),
+            config('receiptprinter.connector_descriptor')
+        );
+
+        // Configure printer settings
+        $printer->setStore('cosmetic');
+        $printer->setCashier($cashier);
+        $printer->setTotal($info['total']);
+        $printer->setTotalRiel($info['total_riel']);
+        $printer->setTotalDiscount($info['total_discount']);
+        $printer->setReceivedInUsd($info['received_usd']);
+        $printer->setReceivedInRiel($info['received_riel']);
+        $printer->setChangeInUsd($info['change_usd']);
+        $printer->setChangeInRiel($info['change_riel']);
+        
+        // Set logo and note images
+        $printer->setLogo(public_path('img/logo.png'));
+        $printer->setNote(public_path('img/invoice_image.png'));
+
+        return $printer;
     }
 
     /**
