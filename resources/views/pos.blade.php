@@ -598,55 +598,92 @@
         });
 
         $('#received-cash-in-usd').on('input', function(e) {
-            let value = $(this).val();
-            let totalUSD = $('#total-usd').attr('total-usd-data');
+            let value = parseFloat($(this).val()) || 0;
+            let rielValue = parseInt($('#received-cash-in-riel').val()) || 0;
+            let totalUSD = parseFloat($('#total-usd').attr('total-usd-data'));
             let paymentType = $('#payment-type').val();
 
-            if (paymentType === 'custom') {
-                let cashPercentage = parseInt($('#cash-percentage').val()) || 0;
-                let cashAmount = (totalUSD * (cashPercentage / 100)).toFixed(2);
-                let changeInUSD = value - cashAmount;
-                let changeInRiel = handleExchangeToRielCurrency(changeInUSD);
-                $('#change-in-riel').val(`${changeInRiel} ៛`);
-                $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
-            } else {
-                let changeInUSD = value - totalUSD;
-                let changeInRiel = handleExchangeToRielCurrency(changeInUSD);
-                $('#change-in-riel').val(`${changeInRiel} ៛`);
-                $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
-            }
-
-            if (value != '') {
-                $("#received-cash-in-riel").prop('disabled', true);
-            } else {
-                $("#received-cash-in-riel").prop('disabled', false);
+            // Check if both USD and Riel inputs have values
+            if (value > 0 && rielValue > 0) {
+                // Hide change fields when both inputs have values
+                $('[for="change-in-usd"]').parent().hide();
+                $('[for="change-in-riel"]').parent().hide();
+                // Clear change fields when hidden
                 $('#change-in-riel').val('');
                 $('#change-in-usd').val('');
+            } else {
+                // Show change fields
+                $('[for="change-in-usd"]').parent().show();
+                $('[for="change-in-riel"]').parent().show();
+                
+                // Recalculate change values
+                if (value > 0) {
+                    if (paymentType === 'custom') {
+                        let cashPercentage = parseInt($('#cash-percentage').val()) || 0;
+                        let cashAmount = (totalUSD * (cashPercentage / 100)).toFixed(2);
+                        let changeInUSD = value - cashAmount;
+                        let changeInRiel = handleExchangeToRielCurrency(changeInUSD);
+                        $('#change-in-riel').val(`${changeInRiel} ៛`);
+                        $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
+                    } else {
+                        let changeInUSD = value - totalUSD;
+                        let changeInRiel = handleExchangeToRielCurrency(changeInUSD);
+                        $('#change-in-riel').val(`${changeInRiel} ៛`);
+                        $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
+                    }
+                } else {
+                    $('#change-in-riel').val('');
+                    $('#change-in-usd').val('');
+                }
             }
         });
 
         $('#received-cash-in-riel').on('input', function(e) {
-            let value = $(this).val();
-            let totalUSD = $('#total-usd').attr('total-usd-data');
+            // Ensure Riel value is always an integer
+            let value = parseInt($(this).val()) || 0;
+            let usdValue = parseFloat($('#received-cash-in-usd').val()) || 0;
+            let totalUSD = parseFloat($('#total-usd').attr('total-usd-data'));
             let totalRiel = handleRemoveCommafromRielCurrency($('#total-riel').attr('total-riel-data'));
             let paymentType = $('#payment-type').val();
 
-            if (paymentType === 'custom') {
-                let cashPercentage = parseInt($('#cash-percentage').val()) || 0;
-                let cashAmountRiel = (totalRiel * (cashPercentage / 100));
-                let changeInRiel = addComma(value - cashAmountRiel);
-                $('#change-in-riel').val(`${changeInRiel} ៛`);
-            } else {
-                let changeInRiel = addComma(value - totalRiel);
-                $('#change-in-riel').val(`${changeInRiel} ៛`);
-            }
-
-            if (value != '') {
-                $("#received-cash-in-usd").prop('disabled', true);
-            } else {
-                $("#received-cash-in-usd").prop('disabled', false);
+            // Check if both USD and Riel inputs have values
+            if (value > 0 && usdValue > 0) {
+                // Hide change fields when both inputs have values
+                $('[for="change-in-usd"]').parent().hide();
+                $('[for="change-in-riel"]').parent().hide();
+                // Clear change fields when hidden
                 $('#change-in-riel').val('');
                 $('#change-in-usd').val('');
+            } else {
+                // Show change fields
+                $('[for="change-in-usd"]').parent().show();
+                $('[for="change-in-riel"]').parent().show();
+                
+                // Recalculate change values
+                if (value > 0) {
+                    if (paymentType === 'custom') {
+                        let cashPercentage = parseInt($('#cash-percentage').val()) || 0;
+                        let cashAmountRiel = (totalRiel * (cashPercentage / 100));
+                        let changeInRiel = addComma(value - cashAmountRiel);
+                        $('#change-in-riel').val(`${changeInRiel} ៛`);
+                        // Also calculate USD equivalent for better user experience
+                        let changeInUSD = (value - cashAmountRiel) / parseFloat($('#exchange_rate').val());
+                        $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
+                    } else {
+                        let changeInRiel = addComma(value - totalRiel);
+                        $('#change-in-riel').val(`${changeInRiel} ៛`);
+                        // Also calculate USD equivalent for better user experience
+                        let changeInUSD = (value - totalRiel) / parseFloat($('#exchange_rate').val());
+                        $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
+                    }
+                } else if (usdValue > 0) {
+                    // If there's a USD value but no Riel value, let the USD handler calculate
+                    // This ensures we don't clear values when one field still has a value
+                    $('#received-cash-in-usd').trigger('input');
+                } else {
+                    $('#change-in-riel').val('');
+                    $('#change-in-usd').val('');
+                }
             }
         });
 
@@ -953,7 +990,7 @@
         let quantity = parseInt($(e).parents('.product-card').find('.quantity').val());
         let initDiscountPrice = parseFloat($(e).parents('.product-card').find('.product-price').val());
         let totalPrice = parseFloat((price) * quantity).toFixed(2),
-            discountInUSD = ($(e).parents('.product-card').find('.discount-in-usd').val()) === '' ? 0 : parseInt($(e).parents('.product-card').find('.discount-in-usd').val());
+            discountInUSD = ($(e).parents('.product-card').find('.discount-in-usd').val()) === '' ? 0 : parseFloat($(e).parents('.product-card').find('.discount-in-usd').val());
 
 
         if (!discountInUSD) {
@@ -1291,7 +1328,7 @@
                     </div>
                     <div class="form-group form-group-flex">
                         <label for="received-cash-in-riel">{{ __('messages.received_cash_in_riel') }}</label>
-                        <input type="number" name="received-cash-in-riel" class="form-control" id="received-cash-in-riel">
+                        <input type="number" name="received-cash-in-riel" class="form-control" id="received-cash-in-riel" step="1" min="0">
                     </div>
                     <div class="form-group form-group-flex">
                         <label for="change-in-usd">{{ __('messages.change_in_usd') }}</label>
