@@ -236,7 +236,13 @@
       </span>
       <span>
         <span>{{ __('messages.payment_type') }}:</span>
-        <span>{{ $order->payment_type === 'aba' || $order->payment_type === 'acleda' ? strtoupper($order->payment_type) : ucfirst($order->payment_type)}}</span>
+        <span>
+          @if($order->payment_type === 'custom')
+            {{ ucfirst($order->payment_type) }} (ABA ${{ isset($order->aba_amount) ? $order->aba_amount : '0' }} | Cash ${{ isset($order->cash_amount) ? $order->cash_amount : '0' }})
+          @else
+            {{ $order->payment_type === 'aba' || $order->payment_type === 'acleda' ? strtoupper($order->payment_type) : ucfirst($order->payment_type)}}
+          @endif
+        </span>
       </span>
       <span>
         <span>{{ __('messages.total') }}:</span>
@@ -304,6 +310,7 @@
               <option value="aba">{{ __('messages.aba') }}</option>
               <option value="cash">{{ __('messages.cash') }}</option>
               <option value="acleda">{{ __('messages.acleda') }}</option>
+              <option value="custom">{{ __('messages.custom_split') }}</option>
             </select>
           </div>
         </form>
