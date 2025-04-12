@@ -382,4 +382,45 @@ class SaleController extends Controller
         }
         return $total;
     }
+
+    /**
+     * Update the payment type for an invoice
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updatePaymentType(Request $request)
+    {
+        try {
+            $id = $request->input('id');
+            $paymentType = $request->input('payment_type');
+            
+            // Determine which model to use based on user role
+            $model = auth()->user()->isAdmin() ? TPOS::class : POS::class;
+            
+            $invoice = $model::find($id);
+            
+            if (!$invoice) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invoice not found'
+                ]);
+            }
+            
+            // Update the payment type
+            $invoice->payment_type = $paymentType;
+            $invoice->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Payment type updated successfully'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ]);
+        }
+    }
 }

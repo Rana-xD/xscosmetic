@@ -186,4 +186,10 @@ return [
     'product_price' => 'Product Price',
     'choose_image' => 'Choose Image',
     'view_image' => 'View Image',
+
+    'payment_updated' => 'Payment type updated successfully',
+    'update_error' => 'Error updating payment type',
+    'update_invoice' => 'Update Invoice',
+    'update_payment_type' => 'Update Payment Type',
+    'save_changes' => 'Save Changes'
 ];

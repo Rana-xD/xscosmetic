@@ -1,4 +1,4 @@
-  @extends('layouts/application')
+@extends('layouts/application')
 @section('content')
 <style>
   .table .thead-dark th {
@@ -164,7 +164,7 @@
     margin-left: 10px;
   }
 
-  .print-invoice {
+  .print-invoice, .update-payment {
     padding: 6px 14px !important;
     font-size: 14px !important;
     display: flex;
@@ -172,8 +172,12 @@
     gap: 5px;
   }
 
-  .print-invoice i {
+  .print-invoice i, .update-payment i {
     font-size: 14px;
+  }
+  
+  .update-payment {
+    margin-left: 10px;
   }
 </style>
 <div class="container">
@@ -272,8 +276,43 @@
         <i class="fa fa-print"></i>
         <span>{{ __('messages.print_invoice') }}</span>
       </button>
+      <button class="btn btn-info update-payment" data-invoice="{{ $order->id }}" data-payment="{{ $order->payment_type }}">
+        <i class="fa fa-edit"></i>
+        <span>{{ __('messages.update_invoice') }}</span>
+      </button>
     </div>
     @endforeach
+  </div>
+</div>
+
+<!-- Payment Type Update Modal -->
+<div class="modal fade" id="updatePaymentModal" tabindex="-1" role="dialog" aria-labelledby="updatePaymentModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updatePaymentModalLabel">{{ __('messages.update_payment_type') }}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="updatePaymentForm">
+          <input type="hidden" id="invoice_id" name="invoice_id">
+          <div class="form-group">
+            <label for="payment_type">{{ __('messages.payment_type') }}</label>
+            <select class="form-control" id="payment_type" name="payment_type">
+              <option value="aba">{{ __('messages.aba') }}</option>
+              <option value="cash">{{ __('messages.cash') }}</option>
+              <option value="acleda">{{ __('messages.acleda') }}</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('messages.close') }}</button>
+        <button type="button" class="btn btn-primary" id="savePaymentUpdate">{{ __('messages.save_changes') }}</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -424,6 +463,58 @@
       });
     });
 
+    // Handle payment type update
+    $('.update-payment').on('click', function() {
+      const invoiceId = $(this).data('invoice');
+      const currentPayment = $(this).data('payment');
+      
+      $('#invoice_id').val(invoiceId);
+      $('#payment_type').val(currentPayment);
+      $('#updatePaymentModal').modal('show');
+    });
+    
+    $('#savePaymentUpdate').on('click', function() {
+      const invoiceId = $('#invoice_id').val();
+      const paymentType = $('#payment_type').val();
+      
+      $.ajax({
+        url: '/invoice/update-payment',
+        method: 'POST',
+        data: {
+          id: invoiceId,
+          payment_type: paymentType,
+          _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+          if (response.success) {
+            $('#updatePaymentModal').modal('hide');
+            swal({
+              title: "Success!",
+              text: '{{ __("messages.payment_updated") }}',
+              type: "success",
+              timer: 2000,
+              showConfirmButton: false
+            }, function() {
+              location.reload();
+            });
+          } else {
+            swal({
+              title: "Error!",
+              text: response.message || '{{ __("messages.update_error") }}',
+              type: "error"
+            });
+          }
+        },
+        error: function() {
+          swal({
+            title: "Error!",
+            text: '{{ __("messages.update_error") }}',
+            type: "error"
+          });
+        }
+      });
+    });
+    
     // Handle print daily invoice click
     $('.print-daily-invoice').on('click', function() {
         const selectedDate = $('#date').val();
