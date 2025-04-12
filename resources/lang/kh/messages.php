@@ -199,5 +199,6 @@ return [
     'filter_payment_type' => 'ប្រភេទទូទាត់',
     'all_payment_types' => 'ទាំងអស់',
     'cash_payment' => 'សាច់ប្រាក់',
-    'electronic_payment' => 'ABA & ACLEDA'
+    'electronic_payment' => 'ABA & ACLEDA',
+    'custom_payment' => 'ផ្សេងៗ'
 ];

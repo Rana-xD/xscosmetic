@@ -266,6 +266,7 @@
             <option value="all" selected>{{ __('messages.all_payment_types') }}</option>
             <option value="cash">{{ __('messages.cash_payment') }}</option>
             <option value="electronic">{{ __('messages.electronic_payment') }}</option>
+            <option value="custom">{{ __('messages.custom_payment') }}</option>
           </select>
         </div>
       </div>
@@ -372,13 +373,11 @@
               <option value="aba">{{ __('messages.aba') }}</option>
               <option value="cash">{{ __('messages.cash') }}</option>
               <option value="acleda">{{ __('messages.acleda') }}</option>
-              <option value="custom">{{ __('messages.custom_split') }}</option>
             </select>
           </div>
         </form>
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('messages.close') }}</button>
+      <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 1rem; text-align: right;">
         <button type="button" class="btn btn-primary" id="savePaymentUpdate">{{ __('messages.save_changes') }}</button>
       </div>
     </div>
@@ -586,32 +585,23 @@
     
     // Handle payment type filter
     $('#payment-type-filter').on('change', function() {
-      const filterValue = $(this).val();
+      const selectedPaymentType = $(this).val();
       
-      if (filterValue === 'all') {
-        // Show all invoices
-        $('.invoice-container > div.invoice-wrapper').show();
-      } else if (filterValue === 'cash') {
-        // Show only cash payments
-        $('.invoice-container > div.invoice-wrapper').each(function() {
-          const paymentType = $(this).data('payment-type');
-          if (paymentType === 'cash') {
-            $(this).show();
-          } else {
-            $(this).hide();
-          }
-        });
-      } else if (filterValue === 'electronic') {
-        // Show only ABA and ACLEDA payments
-        $('.invoice-container > div.invoice-wrapper').each(function() {
-          const paymentType = $(this).data('payment-type');
-          if (paymentType === 'aba' || paymentType === 'acleda') {
-            $(this).show();
-          } else {
-            $(this).hide();
-          }
-        });
-      }
+      $('.invoice-container > div.invoice-wrapper').each(function() {
+        const paymentType = $(this).data('payment-type');
+        
+        if (selectedPaymentType === 'all') {
+          $(this).show();
+        } else if (selectedPaymentType === 'cash' && paymentType === 'cash') {
+          $(this).show();
+        } else if (selectedPaymentType === 'electronic' && (paymentType === 'aba' || paymentType === 'acleda')) {
+          $(this).show();
+        } else if (selectedPaymentType === 'custom' && paymentType === 'custom') {
+          $(this).show();
+        } else {
+          $(this).hide();
+        }
+      });
     });
     
     // Handle print daily invoice click

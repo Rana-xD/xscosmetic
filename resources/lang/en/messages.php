@@ -195,5 +195,6 @@ return [
     'filter_payment_type' => 'Payment Type',
     'all_payment_types' => 'All',
     'cash_payment' => 'Cash',
-    'electronic_payment' => 'ABA & ACLEDA'
+    'electronic_payment' => 'ABA & ACLEDA',
+    'custom_payment' => 'Custom'
 ];
