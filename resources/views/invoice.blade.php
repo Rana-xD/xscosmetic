@@ -114,8 +114,9 @@
   }
 
   .invoice-container {
-    margin-top: 50px;
+    margin-top: 100px;
   }
+
 
   .invoice-info {
     display: flex;
@@ -137,9 +138,10 @@
     display: flex;
     align-items: center;
     height: 100%;
+    justify-content: center;
   }
 
-  .btn-add {
+  .btn-add, .btn-primary {
     padding: 8px 20px;
     height: 38px;
     display: flex;
@@ -150,7 +152,7 @@
   .print-daily-invoice {
     padding: 8px 20px;
     height: 38px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: 80px;
@@ -179,6 +181,53 @@
   .update-payment {
     margin-left: 10px;
   }
+  
+  .filter-wrapper {
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .filter-wrapper .label-text {
+    margin-right: 12px;
+    white-space: nowrap;
+  }
+  
+  .filter-wrapper select {
+    flex-grow: 1;
+    min-width: 150px;
+    width: 100%;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: #fff;
+    padding: 8px 12px;
+    color: #495057;
+    font-weight: 500;
+    font-size: 16px; /* Increased font size by 2px */
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23343a40' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 8px 10px;
+    padding-right: 2rem;
+    text-overflow: ellipsis;
+    height: 40px;
+    line-height: 1.4;
+  }
+  
+  .filter-wrapper select:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  .invoice-wrapper {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+  }
 </style>
 <div class="container">
   <h3>{{ __('messages.invoice_title') }}</h3>
@@ -205,22 +254,34 @@
           </div>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-2">
         <div class="search-wrapper">
-          <button type="button" class="btn btn-add" id="handleCustomInvoiceSearch">{{ __('messages.search') }}</button>
+          <button type="button" class="btn btn-primary" id="handleCustomInvoiceSearch">{{ __('messages.search') }}</button>
         </div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-3">
+        <div class="filter-wrapper">
+          <p class="label-text">{{ __('messages.filter_payment_type') }}:</p>
+          <select class="form-control" id="payment-type-filter" style="width: auto; min-width: 160px;">
+            <option value="all" selected>{{ __('messages.all_payment_types') }}</option>
+            <option value="cash">{{ __('messages.cash_payment') }}</option>
+            <option value="electronic">{{ __('messages.electronic_payment') }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="col-md-3 text-right">
         <button type="button" class="btn btn-success print-daily-invoice" id="print-daily-invoice">
             <i class="fa fa-print"></i>
             {{ __('messages.print_daily_invoice') }}
-          </button>
+        </button>
       </div>
     </div>
   </div>
 
   <div class="invoice-container">
     @foreach ($orders as $order)
+    <div class="invoice-wrapper" data-payment-type="{{ $order->payment_type }}">
+
     <p class="cashier-name">
       <span>{{ __('messages.cashier') }}:</span>
       <span>{{$order->cashier}}</span>
@@ -286,6 +347,7 @@
         <i class="fa fa-edit"></i>
         <span>{{ __('messages.update_invoice') }}</span>
       </button>
+    </div>
     </div>
     @endforeach
   </div>
@@ -520,6 +582,36 @@
           });
         }
       });
+    });
+    
+    // Handle payment type filter
+    $('#payment-type-filter').on('change', function() {
+      const filterValue = $(this).val();
+      
+      if (filterValue === 'all') {
+        // Show all invoices
+        $('.invoice-container > div.invoice-wrapper').show();
+      } else if (filterValue === 'cash') {
+        // Show only cash payments
+        $('.invoice-container > div.invoice-wrapper').each(function() {
+          const paymentType = $(this).data('payment-type');
+          if (paymentType === 'cash') {
+            $(this).show();
+          } else {
+            $(this).hide();
+          }
+        });
+      } else if (filterValue === 'electronic') {
+        // Show only ABA and ACLEDA payments
+        $('.invoice-container > div.invoice-wrapper').each(function() {
+          const paymentType = $(this).data('payment-type');
+          if (paymentType === 'aba' || paymentType === 'acleda') {
+            $(this).show();
+          } else {
+            $(this).hide();
+          }
+        });
+      }
     });
     
     // Handle print daily invoice click

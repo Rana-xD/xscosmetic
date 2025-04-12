@@ -191,5 +191,9 @@ return [
     'update_error' => 'Error updating payment type',
     'update_invoice' => 'Update Invoice',
     'update_payment_type' => 'Update Payment Type',
-    'save_changes' => 'Save Changes'
+    'save_changes' => 'Save Changes',
+    'filter_payment_type' => 'Payment Type',
+    'all_payment_types' => 'All',
+    'cash_payment' => 'Cash',
+    'electronic_payment' => 'ABA & ACLEDA'
 ];

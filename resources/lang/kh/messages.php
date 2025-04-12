@@ -195,5 +195,9 @@ return [
     'update_error' => 'មានបញ្ហាក្នុងការធ្វើបច្ចុប្បន្នភាពប្រភេទទូទាត់',
     'update_invoice' => 'ធ្វើបច្ចុប្បន្នភាពវិក្កយបត្រ',
     'update_payment_type' => 'ធ្វើបច្ចុប្បន្នភាពប្រភេទទូទាត់',
-    'save_changes' => 'រក្សាទុកការផ្លាស់ប្តូរ'
+    'save_changes' => 'រក្សាទុកការផ្លាស់ប្តូរ',
+    'filter_payment_type' => 'ប្រភេទទូទាត់',
+    'all_payment_types' => 'ទាំងអស់',
+    'cash_payment' => 'សាច់ប្រាក់',
+    'electronic_payment' => 'ABA & ACLEDA'
 ];
