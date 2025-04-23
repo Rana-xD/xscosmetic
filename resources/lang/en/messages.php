@@ -68,6 +68,7 @@ return [
     'acleda' => 'ACLEDA',
     'custom_split' => 'Custom Split',
     'delivery_type' => 'Delivery Type',
+    'later' => 'Later',
     'cash_amount_usd' => 'Cash Amount (USD)',
     'aba_amount_usd' => 'ABA Amount (USD)',
     'cash_percentage' => 'Cash Percentage (%)',

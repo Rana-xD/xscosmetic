@@ -297,6 +297,7 @@
             <option value="cash">{{ __('messages.cash_payment') }}</option>
             <option value="electronic">{{ __('messages.electronic_payment') }}</option>
             <option value="custom">{{ __('messages.custom_payment') }}</option>
+            <option value="delivery">{{ __('messages.delivery') }}</option>
           </select>
         </div>
       </div>
@@ -331,6 +332,34 @@
         <span>
           @if($order->payment_type === 'custom')
             {{ ucfirst($order->payment_type) }} (ABA ${{ isset($order->aba_amount) ? $order->aba_amount : '0' }} | Cash ${{ isset($order->cash_amount) ? $order->cash_amount : '0' }})
+          @elseif($order->payment_type === 'delivery')
+            {{ ucfirst($order->payment_type) }} |
+            @if($order->delivery_id)
+              @php
+                $delivery = App\Delivery::find($order->delivery_id);
+              @endphp
+              @if($delivery)
+                {{ $delivery->name }} ({{ $delivery->location }})
+                @php
+                  $orderTotal = 0;
+                  // Check if items is already an array or still a JSON string
+                  $items = is_array($order->items) ? 
+                      $order->items : 
+                      json_decode($order->items, true);
+                  if (is_array($items)) {
+                    foreach ($items as $item) {
+                      if (isset($item['total'])) {
+                        $itemTotal = str_replace('$', '', $item['total']);
+                        $itemTotal = trim($itemTotal);
+                        $orderTotal += (float) $itemTotal;
+                      }
+                    }
+                  }
+                  $isFree = $orderTotal >= 50 || $delivery->id === 'later';
+                @endphp
+                {{ $isFree ? 'Free' : '- $' . number_format($delivery->cost, 2) }}
+              @endif
+            @endif
           @else
             {{ $order->payment_type === 'aba' || $order->payment_type === 'acleda' ? strtoupper($order->payment_type) : ucfirst($order->payment_type)}}
           @endif
@@ -403,6 +432,16 @@
               <option value="aba">{{ __('messages.aba') }}</option>
               <option value="cash">{{ __('messages.cash') }}</option>
               <option value="acleda">{{ __('messages.acleda') }}</option>
+              <option value="delivery">{{ __('messages.delivery') }}</option>
+            </select>
+          </div>
+          <div class="form-group delivery-options" style="display: none;">
+            <label for="delivery_id">{{ __('messages.delivery_type') }}</label>
+            <select class="form-control" id="delivery_id" name="delivery_id">
+              <option value="later">{{ __('messages.later') }}</option>
+              @foreach (App\Delivery::orderBy('name', 'ASC')->get() as $delivery)
+              <option value="{{ $delivery->id }}">{{ $delivery->name }} ({{ $delivery->location }}) - ${{ number_format($delivery->cost, 2) }}</option>
+              @endforeach
             </select>
           </div>
         </form>
@@ -575,12 +614,44 @@
       
       $('#invoice_id').val(invoiceId);
       $('#payment_type').val(currentPayment);
+      
+      // Show/hide delivery options based on payment type
+      if (currentPayment === 'delivery') {
+        $('.delivery-options').show();
+        
+        // Get current delivery ID for this invoice
+        $.ajax({
+          url: '/invoice/get-delivery-id',
+          method: 'GET',
+          data: { id: invoiceId },
+          success: function(response) {
+            if (response.delivery_id) {
+              $('#delivery_id').val(response.delivery_id);
+            } else {
+              $('#delivery_id').val('');
+            }
+          }
+        });
+      } else {
+        $('.delivery-options').hide();
+      }
+      
       $('#updatePaymentModal').modal('show');
+    });
+    
+    // Show/hide delivery options when payment type changes
+    $('#payment_type').on('change', function() {
+      if ($(this).val() === 'delivery') {
+        $('.delivery-options').show();
+      } else {
+        $('.delivery-options').hide();
+      }
     });
     
     $('#savePaymentUpdate').on('click', function() {
       const invoiceId = $('#invoice_id').val();
       const paymentType = $('#payment_type').val();
+      const deliveryId = paymentType === 'delivery' ? $('#delivery_id').val() : null;
       
       $.ajax({
         url: '/invoice/update-payment',
@@ -588,6 +659,7 @@
         data: {
           id: invoiceId,
           payment_type: paymentType,
+          delivery_id: deliveryId,
           _token: '{{ csrf_token() }}'
         },
         success: function(response) {
@@ -634,6 +706,8 @@
         } else if (selectedPaymentType === 'electronic' && (paymentType === 'aba' || paymentType === 'acleda')) {
           $(this).show();
         } else if (selectedPaymentType === 'custom' && paymentType === 'custom') {
+          $(this).show();
+        } else if (selectedPaymentType === 'delivery' && paymentType === 'delivery') {
           $(this).show();
         } else {
           $(this).hide();

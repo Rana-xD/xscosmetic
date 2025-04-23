@@ -6,7 +6,7 @@
 @section('content')
 <div class="container">
    <div class="row" style="margin-top:100px;">
-      <table id="Table" class="table table-striped table-bordered" cellspacing="0" width="100%">
+      <table id="Table" class="table table-striped table-bordered w-100">
           <thead>
               <tr>
                   <th class="hidden-xs">{{ __('messages.sale_table_number') }}</th>
@@ -39,7 +39,7 @@
       </table>
    </div>
    <!-- Button trigger modal -->
-   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#Adddelivery">{{ __('messages.add_delivery') }}</button>
+   <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#addNewDeliveryModal">{{ __('messages.add_delivery') }}</button>
 </div>
 <!-- /.container -->
 
@@ -213,8 +213,8 @@
   });
 </script>
 <!-- Add Modal -->
-<div class="modal fade" id="Adddelivery" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
- <div class="modal-dialog modal-dialog-centered" role="document">
+<div class="modal fade" id="addNewDeliveryModal" tabindex="-1" aria-labelledby="addNewDeliveryModalLabel" aria-hidden="true">
+ <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <form id="add-delivery" action="/delivery/add" method="POST" enctype="multipart/form-data">
         @csrf
@@ -263,7 +263,7 @@
 
 <!-- Edit Modal -->
 <div class="modal fade" id="Updatedelivery" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-dialog" role="document">
      <div class="modal-content">
        <form id="editDelivery" action="/delivery/edit" method="POST" enctype="multipart/form-data">
          @csrf

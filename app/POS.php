@@ -29,6 +29,7 @@ class POS extends Model
         'cash_amount',
         'aba_amount',
         'additional_info',
+        'delivery_id',
         'created_at',
         'updated_at'
     ];
@@ -58,5 +59,13 @@ class POS extends Model
         });
         
         return number_format($total, 2, '.', '');
+    }
+    
+    /**
+     * Get the delivery associated with the POS.
+     */
+    public function delivery()
+    {
+        return $this->belongsTo(Delivery::class);
     }
 }

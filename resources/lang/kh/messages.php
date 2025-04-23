@@ -68,6 +68,7 @@ return [
     'acleda' => 'អេស៊ីលីដា',
     'custom_split' => 'ការបែងចែកផ្សេងៗ',
     'delivery_type' => 'ប្រភេទដឹកជញ្ជូន',
+    'later' => 'ពេលក្រោយ',
     'cash_amount_usd' => 'ចំនួនសាច់ប្រាក់ (ដុល្លារ)',
     'aba_amount_usd' => 'ចំនួន ABA (ដុល្លារ)',
     'cash_percentage' => 'ភាគរយសាច់ប្រាក់ (%)',

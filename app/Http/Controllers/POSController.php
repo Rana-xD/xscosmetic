@@ -92,6 +92,37 @@ class POSController extends Controller
             $data['cash_amount'] = $request->cashAmount;
             $data['aba_amount'] = $request->abaAmount;
         }
+        
+        // Add delivery_id if payment type is delivery
+        if ($request->payment_type === 'delivery') {
+            if ($request->has('delivery_type') && $request->delivery_type !== 'later') {
+                $data['delivery_id'] = $request->delivery_type;
+                
+                // Check if order total is less than $50 and add delivery fee
+                $total = isset($additional_info['total']) ? (float) $additional_info['total'] : 0;
+                
+                if ($total < 50.00) {
+                    // Get the delivery fee from the Delivery model
+                    $delivery = \App\Delivery::find($request->delivery_type);
+                    
+                    if ($delivery) {
+                        $deliveryFee = (float) $delivery->cost;
+                        
+                        // Update the total in additional_info to include delivery fee
+                        $newTotal = $total + $deliveryFee;
+                        $additional_info['total'] = number_format($newTotal, 2, '.', '');
+                        
+                        // Update total_riel with the new total
+                        $exchangeRate = 4100; // Default exchange rate
+                        $newTotalRiel = $newTotal * $exchangeRate;
+                        $additional_info['total_riel'] = number_format($newTotalRiel, 0, '.', ',');
+                        
+                        // Update the additional_info in the data array
+                        $data['additional_info'] = $additional_info;
+                    }
+                }
+            }
+        }
 
         $temp_data = [
             "order_no" => $request->invoice_no,

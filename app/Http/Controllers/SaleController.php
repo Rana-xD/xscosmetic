@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Auth;
 
 class SaleController extends Controller
 {
+    // Constants for time formats
+    const START_TIME_FORMAT = ' 00:00:00';
+    const END_TIME_FORMAT = ' 23:59:59';
+    
     public function __construct()
     {
         $this->middleware('auth');
@@ -22,8 +26,8 @@ class SaleController extends Controller
 
     public function show()
     {
-        $start_date = Carbon::now()->format('Y-m-d') . ' 00:00:00';
-        $end_date = Carbon::now()->format('Y-m-d') . ' 23:59:59';
+        $start_date = Carbon::now()->format('Y-m-d') . self::START_TIME_FORMAT;
+        $end_date = Carbon::now()->format('Y-m-d') . self::END_TIME_FORMAT;
 
         if (auth()->user()->isAdmin()) {
             $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])
@@ -41,8 +45,8 @@ class SaleController extends Controller
 
     public function cusomterIncomeReport(Request $request)
     {
-        $start_date = date($request->date) . ' 00:00:00';
-        $end_date = date($request->date) . ' 23:59:59';
+        $start_date = date($request->date) . self::START_TIME_FORMAT;
+        $end_date = date($request->date) . self::END_TIME_FORMAT;
 
 
         if (auth()->user()->isAdmin()) {
@@ -63,14 +67,27 @@ class SaleController extends Controller
 
     public function showInvoice()
     {
-
-        $start_date = Carbon::now()->format('Y-m-d') . ' 00:00:00';
-        $end_date = Carbon::now()->format('Y-m-d') . ' 23:59:59';
+        $start_date = Carbon::now()->format('Y-m-d') . self::START_TIME_FORMAT;
+        $end_date = Carbon::now()->format('Y-m-d') . self::END_TIME_FORMAT;
+        
         if (auth()->user()->isAdmin()) {
-            $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->get();
+            // For admin users, get orders from POS table and unique orders from TPOS table
+            $pos_orders = POS::whereBetween('created_at', [$start_date, $end_date])->get();
+            
+            // Get order_no values from POS table to exclude from TPOS query
+            $pos_order_numbers = $pos_orders->pluck('order_no')->toArray();
+            
+            // Get TPOS orders that don't exist in POS table
+            $tpos_orders = TPOS::whereBetween('created_at', [$start_date, $end_date])
+                ->whereNotIn('order_no', $pos_order_numbers)
+                ->get();
+            
+            // Merge the collections and sort by created_at
+            $orders = $pos_orders->concat($tpos_orders)->sortByDesc('created_at')->values();
         } else {
             $orders = POS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->get();
         }
+        
         return view('invoice', [
             'orders' => $orders,
             'date' => Carbon::now()->format('Y-m-d')
@@ -79,12 +96,23 @@ class SaleController extends Controller
 
     public function showCustomInvoice(Request $request)
     {
-        $start_date = date($request->date) . ' 00:00:00';
-        $end_date = date($request->date) . ' 23:59:59';
-
+        $start_date = date($request->date) . self::START_TIME_FORMAT;
+        $end_date = date($request->date) . self::END_TIME_FORMAT;
 
         if (auth()->user()->isAdmin()) {
-            $orders = TPOS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->get();
+            // For admin users, get orders from POS table and unique orders from TPOS table
+            $pos_orders = POS::whereBetween('created_at', [$start_date, $end_date])->get();
+            
+            // Get order_no values from POS table to exclude from TPOS query
+            $pos_order_numbers = $pos_orders->pluck('order_no')->toArray();
+            
+            // Get TPOS orders that don't exist in POS table
+            $tpos_orders = TPOS::whereBetween('created_at', [$start_date, $end_date])
+                ->whereNotIn('order_no', $pos_order_numbers)
+                ->get();
+            
+            // Merge the collections and sort by created_at
+            $orders = $pos_orders->concat($tpos_orders)->sortByDesc('created_at')->values();
         } else {
             $orders = POS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->get();
         }
@@ -184,13 +212,12 @@ class SaleController extends Controller
             $payment_type_income = $this->generateIncomeDataForPaymentType($date, $total_change, $total_expense);
         }
 
-        $income_data = [
+        return [
             'items' => $invoice,
             'payment_type_income' => $payment_type_income,
             'total' => number_format($total, 2, '.', ''),
             'total_in_riel' => number_format($total * $exchange_rate, 0, '.', ',')
         ];
-        return $income_data;
     }
 
     private function generateIncomeDataForPaymentType($date, $total_change, $total_expense)
@@ -235,16 +262,15 @@ class SaleController extends Controller
 
         $total_income_in_cash = $total_income_in_cash + $total_change - $total_expense;
 
-        $payment_type_income = [
+        return [
             'cash' => $total_income_in_cash,
-            'change' => $total_change,
-            'expense' => $total_expense,
             'aba' => $total_income_in_aba,
             'acleda' => $total_income_in_acleda,
-            'delivery' => $total_income_in_delivery
+            'custom' => 0,
+            'delivery' => $total_income_in_delivery,
+            'total_expense' => $total_expense,
+            'total_change' => $total_change
         ];
-
-        return $payment_type_income;
     }
 
     private function generateIncomeDataFromTPosForPaymentType($date, $total_change, $total_expense)
@@ -280,16 +306,15 @@ class SaleController extends Controller
 
         $total_income_in_cash = $total_income_in_cash + $total_change - $total_expense;
 
-        $payment_type_income = [
+        return [
             'cash' => $total_income_in_cash,
-            'change' => $total_change,
-            'expense' => $total_expense,
             'aba' => $total_income_in_aba,
             'acleda' => $total_income_in_acleda,
-            'delivery' => $total_income_in_delivery
+            'custom' => 0,
+            'delivery' => $total_income_in_delivery,
+            'total_expense' => $total_expense,
+            'total_change' => $total_change
         ];
-
-        return $payment_type_income;
     }
 
     private function getTotalAmount($orders)
@@ -394,6 +419,7 @@ class SaleController extends Controller
         try {
             $id = $request->input('id');
             $paymentType = $request->input('payment_type');
+            $deliveryId = $request->input('delivery_id');
             
             // Determine which model to use based on user role
             $model = auth()->user()->isAdmin() ? TPOS::class : POS::class;
@@ -409,11 +435,114 @@ class SaleController extends Controller
             
             // Update the payment type
             $invoice->payment_type = $paymentType;
+            
+            // Update delivery_id if payment type is delivery
+            if ($paymentType === 'delivery') {
+                $invoice->delivery_id = $deliveryId ?: null;
+                
+                // Update additional_info if needed
+                if ($invoice->additional_info && $deliveryId !== 'later' && $deliveryId !== null) {
+                    // Check if additional_info is already an array or still a JSON string
+                    $additionalInfo = is_array($invoice->additional_info) ? 
+                        $invoice->additional_info : 
+                        json_decode($invoice->additional_info, true);
+                    
+                    if (is_array($additionalInfo) && isset($additionalInfo['total'])) {
+                        $total = (float) $additionalInfo['total'];
+                        
+                        // Check if order total is less than $50 and add delivery fee
+                        if ($total < 50.00) {
+                            // Get the delivery fee from the Delivery model
+                            $delivery = \App\Delivery::find($deliveryId);
+                            
+                            if ($delivery) {
+                                $deliveryFee = (float) $delivery->cost;
+                                
+                                // Check if delivery fee was already added
+                                // We'll assume if there's a significant difference between the total and the sum of items,
+                                // then a delivery fee was already included
+                                $itemsTotal = 0;
+                                // Check if items is already an array or still a JSON string
+                                $items = is_array($invoice->items) ? 
+                                    $invoice->items : 
+                                    json_decode($invoice->items, true);
+                                
+                                if (is_array($items)) {
+                                    foreach ($items as $item) {
+                                        if (isset($item['total'])) {
+                                            $itemTotal = str_replace('$', '', $item['total']);
+                                            $itemTotal = trim($itemTotal);
+                                            $itemsTotal += (float) $itemTotal;
+                                        }
+                                    }
+                                }
+                                
+                                // Calculate the base total (without any delivery fee)
+                                $baseTotal = $itemsTotal;
+                                
+                                // Calculate the new total with the correct delivery fee
+                                $newTotal = $baseTotal + $deliveryFee;
+                                $additionalInfo['total'] = number_format($newTotal, 2, '.', '');
+                                
+                                // Update total_riel with the new total if it exists
+                                if (isset($additionalInfo['total_riel'])) {
+                                    $exchangeRate = 4100; // Default exchange rate
+                                    $newTotalRiel = $newTotal * $exchangeRate;
+                                    $additionalInfo['total_riel'] = number_format($newTotalRiel, 0, '.', ',');
+                                }
+                                
+                                // No need to json_encode if the model will handle it via casts
+                                $invoice->additional_info = $additionalInfo;
+                            }
+                        }
+                    }
+                }
+                
+                // If changing from delivery to another payment type, we might need to remove the delivery fee
+                // This would require similar logic to the above, but removing the fee instead
+            }
+            
             $invoice->save();
             
             return response()->json([
                 'success' => true,
                 'message' => 'Payment type updated successfully'
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Get the delivery ID for an invoice
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getDeliveryId(Request $request)
+    {
+        try {
+            $id = $request->input('id');
+            
+            // Determine which model to use based on user role
+            $model = auth()->user()->isAdmin() ? TPOS::class : POS::class;
+            
+            $invoice = $model::find($id);
+            
+            if (!$invoice) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invoice not found'
+                ]);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'delivery_id' => $invoice->delivery_id
             ]);
             
         } catch (\Exception $e) {

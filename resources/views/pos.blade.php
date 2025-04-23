@@ -592,6 +592,16 @@
                 withdrawDeliveryFee();
             }
         });
+        
+        // Add event listener for delivery type change
+        $('#delivery-type').on('change', function() {
+            // If delivery is already added, remove it first
+            if (addDelivery == 1) {
+                withdrawDeliveryFee();
+            }
+            // Then add the new delivery fee
+            depositDeliveryFee();
+        });
 
         $('#cash-in-usd').on('input', function() {
             let cashAmount = parseFloat($(this).val()) || 0;
@@ -843,6 +853,7 @@
                 "receivedInRiel": $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val(),
                 "changeInUSD": $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val(),
                 "changeInRiel": $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val(),
+                "delivery_type": $('#payment-type').val() === 'delivery' ? $('#delivery-type').val() : null,
                 "additional_info": {
                     total: $('#total-usd').attr('total-usd-data'),
                     total_riel: $('#total-riel').attr('total-riel-data'),
@@ -898,15 +909,42 @@
 
     function depositDeliveryFee() {
         let totalInUSD = parseFloat($('#total-in-usd-final').val());
+        let deliveryType = $('#delivery-type').val();
+        let deliveryFee = 0;
 
-        if (totalInUSD < 50.00 && addDelivery == 0) {
+        // If delivery type is 'later', fee is 0
+        if (deliveryType !== 'later' && totalInUSD < 50.00 && addDelivery == 0) {
+            // Get the delivery fee from the selected option's data attribute
+            if (deliveryType !== 'later') {
+                // Find the selected delivery option to get its cost
+                let selectedOption = $('#delivery-type option:selected');
+                let deliveryId = selectedOption.val();
+                
+                // Use AJAX to get the delivery cost
+                $.ajax({
+                    url: '/api/delivery/' + deliveryId,
+                    type: 'GET',
+                    async: false,
+                    success: function(response) {
+                        deliveryFee = parseFloat(response.cost);
+                    },
+                    error: function() {
+                        // Default to 1.50 if there's an error
+                        deliveryFee = 1.50;
+                    }
+                });
+            }
+            
             addDelivery = 1;
-            totalInUSD += 1.50;
+            totalInUSD += deliveryFee;
             let totalRiel = handleExchangeToRielCurrency(totalInUSD);
             $('#total-in-usd-modal').val(`${totalInUSD.toFixed(2)} $`);
             $('#total-in-usd-final').val(totalInUSD);
             $('#total-in-riel-modal').val(`${totalRiel} ៛`);
             $('#total-in-riel-final').val(handleRemoveCommafromRielCurrency(totalRiel));
+            
+            // Store the delivery fee for later withdrawal
+            $('#delivery-fee').data('fee', deliveryFee);
         }
     }
 
@@ -915,14 +953,15 @@
 
         if (addDelivery == 1) {
             addDelivery = 0;
-            totalInUSD -= 1.50;
+            // Get the stored delivery fee or default to 1.50
+            let deliveryFee = $('#delivery-fee').data('fee') || 1.50;
+            totalInUSD -= deliveryFee;
             let totalRiel = handleExchangeToRielCurrency(totalInUSD);
             $('#total-in-usd-modal').val(`${totalInUSD.toFixed(2)} $`);
             $('#total-in-usd-final').val(totalInUSD);
             $('#total-in-riel-modal').val(`${totalRiel} ៛`);
             $('#total-in-riel-final').val(handleRemoveCommafromRielCurrency(totalRiel));
         }
-
     }
 
     function resetReceivedCashAndChange() {
@@ -1468,15 +1507,18 @@
                             <option value="delivery">{{ __('messages.delivery') }}</option>
                         </select>
                     </div>
-                    <div class="delivery">
+                    <div class="delivery" style="display: none;">
                         <div class="form-group form-group-flex">
                             <label for="delivery-type">{{ __('messages.delivery_type') }}</label>
-                            <select class="form-control" id="delivery-type" name="filtertype">
+                            <select class="form-control" id="delivery-type" name="delivery_type">
+                                <option value="later" selected>{{ __('messages.later') }}</option>
                                 @foreach (App\Delivery::orderBy('name', 'ASC')->get() as $delivery)
-                                <option value="{{ $delivery->name }}">{{ $delivery->name }}</option>
+                                <option value="{{ $delivery->id }}">{{ $delivery->name }} ({{ $delivery->location }}) - ${{ number_format($delivery->cost, 2) }}</option>
                                 @endforeach
                             </select>
                         </div>
+                        <!-- Hidden field to store delivery fee -->
+                        <input type="hidden" id="delivery-fee" data-fee="0">
                     </div>
                 </div>
                 <div class="modal-body modal-body-pos custom-split" style="display: none;">
