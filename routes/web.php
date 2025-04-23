@@ -64,6 +64,14 @@ Route::get('/expense/add', 'ExpenseController@store');
 Route::get('/expense/delete', 'ExpenseController@destroy');
 Route::post('/expense/update', 'ExpenseController@update');
 Route::get('/expense/filter', 'ExpenseController@showCustomExpense');
+Route::get('/expense/items', 'ExpenseController@getUniqueExpenseItems');
+
+// Expense Item Routes
+Route::get('/expense-item', 'ExpenseItemController@index');
+Route::post('/expense-item/add', 'ExpenseItemController@store');
+Route::post('/expense-item/update/{id}', 'ExpenseItemController@update');
+Route::get('/expense-item/delete/{id}', 'ExpenseItemController@destroy');
+Route::get('/expense-item/get-all', 'ExpenseItemController@getAll');
 
 Route::get('/delivery', 'DeliveryController@show');
 Route::post('/delivery/add', 'DeliveryController@store');

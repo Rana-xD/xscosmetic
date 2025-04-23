@@ -75,8 +75,9 @@
                   <li class="dropdown">
                         <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-thumb-tack"></i> {{ __('messages.tracking') }} <span class="caret"></span></a>
                            <ul class="dropdown-menu">
-                              <li class="flat-box"><a href="/change"><i class="fa fa-money"></i> {{ __('messages.change_log') }}</a></li>
-                              <li class="flat-box"><a href="/expense"><i class="fa fa-credit-card-alt"></i> {{ __('messages.expense') }}</a></li>
+                               <li class="flat-box"><a href="/change"><i class="fa fa-money"></i> {{ __('messages.change_log') }}</a></li>
+                               <li class="flat-box"><a href="/expense"><i class="fa fa-credit-card-alt"></i> {{ __('messages.expense') }}</a></li>
+                               <li class="flat-box"><a href="/expense-item"><i class="fa fa-list"></i> {{ __('messages.expense_items') }}</a></li>
                               @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
                               <li class="flat-box"><a href="/product-log"><i class="fa fa-book"></i> {{ __('messages.product_log') }}</a></li>
                               @endif

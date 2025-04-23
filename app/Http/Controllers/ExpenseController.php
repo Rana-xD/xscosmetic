@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Expense;
+use App\ExpenseItem;
 use Carbon\Carbon;
 
 class ExpenseController extends Controller
@@ -32,9 +33,30 @@ class ExpenseController extends Controller
 
     public function store(Request $request)
     {
-
         $today = Carbon::now()->format('Y-m-d');
         $expense = Expense::where('date', $today)->first();
+        
+        // Save new expense items to the ExpenseItem table
+        if (!empty($request->items)) {
+            foreach ($request->items as $item) {
+                // Only save to ExpenseItem table if it's a new expense type
+                // or if expense_type parameter is not provided (backward compatibility)
+                if (!$request->has('expense_type') || $request->expense_type === 'new') {
+                    // Check if the item already exists in the ExpenseItem table
+                    $existingItem = ExpenseItem::where('name', $item['name'])->first();
+                    
+                    if (!$existingItem) {
+                        // Create a new expense item
+                        ExpenseItem::create([
+                            'name' => $item['name'],
+                            'cost' => $item['cost']
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        // Continue with the existing expense saving logic
         if (empty($expense)) {
             $data = [
                 "items" => $request->items,
@@ -120,5 +142,30 @@ class ExpenseController extends Controller
             $total += (float) $item['cost'];
         }
         return $total;
+    }
+    
+    /**
+     * Get all unique expense items from the database
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUniqueExpenseItems()
+    {
+        // Get expense items from the new ExpenseItem model
+        $expenseItems = ExpenseItem::orderBy('name', 'asc')->get();
+        
+        $uniqueItems = [];
+        
+        foreach ($expenseItems as $item) {
+            $uniqueItems[] = [
+                'name' => $item->name,
+                'cost' => $item->cost
+            ];
+        }
+        
+        return response()->json([
+            'success' => true,
+            'items' => $uniqueItems
+        ]);
     }
 }

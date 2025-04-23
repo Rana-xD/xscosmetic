@@ -365,23 +365,109 @@
       window.location = filter;
     })
 
+    // Load existing expense items when page loads
+    loadExistingExpenseItems();
+    
+    // Toggle between new and existing expense fields
+    $('#expense-type').on('change', function() {
+      if ($(this).val() === 'new') {
+        $('#new-expense-fields').show();
+        $('#existing-expense-fields').hide();
+      } else {
+        $('#new-expense-fields').hide();
+        $('#existing-expense-fields').show();
+      }
+    });
+    
+    // Update cost field when selecting an existing expense
+    $('#existing-expense-select').on('change', function() {
+      const selectedOption = $(this).find('option:selected');
+      const cost = selectedOption.data('cost');
+      if (cost) {
+        $('#existing-expense-cost').val(cost);
+      } else {
+        $('#existing-expense-cost').val('');
+      }
+    });
+    
+    // Function to load existing expense items
+    function loadExistingExpenseItems() {
+      $.ajax({
+        url: '/expense-item/get-all',
+        type: 'GET',
+        success: function(response) {
+          if (response.items && response.items.length > 0) {
+            const select = $('#existing-expense-select');
+            select.empty();
+            select.append(`<option value="">{{ __('messages.select_expense_item') }}</option>`);
+            
+            response.items.forEach(item => {
+              select.append(`<option value="${item.name}" data-cost="${item.cost}">${item.name}</option>`);
+            });
+          } else {
+            $('#existing-expense-select').html('<option value="">{{ __('messages.no_items_found') }}</option>');
+          }
+        },
+        error: function() {
+          $('#existing-expense-select').html('<option value="">{{ __('messages.error_loading_items') }}</option>');
+        }
+      });
+    }
+    
     $('#addExpenseForm').on("submit", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      let name = $("#ExpenseName").val();
-      let cost = $("#ExpenseCost").val();
-      let items = [];
-
-      item = {
-        name: name,
-        cost: cost,
-      };
-
-      items.push(item);
-
-      formData = {
-        "items": items
+      
+      // Validate form based on selected expense type
+      const expenseType = $('#expense-type').val();
+      let isValid = true;
+      
+      if (expenseType === 'new') {
+        // Validate new expense fields
+        if (!$("#ExpenseName").val().trim()) {
+          isValid = false;
+          alert("{{ __('messages.enter_name') }}");
+        } else if (!$("#ExpenseCost").val().trim()) {
+          isValid = false;
+          alert("{{ __('messages.enter_cost') }}");
+        }
+      } else {
+        // Validate existing expense fields
+        if (!$("#existing-expense-select").val()) {
+          isValid = false;
+          alert("{{ __('messages.select_expense_item') }}");
+        } else if (!$("#existing-expense-cost").val().trim()) {
+          isValid = false;
+          alert("{{ __('messages.enter_cost') }}");
+        }
       }
+      
+      if (!isValid) {
+        return false;
+      }
+      
+      let items = [];
+      let item = {};
+      
+      // Get data based on selected expense type
+      if (expenseType === 'new') {
+        item = {
+          name: $("#ExpenseName").val().trim(),
+          cost: $("#ExpenseCost").val().trim()
+        };
+      } else {
+        item = {
+          name: $("#existing-expense-select").val(),
+          cost: $("#existing-expense-cost").val().trim()
+        };
+      }
+      
+      items.push(item);
+      
+      let formData = {
+        "items": items,
+        "expense_type": expenseType
+      };
 
       $.ajax({
         url: '/expense/add',
@@ -536,12 +622,37 @@
         </div>
         <div class="modal-body">
           <div class="form-group">
-            <label for="UnitName">{{ __('messages.name') }}</label>
-            <input type="text" name="name" Required class="form-control" id="ExpenseName" placeholder="{{ __('messages.enter_name') }}">
+            <label for="expense-type">{{ __('messages.expense_type') }}</label>
+            <select class="form-control" id="expense-type">
+              <option value="new">{{ __('messages.new_expense') }}</option>
+              <option value="existing">{{ __('messages.existing_expense') }}</option>
+            </select>
           </div>
-          <div class="form-group">
-            <label for="UnitName">{{ __('messages.cost') }}</label>
-            <input type="text" name="cost" Required class="form-control" id="ExpenseCost" placeholder="{{ __('messages.enter_cost') }}">
+          
+          <!-- New expense input fields -->
+          <div id="new-expense-fields">
+            <div class="form-group">
+              <label for="ExpenseName">{{ __('messages.name') }}</label>
+              <input type="text" name="name" class="form-control" id="ExpenseName" placeholder="{{ __('messages.enter_name') }}">
+            </div>
+            <div class="form-group">
+              <label for="ExpenseCost">{{ __('messages.cost') }}</label>
+              <input type="text" name="cost" class="form-control" id="ExpenseCost" placeholder="{{ __('messages.enter_cost') }}">
+            </div>
+          </div>
+          
+          <!-- Existing expense selection -->
+          <div id="existing-expense-fields" style="display: none;">
+            <div class="form-group">
+              <label for="existing-expense-select">{{ __('messages.select_expense') }}</label>
+              <select class="form-control" id="existing-expense-select">
+                <option value="">{{ __('messages.loading') }}...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="existing-expense-cost">{{ __('messages.cost') }}</label>
+              <input type="text" class="form-control" id="existing-expense-cost" placeholder="{{ __('messages.enter_cost') }}">
+            </div>
           </div>
         </div>
         <div class="modal-footer">
