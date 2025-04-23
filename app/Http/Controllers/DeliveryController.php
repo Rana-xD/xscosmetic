@@ -22,7 +22,10 @@ class DeliveryController extends Controller {
 
     public function store(Request $request){
         $location = $request->location ?: 'Phnom Penh';
-        $cost = ($location === 'Phnom Penh') ? 1.5 : 2.0;
+        // Use the cost from the request if provided, otherwise use default based on location
+        $cost = $request->has('cost') && is_numeric($request->cost) 
+            ? (float) $request->cost 
+            : (($location === 'Phnom Penh') ? 1.5 : 2.0);
         
         $data = [
             "name" => $request->name,
@@ -48,7 +51,10 @@ class DeliveryController extends Controller {
 
     public function update(Request $request){
         $location = $request->location ?: 'Phnom Penh';
-        $cost = ($location === 'Phnom Penh') ? 1.5 : 2.0;
+        // Use the cost from the request if provided, otherwise use default based on location
+        $cost = $request->has('cost') && is_numeric($request->cost) 
+            ? (float) $request->cost 
+            : (($location === 'Phnom Penh') ? 1.5 : 2.0);
         
         $data = [
             "name" => $request->name,

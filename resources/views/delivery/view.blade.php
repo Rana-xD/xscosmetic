@@ -94,18 +94,18 @@
         let radio = $(this).prev('input[type="radio"]');
         radio.prop('checked', true);
         
-        // Update cost based on location
+        // Set suggested cost based on location (user can still modify)
         if (radio.attr('name') === 'location') {
           if (radio.val() === 'Phnom Penh') {
-            $('#delivery-cost').val('$1.50');
+            $('#delivery-cost').attr('placeholder', '$1.50');
           } else {
-            $('#delivery-cost').val('$2.00');
+            $('#delivery-cost').attr('placeholder', '$2.00');
           }
         } else if (radio.attr('name') === 'location-edit') {
           if (radio.val() === 'Phnom Penh') {
-            $('#delivery-cost-edit').val('$1.50');
+            $('#delivery-cost-edit').attr('placeholder', '$1.50');
           } else {
-            $('#delivery-cost-edit').val('$2.00');
+            $('#delivery-cost-edit').attr('placeholder', '$2.00');
           }
         }
       });
@@ -116,6 +116,9 @@
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
         formData.append('name',$("#delivery-name").val());
         formData.append('location', $('input[name="location"]:checked').val());
+        // Get cost value without $ sign
+        let costValue = $("#delivery-cost").val().replace('$', '').trim();
+        formData.append('cost', costValue);
         $.ajax({
           url: '/delivery/add',
           type: "POST", 
@@ -174,15 +177,16 @@
 
             $('#DeliveryId').val(id);
             $('#delivery-name-edit').val(deliveryName);
-            // Display the cost (read-only since it's automatically calculated based on location)
+            
+            // Set the cost value - remove the $ sign and any formatting
+            let costValue = deliveryCost.replace('$', '').trim();
+            $('#delivery-cost-edit').val(costValue);
             
             // Set the correct radio button based on the location
             if (deliveryLocation === 'Phnom Penh') {
                 $('#location-phnom-penh-edit').prop('checked', true);
-                $('#delivery-cost-edit').val('$1.50');
             } else {
                 $('#location-province-edit').prop('checked', true);
-                $('#delivery-cost-edit').val('$2.00');
             }
             
             $('#Updatedelivery').modal('show');
@@ -194,7 +198,11 @@
         let formData = new FormData();
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
         formData.append('name',$("#delivery-name-edit").val());
+        formData.append('id',$("#DeliveryId").val());
         formData.append('location', $('input[name="location-edit"]:checked').val());
+        // Get cost value without $ sign
+        let costValue = $("#delivery-cost-edit").val().replace('$', '').trim();
+        formData.append('cost', costValue);
         formData.append('id',$("#DeliveryId").val());
         $.ajax({
           url: '/delivery/update',
@@ -248,7 +256,7 @@
            </div>
            <div class="form-group">
              <label for="delivery-cost">{{ __('messages.delivery_cost') }}</label>
-             <input type="text" class="form-control" id="delivery-cost" value="$1.50" readonly>
+             <input type="text" class="form-control" id="delivery-cost" placeholder="$0.00">
            </div>
       </div>
       <div class="modal-footer">
@@ -292,7 +300,7 @@
             </div>
             <div class="form-group">
               <label for="delivery-cost-edit">{{ __('messages.delivery_cost') }}</label>
-              <input type="text" class="form-control" id="delivery-cost-edit" readonly>
+              <input type="text" class="form-control" id="delivery-cost-edit" placeholder="$0.00">
             </div>
        </div>
        <div class="modal-footer">
