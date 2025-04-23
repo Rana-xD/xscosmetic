@@ -72,6 +72,36 @@
   .delete-invoice i {
     font-size: 14px;
   }
+  
+  /* Custom styles for SweetAlert buttons */
+  .swal-button--loading {
+    position: relative;
+    pointer-events: none;
+  }
+  
+  .swal-button--loading .swal-button-text {
+    visibility: hidden;
+  }
+  
+  .swal-button--loading:after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-top: -8px;
+    margin-left: -8px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #fff;
+    animation: swal-rotate 1s linear infinite;
+  }
+  
+  @keyframes swal-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 
   .date-nav {
     padding: 6px 8px;
@@ -464,6 +494,10 @@
         closeOnConfirm: false
       }, function(isConfirm) {
         if (isConfirm) {
+          // Show loading spinner on the confirm button
+          $('.sweet-alert button.confirm').addClass('swal-button--loading');
+          $('.sweet-alert button.confirm').prop('disabled', true);
+          
           $.ajax({
             url: '/pos/delete/' + invoiceId,
             type: 'DELETE',
@@ -486,6 +520,9 @@
               }
             },
             error: function(xhr) {
+              // Reset confirm button state on error
+              $('.sweet-alert button.confirm').removeClass('swal-button--loading');
+              $('.sweet-alert button.confirm').prop('disabled', false);
               swal("Error!", "Something went wrong!", "error");
             }
           });

@@ -850,7 +850,8 @@
                     received_in_usd: $('#received-cash-in-usd').val() === '' ? 0 : $('#received-cash-in-usd').val(),
                     received_in_riel: $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val(),
                     change_in_usd: $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val(),
-                    change_in_riel: $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val()
+                    change_in_riel: $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val(),
+                    selected_change_currency: $('input[name="change-currency"]:checked').val() || ''
                 }
             };
 

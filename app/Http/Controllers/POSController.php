@@ -37,16 +37,53 @@ class POSController extends Controller
 
     public function store(Request $request)
     {
+        $additional_info = $request->additional_info;
+        
         $data = [
             "order_no" => $request->invoice_no,
             "items" => $request->data,
             "cashier" => Auth::user()->username,
             "time" => $this->getLocaleTime(),
             "payment_type" => $request->payment_type,
-            "additional_info" => $request->additional_info,
+            "additional_info" => $additional_info,
             'created_at' => $this->getLocaleTimestamp(),
             'updated_at' => $this->getLocaleTimestamp()
         ];
+        
+        // Add received and change amounts for cash payments
+        if ($request->payment_type === 'cash') {
+            // Clean and convert received values
+            $receivedUsd = isset($additional_info['received_in_usd']) ? $additional_info['received_in_usd'] : 0;
+            $receivedUsd = is_string($receivedUsd) ? (float) preg_replace('/[^0-9.]/', '', $receivedUsd) : (float) $receivedUsd;
+            
+            $receivedRiel = isset($additional_info['received_in_riel']) ? $additional_info['received_in_riel'] : 0;
+            $receivedRiel = is_string($receivedRiel) ? (int) preg_replace('/[^0-9]/', '', $receivedRiel) : (int) $receivedRiel;
+            
+            $data['received_in_usd'] = $receivedUsd;
+            $data['received_in_riel'] = $receivedRiel;
+            
+            // Clean and convert change values
+            $changeUsd = isset($additional_info['change_in_usd']) ? $additional_info['change_in_usd'] : 0;
+            $changeUsd = is_string($changeUsd) ? (float) preg_replace('/[^0-9.-]/', '', $changeUsd) : (float) $changeUsd;
+            
+            $changeRiel = isset($additional_info['change_in_riel']) ? $additional_info['change_in_riel'] : 0;
+            $changeRiel = is_string($changeRiel) ? (int) preg_replace('/[^0-9]/', '', $changeRiel) : (int) $changeRiel;
+            
+            // Store change based on which currency was selected for display
+            if (isset($additional_info['selected_change_currency'])) {
+                if ($additional_info['selected_change_currency'] === 'usd') {
+                    $data['change_in_usd'] = $changeUsd;
+                    $data['change_in_riel'] = 0;
+                } else {
+                    $data['change_in_usd'] = 0;
+                    $data['change_in_riel'] = $changeRiel;
+                }
+            } else {
+                // Default behavior if no currency is selected
+                $data['change_in_usd'] = $changeUsd;
+                $data['change_in_riel'] = $changeRiel;
+            }
+        }
 
         // Add custom split payment data if available
         if ($request->payment_type === 'custom') {
@@ -67,7 +104,6 @@ class POSController extends Controller
         ];
 
         $invoice = $request->invoice;
-        $additional_info = $request->additional_info;
 
         if (Auth::user()->role !== "SUPERADMIN") {
             $this->printInvoice(
