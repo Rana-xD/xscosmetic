@@ -9,6 +9,8 @@ class Delivery extends Model
     protected $table = 'delivery';
 
     protected $fillable = [
-        'name'
+        'name',
+        'location',
+        'cost'
     ];
 }

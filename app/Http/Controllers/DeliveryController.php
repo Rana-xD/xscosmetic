@@ -21,8 +21,13 @@ class DeliveryController extends Controller {
     }
 
     public function store(Request $request){
+        $location = $request->location ?: 'Phnom Penh';
+        $cost = ($location === 'Phnom Penh') ? 1.5 : 2.0;
+        
         $data = [
             "name" => $request->name,
+            "location" => $location,
+            "cost" => $cost
         ];
 
         Delivery::create($data);
@@ -42,8 +47,13 @@ class DeliveryController extends Controller {
     }
 
     public function update(Request $request){
+        $location = $request->location ?: 'Phnom Penh';
+        $cost = ($location === 'Phnom Penh') ? 1.5 : 2.0;
+        
         $data = [
             "name" => $request->name,
+            "location" => $location,
+            "cost" => $cost
         ];
 
         $id = $request->id;

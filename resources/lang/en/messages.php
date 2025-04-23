@@ -14,6 +14,7 @@ return [
     'daily_income' => 'Daily Income',
     'invoice' => 'Invoice',
     'delivery' => 'Delivery',
+    'location' => 'Location',
     'user' => 'User',
     'setting' => 'Setting',
     'exchange_rate' => 'Exchange Rate',
@@ -131,7 +132,9 @@ return [
 
     // Delivery Page
     'delivery_name' => 'Delivery Name',
+    'delivery_cost' => 'Delivery Cost',
     'add_delivery' => 'Add Delivery',
+    'edit_delivery' => 'Edit Delivery',
 
     // Settings Page
     'update_settings' => 'Update',

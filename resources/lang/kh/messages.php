@@ -14,6 +14,7 @@ return [
     'daily_income' => 'ចំណូលប្រចាំថ្ងៃ',
     'invoice' => 'វិក្កយបត្រ',
     'delivery' => 'ដឹកជញ្ជូន',
+    'location' => 'ទីតាំង',
     'user' => 'អ្នកប្រើប្រាស់',
     'setting' => 'ការកំណត់',
     'exchange_rate' => 'អត្រាប្តូរប្រាក់',
@@ -127,8 +128,10 @@ return [
     'delete_confirm' => 'លុបទិន្នន័យ',
 
     // Delivery Page
-    'delivery_name' => 'ឈ្មោះដឹកជញ្ជូន',
+    'delivery_name' => 'ឈ្មោះការដឹកជញ្ជូន',
+    'delivery_cost' => 'តម្លៃដឹកជញ្ជូន',
     'add_delivery' => 'បន្ថែមការដឹកជញ្ជូន',
+    'edit_delivery' => 'កែប្រែការដឹកជញ្ជូន',
 
     // Settings Page
     'exchange_rate' => 'អត្រាប្តូរប្រាក់ ១ដុល្លារ',

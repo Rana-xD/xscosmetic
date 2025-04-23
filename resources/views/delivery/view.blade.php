@@ -11,6 +11,8 @@
               <tr>
                   <th class="hidden-xs">{{ __('messages.sale_table_number') }}</th>
                   <th>{{ __('messages.delivery_name') }}</th>
+                  <th>{{ __('messages.location') }}</th>
+                  <th>{{ __('messages.delivery_cost') }}</th>
                   <th>{{ __('messages.edit') }}</th>
               </tr>
           </thead>
@@ -21,6 +23,8 @@
               <tr class="delivery-data">
                  <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
                  <td class="delivery-name">{{ $delivery->name }}</td>
+                 <td class="delivery-location">{{ $delivery->location }}</td>
+                 <td class="delivery-cost">${{ number_format($delivery->cost, 2) }}</td>
                  <td><div class="btn-group">
                   <a class="btn btn-default delete-btn delete-delivery" data-id="{{ $delivery->id }}" ><i class="fa fa-times" data-id="{{ $delivery->id }}"></i></a>
                   
@@ -42,14 +46,76 @@
 
 <script src="js/jquery-ui.min.js"></script>
 
+<style>
+  .radio-options {
+    display: flex;
+    align-items: center;
+  }
+  
+  .radio-inline {
+    display: inline-block;
+    margin-right: 10px;
+    padding-left: 0;
+  }
+  
+  .radio-option {
+    display: block;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    text-align: center;
+    transition: all 0.2s;
+    min-width: 100px;
+  }
+  
+  .radio-option:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .radio-inline input[type="radio"] {
+    display: none;
+  }
+  
+  .radio-inline input[type="radio"]:checked + .radio-option {
+    background-color: #25b09b;
+    color: white;
+    border-color: #25b09b;
+    font-weight: bold;
+  }
+</style>
+
 <script type="text/javascript">
   $(document).ready(function() {
+      
+      // Initialize radio buttons
+      $(document).on('click', '.radio-option', function() {
+        let radio = $(this).prev('input[type="radio"]');
+        radio.prop('checked', true);
+        
+        // Update cost based on location
+        if (radio.attr('name') === 'location') {
+          if (radio.val() === 'Phnom Penh') {
+            $('#delivery-cost').val('$1.50');
+          } else {
+            $('#delivery-cost').val('$2.00');
+          }
+        } else if (radio.attr('name') === 'location-edit') {
+          if (radio.val() === 'Phnom Penh') {
+            $('#delivery-cost-edit').val('$1.50');
+          } else {
+            $('#delivery-cost-edit').val('$2.00');
+          }
+        }
+      });
       
       $("#add-delivery").on("submit",(e)=>{
         e.preventDefault();
         let formData = new FormData();
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
         formData.append('name',$("#delivery-name").val());
+        formData.append('location', $('input[name="location"]:checked').val());
         $.ajax({
           url: '/delivery/add',
           type: "POST", 
@@ -102,10 +168,23 @@
         e.preventDefault();
         let self = e.target,
             id = $(self).attr('data-id'),
-            deliveryName = $(self).parents('.delivery-data').find('.delivery-name').text();
+            deliveryName = $(self).parents('.delivery-data').find('.delivery-name').text(),
+            deliveryLocation = $(self).parents('.delivery-data').find('.delivery-location').text(),
+            deliveryCost = $(self).parents('.delivery-data').find('.delivery-cost').text();
 
             $('#DeliveryId').val(id);
             $('#delivery-name-edit').val(deliveryName);
+            // Display the cost (read-only since it's automatically calculated based on location)
+            
+            // Set the correct radio button based on the location
+            if (deliveryLocation === 'Phnom Penh') {
+                $('#location-phnom-penh-edit').prop('checked', true);
+                $('#delivery-cost-edit').val('$1.50');
+            } else {
+                $('#location-province-edit').prop('checked', true);
+                $('#delivery-cost-edit').val('$2.00');
+            }
+            
             $('#Updatedelivery').modal('show');
       });
 
@@ -115,6 +194,7 @@
         let formData = new FormData();
         formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
         formData.append('name',$("#delivery-name-edit").val());
+        formData.append('location', $('input[name="location-edit"]:checked').val());
         formData.append('id',$("#DeliveryId").val());
         $.ajax({
           url: '/delivery/update',
@@ -147,6 +227,29 @@
              <label for="delivery-name">{{ __('messages.delivery_name') }}</label>
              <input type="text" name="name" Required class="form-control" id="delivery-name" placeholder="{{ __('messages.delivery_name') }}">
            </div>
+           <style>
+           .form-group label {
+             display: block;
+             margin-bottom: 5px;
+           }
+           </style>
+           <div class="form-group">
+             <label for="location">{{ __('messages.location') }}</label>
+             <div class="radio-options">
+               <div class="radio-inline">
+                 <input type="radio" name="location" id="location-phnom-penh" value="Phnom Penh" checked>
+                 <label class="radio-option" for="location-phnom-penh">Phnom Penh</label>
+               </div>
+               <div class="radio-inline">
+                 <input type="radio" name="location" id="location-province" value="Province">
+                 <label class="radio-option" for="location-province">Province</label>
+               </div>
+             </div>
+           </div>
+           <div class="form-group">
+             <label for="delivery-cost">{{ __('messages.delivery_cost') }}</label>
+             <input type="text" class="form-control" id="delivery-cost" value="$1.50" readonly>
+           </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
@@ -172,7 +275,24 @@
             <div class="form-group">
               <label for="delivery-name-edit">{{ __('messages.delivery_name') }}</label>
               <input type="text" name="name" Required class="form-control" id="delivery-name-edit" placeholder="{{ __('messages.delivery_name') }}">
-              <input type="hidden"  name="delivery-id" id="DeliveryId">
+              <input type="hidden" name="delivery-id" id="DeliveryId">
+            </div>
+            <div class="form-group">
+              <label for="location-edit">{{ __('messages.location') }}</label>
+              <div class="radio-options">
+                <div class="radio-inline">
+                  <input type="radio" name="location-edit" id="location-phnom-penh-edit" value="Phnom Penh">
+                  <label class="radio-option" for="location-phnom-penh-edit">Phnom Penh</label>
+                </div>
+                <div class="radio-inline">
+                  <input type="radio" name="location-edit" id="location-province-edit" value="Province">
+                  <label class="radio-option" for="location-province-edit">Province</label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="delivery-cost-edit">{{ __('messages.delivery_cost') }}</label>
+              <input type="text" class="form-control" id="delivery-cost-edit" readonly>
             </div>
        </div>
        <div class="modal-footer">
