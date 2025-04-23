@@ -196,5 +196,10 @@ return [
     'all_payment_types' => 'All',
     'cash_payment' => 'Cash',
     'electronic_payment' => 'ABA & ACLEDA',
-    'custom_payment' => 'Custom'
+    'custom_payment' => 'Custom',
+    
+    // Radio button options for change currency
+    'show_change_in' => 'Show Change In',
+    'show_in_usd' => 'Show in USD',
+    'show_in_riel' => 'Show in Riel'
 ];

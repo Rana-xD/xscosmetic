@@ -15,6 +15,55 @@
         display: none;
     }
 
+    #change-currency-options {
+        margin-bottom: 15px;
+    }
+
+    .radio-options {
+        display: flex;
+        align-items: center;
+    }
+    
+    .radio-inline {
+        display: inline-block;
+        margin-right: 10px;
+    }
+    
+    .radio-option {
+        display: block;
+        padding: 8px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: #f8f8f8;
+        border: 1px solid #ddd;
+        text-align: center;
+        transition: all 0.2s;
+        min-width: 100px;
+    }
+    
+    .radio-option:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .radio-inline input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+    }
+    
+    /* Fix input height consistency */
+    .form-group-flex input[type="text"],
+    .form-group-flex input[type="number"] {
+        height: 34px;
+        line-height: 1.42857143;
+    }
+    
+    .radio-inline input[type="radio"]:checked + .radio-option {
+        background-color: #25b09b;
+        color: white;
+        border-color: #25b09b;
+        font-weight: bold;
+    }
+
     /* HTML: <div class="loader"></div> */
     .loader {
         display: none;
@@ -75,6 +124,10 @@
         filter: hue-rotate(45deg);
         background-size: 8px 8px;
         animation-timing-function: linear
+    }
+
+    #change-currency-label {
+        width: 20.5%;
     }
 
     @keyframes l12 {
@@ -605,16 +658,25 @@
 
             // Check if both USD and Riel inputs have values
             if (value > 0 && rielValue > 0) {
-                // Hide change fields when both inputs have values
-                $('[for="change-in-usd"]').parent().hide();
-                $('[for="change-in-riel"]').parent().hide();
-                // Clear change fields when hidden
-                $('#change-in-riel').val('');
-                $('#change-in-usd').val('');
+                // Show radio buttons for selecting change currency
+                $('#change-currency-options').show();
+                
+                // Check if any radio button is already selected
+                let selectedCurrency = $('input[name="change-currency"]:checked').val();
+                if (selectedCurrency) {
+                    // Calculate change based on selected currency option
+                    calculateDualCurrencyChange();
+                } else {
+                    // Hide both change fields when no option is selected
+                    $('.form-group-flex').has('#change-in-usd').hide();
+                    $('.form-group-flex').has('#change-in-riel').hide();
+                }
             } else {
+                // Hide radio buttons when only one currency is used
+                $('#change-currency-options').hide();
                 // Show change fields
-                $('[for="change-in-usd"]').parent().show();
-                $('[for="change-in-riel"]').parent().show();
+                $('.form-group-flex').has('#change-in-usd').show();
+                $('.form-group-flex').has('#change-in-riel').show();
                 
                 // Recalculate change values
                 if (value > 0) {
@@ -648,16 +710,25 @@
 
             // Check if both USD and Riel inputs have values
             if (value > 0 && usdValue > 0) {
-                // Hide change fields when both inputs have values
-                $('[for="change-in-usd"]').parent().hide();
-                $('[for="change-in-riel"]').parent().hide();
-                // Clear change fields when hidden
-                $('#change-in-riel').val('');
-                $('#change-in-usd').val('');
+                // Show radio buttons for selecting change currency
+                $('#change-currency-options').show();
+                
+                // Check if any radio button is already selected
+                let selectedCurrency = $('input[name="change-currency"]:checked').val();
+                if (selectedCurrency) {
+                    // Calculate change based on selected currency option
+                    calculateDualCurrencyChange();
+                } else {
+                    // Hide both change fields when no option is selected
+                    $('.form-group-flex').has('#change-in-usd').hide();
+                    $('.form-group-flex').has('#change-in-riel').hide();
+                }
             } else {
+                // Hide radio buttons when only one currency is used
+                $('#change-currency-options').hide();
                 // Show change fields
-                $('[for="change-in-usd"]').parent().show();
-                $('[for="change-in-riel"]').parent().show();
+                $('.form-group-flex').has('#change-in-usd').show();
+                $('.form-group-flex').has('#change-in-riel').show();
                 
                 // Recalculate change values
                 if (value > 0) {
@@ -860,6 +931,12 @@
         $('#change-in-usd').val('');
         $("#received-cash-in-usd").prop('disabled', false);
         $("#received-cash-in-riel").prop('disabled', false);
+        $('#change-currency-options').hide();
+        // Uncheck all radio buttons
+        $('input[name="change-currency"]').prop('checked', false);
+        // Show both change fields for next time
+        $('.form-group-flex').has('#change-in-usd').show();
+        $('.form-group-flex').has('#change-in-riel').show();
     }
 
 
@@ -949,7 +1026,11 @@
 
     function addComma(num) {
         if (num === null) return;
-        return num.toString().split("").reverse().map((digit, index) => index != 0 && index % 3 === 0 ? `${digit},` : digit).reverse().join("");
+        // Handle negative numbers by preserving the minus sign
+        const isNegative = num < 0;
+        const absNum = Math.abs(num);
+        const formattedNum = absNum.toString().split("").reverse().map((digit, index) => index != 0 && index % 3 === 0 ? `${digit},` : digit).reverse().join("");
+        return isNegative ? `-${formattedNum}` : formattedNum;
     }
 
     function handleProductDiscount(e) {
@@ -1253,7 +1334,101 @@
             $('.custom-split').hide();
             $('.delivery').hide();
         }
+        
+        // Recalculate change if both currency inputs have values
+        let usdValue = parseFloat($('#received-cash-in-usd').val()) || 0;
+        let rielValue = parseInt($('#received-cash-in-riel').val()) || 0;
+        if (usdValue > 0 && rielValue > 0) {
+            calculateDualCurrencyChange();
+        }
     });
+    
+    // Add event listeners for radio buttons
+    $(document).on('change', 'input[name="change-currency"]', function() {
+        console.log('Radio changed:', $(this).val());
+        calculateDualCurrencyChange();
+    });
+    
+    // Initialize radio buttons on document ready
+    $(document).ready(function() {
+        // Make sure the radio options are properly initialized
+        $(document).on('click', '.radio-option', function() {
+            let radio = $(this).prev('input[type="radio"]');
+            radio.prop('checked', true);
+            radio.trigger('change');
+        });
+        
+        // Add event handler for modal close to reset form state
+        $('#OrderModal').on('hidden.bs.modal', function () {
+            resetReceivedCashAndChange();
+        });
+        
+        // Also reset when the close button is clicked
+        $('.cancel-pos').on('click', function() {
+            resetReceivedCashAndChange();
+        });
+    });
+    // Function to calculate change when both USD and Riel inputs are provided
+    function calculateDualCurrencyChange() {
+        let usdValue = parseFloat($('#received-cash-in-usd').val()) || 0;
+        let rielValue = parseInt($('#received-cash-in-riel').val()) || 0;
+        let totalUSD = parseFloat($('#total-usd').attr('total-usd-data'));
+        let totalRiel = handleRemoveCommafromRielCurrency($('#total-riel').attr('total-riel-data'));
+        let exchangeRate = parseFloat($('#exchange_rate').val());
+        let selectedCurrency = $('input[name="change-currency"]:checked').val();
+        let paymentType = $('#payment-type').val();
+        
+        console.log('Calculate dual currency change, selected:', selectedCurrency);
+        
+        // Hide both change fields by default when both currency inputs have values
+        $('.form-group-flex').has('#change-in-usd').hide();
+        $('.form-group-flex').has('#change-in-riel').hide();
+        
+        // If no radio button is selected, return early
+        if (!selectedCurrency) {
+            console.log('No currency selected');
+            return;
+        }
+        
+        if (selectedCurrency === 'usd') {
+            // Show only USD change field
+            $('.form-group-flex').has('#change-in-usd').show();
+            
+            // First deduct received Riel from total, then calculate USD change
+            let rielValueInUSD = rielValue / exchangeRate;
+            let remainingUSD = totalUSD - rielValueInUSD;
+            
+            // If remaining is negative, it means Riel payment covers everything
+            if (remainingUSD <= 0) {
+                let overpaymentInUSD = Math.abs(remainingUSD);
+                let changeInUSD = usdValue + overpaymentInUSD;
+                $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
+            } else {
+                // Calculate change from USD payment
+                let changeInUSD = usdValue - remainingUSD;
+                $('#change-in-usd').val(`${changeInUSD.toFixed(2)} $`);
+            }
+        } else { // selectedCurrency === 'riel'
+            // Show only Riel change field
+            $('.form-group-flex').has('#change-in-riel').show();
+            
+            // First deduct received USD from total, then calculate Riel change
+            let remainingUSD = totalUSD - usdValue;
+            
+            // If remaining is negative, it means USD payment covers everything
+            if (remainingUSD <= 0) {
+                let overpaymentInUSD = Math.abs(remainingUSD);
+                let overpaymentInRiel = overpaymentInUSD * exchangeRate;
+                let changeInRiel = addComma(rielValue + overpaymentInRiel);
+                $('#change-in-riel').val(`${changeInRiel} ៛`);
+            } else {
+                // Calculate remaining in Riel
+                let remainingRiel = remainingUSD * exchangeRate;
+                let changeInRiel = addComma(rielValue - remainingRiel);
+                $('#change-in-riel').val(`${changeInRiel} ៛`);
+            }
+        }
+    }
 </script>
 
 
@@ -1330,13 +1505,26 @@
                         <label for="received-cash-in-riel">{{ __('messages.received_cash_in_riel') }}</label>
                         <input type="number" name="received-cash-in-riel" class="form-control" id="received-cash-in-riel" step="1" min="0">
                     </div>
+                    <div id="change-currency-options" class="form-group form-group-flex" style="display: none;">
+                        <label id="change-currency-label">{{ __('messages.show_change_in') }}</label>
+                        <div class="radio-options" aria-labelledby="change-currency-label">
+                            <div class="radio-inline">
+                                <input type="radio" name="change-currency" id="change-in-usd-option" value="usd">
+                                <label class="radio-option" for="change-in-usd-option">USD</label>
+                            </div>
+                            <div class="radio-inline">
+                                <input type="radio" name="change-currency" id="change-in-riel-option" value="riel">
+                                <label class="radio-option" for="change-in-riel-option">Riel</label>
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-group form-group-flex">
                         <label for="change-in-usd">{{ __('messages.change_in_usd') }}</label>
                         <input type="text" name="change-in-usd" maxlength="100" class="form-control" id="change-in-usd" disabled>
                     </div>
                     <div class="form-group form-group-flex">
                         <label for="change-in-riel">{{ __('messages.change_in_riel') }}</label>
-                        <input type="text" name="change-in-riel" maxlength="100" class="form-control" id="change-in-riel" disabled>
+                        <input type="text" name="change-in-riel" maxlength="100" class="form-control" id="change-in-riel" disabled style="height: 34px;">
                     </div>
                 </div>
 

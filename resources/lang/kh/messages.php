@@ -200,5 +200,10 @@ return [
     'all_payment_types' => 'ទាំងអស់',
     'cash_payment' => 'សាច់ប្រាក់',
     'electronic_payment' => 'ABA & ACLEDA',
-    'custom_payment' => 'ផ្សេងៗ'
+    'custom_payment' => 'ផ្សេងៗ',
+    
+    // Radio button options for change currency
+    'show_change_in' => 'បង្ហាញប្រាក់អាប់ជា',
+    'show_in_usd' => 'បង្ហាញជាដុល្លារ',
+    'show_in_riel' => 'បង្ហាញជារៀល'
 ];
