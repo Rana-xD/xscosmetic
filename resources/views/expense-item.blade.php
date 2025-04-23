@@ -5,7 +5,8 @@
 @section('content')
 <div class="container">
    <div class="row" style="margin-top:100px;">
-      <table id="Table" class="table table-striped table-bordered" cellspacing="0" width="100%">
+      <div class="table-responsive">
+      <table class="table table-striped table-bordered">
           <thead>
               <tr>
                   <th class="hidden-xs">{{ __('messages.no') }}</th>
@@ -42,6 +43,7 @@
               @endif
           </tbody>
       </table>
+      </div>
    </div>
    <!-- Button trigger modal -->
    <button type="button" class="btn btn-add btn-lg" data-toggle="modal" data-target="#AddExpenseItem">{{ __('messages.add_expense_item') }}</button>
@@ -110,6 +112,8 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
+      // DataTables is already initialized elsewhere in the application
+      // No need to initialize it here
       
       $("#addExpenseItemForm").on("submit",(e)=>{
         e.preventDefault();
