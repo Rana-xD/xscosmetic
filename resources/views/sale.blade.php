@@ -220,7 +220,18 @@
       </thead>
       <tbody>
         <tr>
-          <td>{{$data["payment_type_income"]["cash"]}}$</td>
+          <td>
+            @php
+              $new_system_start_date = '2025-04-25';
+              $current_date = empty($date) ? '' : $date;
+              $is_new_system = !empty($current_date) && $current_date >= $new_system_start_date;
+            @endphp
+            @if($is_new_system)
+              {{number_format($data["payment_type_income"]["cash_in_usd"], 2)}}$ | {{number_format($data["payment_type_income"]["cash_in_riel"], 0, '.', ',')}}៛
+            @else
+              {{$data["payment_type_income"]["cash"]}}$
+            @endif
+          </td>
           <td>{{$data["payment_type_income"]["total_change"]}}$</td>
           <td>{{$data["payment_type_income"]["total_expense"]}}$</td>
           <td>{{$data["payment_type_income"]["aba"]}}$</td>
