@@ -230,6 +230,43 @@ class SaleController extends Controller
             ->where('payment_type', 'cash')
             ->get();
         $total_income_in_cash = $this->getTotalAmount($orders_in_cash);
+        
+        // Check if the date is tomorrow or later (new multi-currency tracking)
+        $tomorrow = Carbon::now()->addDay()->format('Y-m-d');
+        $is_new_system = empty($date) ? false : $date >= $tomorrow;
+        
+        if ($is_new_system) {
+            // For today and future dates - use the new multi-currency tracking
+            $orders_in_cash_details = POS::whereBetween('created_at', [$start_date, $end_date])
+                ->where('payment_type', 'cash')
+                ->get(['received_in_riel', 'change_in_riel', 'received_in_usd', 'change_in_usd']);
+                
+            $total_received_in_riel = 0;
+            $total_received_in_usd = 0;
+            foreach ($orders_in_cash_details as $order) {
+                // Calculate net Riel amount - only subtract change if there's a received amount
+                $received_riel = isset($order->received_in_riel) ? floatval($order->received_in_riel) : 0;
+                if ($received_riel > 0) {
+                    $change_riel = isset($order->change_in_riel) ? floatval($order->change_in_riel) : 0;
+                    $total_received_in_riel += ($received_riel - $change_riel);
+                }
+                
+                // Calculate net USD amount
+                $received_usd = isset($order->received_in_usd) ? floatval($order->received_in_usd) : 0;
+                $change_usd = isset($order->change_in_usd) ? floatval($order->change_in_usd) : 0;
+                $total_received_in_usd += ($received_usd - $change_usd);
+            }
+        } else {
+            // For past dates - use the original logic (cash value for USD and calculate Riel)
+            $total_received_in_usd = $total_income_in_cash;
+            
+            // Get exchange rate from settings
+            $setting = Setting::first();
+            $exchange_rate = $setting ? floatval($setting->exchange_rate) : 4100; // Default to 4100 if not set
+            
+            // Calculate Riel amount based on USD amount and exchange rate
+            $total_received_in_riel = $total_income_in_cash * $exchange_rate;
+        }
 
         $orders_in_aba = POS::whereBetween('created_at', [$start_date, $end_date])
             ->where('payment_type', 'aba')
@@ -262,8 +299,32 @@ class SaleController extends Controller
 
         $total_income_in_cash = $total_income_in_cash + $total_change - $total_expense;
 
+        // Only process custom split payments for received amounts if using the new system
+        if ($is_new_system) {
+            // Add received amounts from custom split payments and subtract change
+            foreach ($custom_split_orders as $order) {
+                // Handle Riel amounts - only subtract change if there's a received amount
+                if (isset($order->received_in_riel)) {
+                    $received_riel = floatval($order->received_in_riel);
+                    if ($received_riel > 0) {
+                        $change_riel = isset($order->change_in_riel) ? floatval($order->change_in_riel) : 0;
+                        $total_received_in_riel += ($received_riel - $change_riel);
+                    }
+                }
+                
+                // Handle USD amounts
+                if (isset($order->received_in_usd)) {
+                    $received_usd = floatval($order->received_in_usd);
+                    $change_usd = isset($order->change_in_usd) ? floatval($order->change_in_usd) : 0;
+                    $total_received_in_usd += ($received_usd - $change_usd);
+                }
+            }
+        }
+        
         return [
             'cash' => $total_income_in_cash,
+            'cash_in_riel' => $total_received_in_riel,
+            'cash_in_usd' => $total_received_in_usd,
             'aba' => $total_income_in_aba,
             'acleda' => $total_income_in_acleda,
             'custom' => 0,
@@ -280,6 +341,43 @@ class SaleController extends Controller
 
         $orders_in_cash = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'cash')->get();
         $total_income_in_cash =  $this->getTotalAmount($orders_in_cash);
+        
+        // Check if the date is tomorrow or later (new multi-currency tracking)
+        $tomorrow = Carbon::now()->addDay()->format('Y-m-d');
+        $is_new_system = empty($date) ? false : $date >= $tomorrow;
+        
+        if ($is_new_system) {
+            // For today and future dates - use the new multi-currency tracking
+            $orders_in_cash_details = TPOS::whereBetween('created_at', [$start_date, $end_date])
+                ->where('payment_type', 'cash')
+                ->get(['received_in_riel', 'change_in_riel', 'received_in_usd', 'change_in_usd']);
+                
+            $total_received_in_riel = 0;
+            $total_received_in_usd = 0;
+            foreach ($orders_in_cash_details as $order) {
+                // Calculate net Riel amount - only subtract change if there's a received amount
+                $received_riel = isset($order->received_in_riel) ? floatval($order->received_in_riel) : 0;
+                if ($received_riel > 0) {
+                    $change_riel = isset($order->change_in_riel) ? floatval($order->change_in_riel) : 0;
+                    $total_received_in_riel += ($received_riel - $change_riel);
+                }
+                
+                // Calculate net USD amount
+                $received_usd = isset($order->received_in_usd) ? floatval($order->received_in_usd) : 0;
+                $change_usd = isset($order->change_in_usd) ? floatval($order->change_in_usd) : 0;
+                $total_received_in_usd += ($received_usd - $change_usd);
+            }
+        } else {
+            // For past dates - use the original logic (cash value for USD and calculate Riel)
+            $total_received_in_usd = $total_income_in_cash;
+            
+            // Get exchange rate from settings
+            $setting = Setting::first();
+            $exchange_rate = $setting ? floatval($setting->exchange_rate) : 4100; // Default to 4100 if not set
+            
+            // Calculate Riel amount based on USD amount and exchange rate
+            $total_received_in_riel = $total_income_in_cash * $exchange_rate;
+        }
 
         $orders_in_aba = TPOS::whereBetween('created_at', [$start_date, $end_date])->where('payment_type', 'aba')->get();
         $total_income_in_aba = $this->getTotalAmount($orders_in_aba);
@@ -306,8 +404,32 @@ class SaleController extends Controller
 
         $total_income_in_cash = $total_income_in_cash + $total_change - $total_expense;
 
+        // Only process custom split payments for received amounts if using the new system
+        if ($is_new_system) {
+            // Add received amounts from custom split payments and subtract change
+            foreach ($custom_split_orders as $order) {
+                // Handle Riel amounts - only subtract change if there's a received amount
+                if (isset($order->received_in_riel)) {
+                    $received_riel = floatval($order->received_in_riel);
+                    if ($received_riel > 0) {
+                        $change_riel = isset($order->change_in_riel) ? floatval($order->change_in_riel) : 0;
+                        $total_received_in_riel += ($received_riel - $change_riel);
+                    }
+                }
+                
+                // Handle USD amounts
+                if (isset($order->received_in_usd)) {
+                    $received_usd = floatval($order->received_in_usd);
+                    $change_usd = isset($order->change_in_usd) ? floatval($order->change_in_usd) : 0;
+                    $total_received_in_usd += ($received_usd - $change_usd);
+                }
+            }
+        }
+        
         return [
             'cash' => $total_income_in_cash,
+            'cash_in_riel' => $total_received_in_riel,
+            'cash_in_usd' => $total_received_in_usd,
             'aba' => $total_income_in_aba,
             'acleda' => $total_income_in_acleda,
             'custom' => 0,
