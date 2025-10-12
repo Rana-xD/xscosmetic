@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('QUEUE_CONNECTION', 'sync'),
+    'default' => env('QUEUE_CONNECTION', 'redis'),
 
     /*
     |--------------------------------------------------------------------------
@@ -32,11 +32,6 @@ return [
 
         'sync' => [
             'driver' => 'sync',
-        ],
-
-        'file' => [
-            'driver' => 'file',
-            'path' => storage_path('framework/queue'),
         ],
 
         'database' => [
