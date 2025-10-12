@@ -22,6 +22,43 @@ if [ ! -f "artisan" ]; then
 fi
 
 # ============================================
+# STEP 0: Remove Problematic Redis Extension
+# ============================================
+echo "Step 0: Checking for problematic redis.so configuration..."
+echo ""
+
+# Find php.ini
+PHP_INI=$(php --ini | grep "Loaded Configuration File" | cut -d: -f2 | xargs)
+
+if [ -f "$PHP_INI" ]; then
+    if grep -q "^extension=redis.so" "$PHP_INI"; then
+        echo "⚠ Found redis.so in php.ini, commenting it out..."
+        sudo cp "$PHP_INI" "$PHP_INI.backup.$(date +%Y%m%d_%H%M%S)"
+        sudo sed -i.bak 's/^extension=redis.so/;extension=redis.so/' "$PHP_INI"
+        echo "✓ Commented out redis.so (we'll use Predis instead)"
+    else
+        echo "✓ No problematic redis.so configuration found"
+    fi
+fi
+
+# Check conf.d directory
+CONF_D=$(php --ini | grep "Scan for additional .ini files" | cut -d: -f2 | xargs)
+if [ -d "$CONF_D" ]; then
+    if ls "$CONF_D"/*redis*.ini 2>/dev/null; then
+        echo "⚠ Found Redis extension config files in $CONF_D"
+        for file in "$CONF_D"/*redis*.ini; do
+            if [ -f "$file" ]; then
+                echo "  Disabling: $file"
+                sudo mv "$file" "$file.disabled"
+            fi
+        done
+        echo "✓ Disabled Redis extension config files"
+    fi
+fi
+
+echo ""
+
+# ============================================
 # STEP 1: Check if Redis is installed
 # ============================================
 echo "Step 1: Checking Redis installation..."
