@@ -34,6 +34,11 @@ return [
             'driver' => 'sync',
         ],
 
+        'file' => [
+            'driver' => 'file',
+            'path' => storage_path('framework/queue'),
+        ],
+
         'database' => [
             'driver' => 'database',
             'table' => 'jobs',
