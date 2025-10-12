@@ -126,10 +126,14 @@ if [ -f "$WORKER_CONFIG" ]; then
 fi
 
 if [ "$SKIP_CONFIG" != "true" ]; then
+    # Get the full path to PHP
+    PHP_PATH=$(which php)
+    echo "Using PHP: $PHP_PATH"
+    
     sudo tee "$WORKER_CONFIG" > /dev/null <<EOF
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php $SCRIPT_DIR/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+command=$PHP_PATH $SCRIPT_DIR/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -139,6 +143,7 @@ numprocs=1
 redirect_stderr=true
 stdout_logfile=$SCRIPT_DIR/storage/logs/worker.log
 stopwaitsecs=3600
+environment=PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 EOF
 
     echo "✓ Created worker config at: $WORKER_CONFIG"
