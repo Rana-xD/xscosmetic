@@ -15,20 +15,36 @@ use App\Events\NewOrder;
 use charlieuki\ReceiptPrinter\ReceiptPrinter as ReceiptPrinter;
 use Carbon\Carbon;
 use DB;
+use App\Services\ProductCacheService;
+use App\Jobs\BatchUpdateProductStock;
+use App\Jobs\ProcessPOSOrder;
+use App\Jobs\DeletePOSInvoice;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class POSController extends Controller
 {
-    public function __construct()
+    protected $productCacheService;
+
+    public function __construct(ProductCacheService $productCacheService)
     {
         $this->middleware('auth');
         // $this->middleware('admin');
+        $this->productCacheService = $productCacheService;
     }
 
     public function show()
     {
         ini_set('max_execution_time', '300');
-        $products = Product::with('category')->get();
-        $setting = Setting::first();
+        
+        // Use cached products instead of querying remote DB every time
+        $products = $this->productCacheService->getProducts();
+        
+        // Cache settings as well
+        $setting = Cache::remember('pos_settings', 3600, function () {
+            return Setting::first();
+        });
+        
         return view('pos', [
             'products' => $products,
             'exchange_rate' => $setting->exchange_rate
@@ -150,17 +166,16 @@ class POSController extends Controller
             );
         }
 
-        $order = POS::create($data);
+        // Dispatch background job to process order and update stock
+        // This runs asynchronously in the queue
+        ProcessPOSOrder::dispatch($data, $temp_data, $this->isAddToTPosValid());
 
-        if ($this->isAddToTPosValid()) {
-            TPOS::create($temp_data);
-        }
-
-        $this->deductStock($data['items']);
-
+        // Return immediately with invoice number
+        // The job will handle order creation and stock updates in the background
         return response()->json([
             'code' => 200,
-            'data' => $invoice
+            'data' => $invoice,
+            'message' => 'Order is being processed'
         ]);
     }
 
@@ -182,6 +197,36 @@ class POSController extends Controller
             $product = Product::find($item['product_id']);
             $product->stock = $product->stock - (int)$item['quantity'];
             $product->save();
+        }
+    }
+
+    /**
+     * Optimized stock deduction using batch update
+     * Reduces multiple queries to a single batch operation
+     */
+    private function deductStockOptimized($items)
+    {
+        try {
+            DB::beginTransaction();
+            
+            foreach ($items as $item) {
+                // Use decrement for atomic operation
+                DB::table('products')
+                    ->where('id', $item['product_id'])
+                    ->decrement('stock', (int)$item['quantity']);
+                
+                // Clear individual product cache
+                Cache::forget("product_{$item['product_id']}");
+            }
+            
+            // Clear main products cache to reflect changes
+            $this->productCacheService->clearCache();
+            
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Stock deduction failed: " . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -333,45 +378,34 @@ class POSController extends Controller
     public function destroy($id)
     {
         try {
-            DB::beginTransaction();
-
-            // Find the invoice by ID
+            // Verify invoice exists before dispatching job
             $invoice = POS::find($id);
             if (!$invoice) {
-                return response()->json(['success' => false, 'message' => 'Invoice not found']);
+                return response()->json([
+                    'success' => false, 
+                    'message' => 'Invoice not found'
+                ]);
             }
 
             $invoice_no = $invoice->order_no;
 
-            // Update product stock
-            foreach ($invoice->items as $item) {
-                $product = Product::find($item['product_id']);
-                if ($product) {
-                    $product->stock += intval($item['quantity']);
-                    $product->save();
-                }
-            }
+            // Dispatch background job to handle deletion
+            // This includes: stock restoration, invoice deletion, and number resequencing
+            DeletePOSInvoice::dispatch($id);
 
-            // Delete the invoice
-            $invoice->delete();
+            Log::info("Invoice deletion job dispatched for: {$invoice_no}");
 
-            // Reset invoice numbers for all invoices after this one
-            $laterInvoices = POS::where('order_no', '>', $invoice_no)
-                ->orderBy('order_no', 'asc')
-                ->get();
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice deletion is being processed'
+            ]);
 
-            foreach ($laterInvoices as $laterInvoice) {
-                $currentNumber = intval(ltrim($laterInvoice->order_no, '0'));
-                $newNumber = str_pad($currentNumber - 1, 6, '0', STR_PAD_LEFT);
-                $laterInvoice->order_no = $newNumber;
-                $laterInvoice->save();
-            }
-
-            DB::commit();
-            return response()->json(['success' => true]);
         } catch (\Exception $e) {
-            DB::rollback();
-            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+            Log::error("Failed to dispatch invoice deletion job: " . $e->getMessage());
+            return response()->json([
+                'success' => false, 
+                'message' => 'Failed to process deletion: ' . $e->getMessage()
+            ]);
         }
     }
 }

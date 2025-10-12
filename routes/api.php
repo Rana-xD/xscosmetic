@@ -20,3 +20,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 // Delivery API routes
 Route::get('/delivery/{id}', [DeliveryController::class, 'show']);
+
+// Cache webhook routes (for remote system to notify local cache)
+Route::post('/cache/clear-products', [\App\Http\Controllers\CacheWebhookController::class, 'clearProducts']);
+Route::post('/cache/refresh-products', [\App\Http\Controllers\CacheWebhookController::class, 'refreshProducts']);

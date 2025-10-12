@@ -265,8 +265,14 @@
     let reading = false;
     let addDelivery = 0;
     let timeoutId = null;
+    let barcodeMap = {}; // Cache for faster barcode lookup
+    let lastScanTime = 0; // Prevent duplicate scans
+    const SCAN_DEBOUNCE_MS = 500; // Minimum time between scans
 
     $(document).ready(function() {
+
+        // Build barcode map for O(1) lookup instead of O(n)
+        buildBarcodeMap();
 
         e = $.Event('keypress');
         e.keyCode = 13; // enter
@@ -475,26 +481,72 @@
 
         };
 
+        // Optimized barcode scanner event listener
         document.addEventListener('keypress', (e) => {
-            //usually scanners throw an 'Enter' key at the end of read
-            if (e.keyCode === 13) {
-                if (code.length > 10) {
-                    element = getProductElementByBarcode(code);
-                    // console.log('code:: '+code);
-                    addProduct(element);
-                    code = "";
-                }
-            } else {
-                code += e.key; //while this is not an 'enter' it stores the every key            
+            // Ignore if user is typing in an input field
+            const activeElement = document.activeElement;
+            const isInputField = activeElement && (
+                activeElement.tagName === 'INPUT' || 
+                activeElement.tagName === 'TEXTAREA' || 
+                activeElement.tagName === 'SELECT' ||
+                activeElement.isContentEditable
+            );
+            
+            if (isInputField) {
+                return; // Let the user type normally in input fields
             }
 
-            //run a timeout of 200ms at the first read and clear everything
-            if (!reading) {
+            // Use modern e.key instead of deprecated e.keyCode
+            if (e.key === 'Enter') {
+                // Clear any existing timeout
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                    timeoutId = null;
+                }
+                
+                if (code.length > 10) {
+                    const currentTime = Date.now();
+                    
+                    // Debounce: prevent duplicate scans within SCAN_DEBOUNCE_MS
+                    if (currentTime - lastScanTime < SCAN_DEBOUNCE_MS) {
+                        console.log('Scan ignored - too soon after last scan');
+                        code = "";
+                        reading = false;
+                        return;
+                    }
+                    
+                    lastScanTime = currentTime;
+                    
+                    // Use optimized barcode lookup with cached map
+                    const element = getProductElementByBarcodeOptimized(code);
+                    
+                    if (element) {
+                        addProduct(element);
+                    } else {
+                        console.warn('Product not found for barcode:', code);
+                        // Optional: Show user feedback for invalid barcode
+                    }
+                    
+                    code = "";
+                }
+                reading = false;
+            } else {
+                // Accumulate barcode characters
+                code += e.key;
+                
+                // Clear and reset timeout on each keypress
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                
+                // Set reading flag and timeout
                 reading = true;
-                setTimeout(() => {
+                timeoutId = setTimeout(() => {
+                    // Reset if no Enter key received within timeout
                     code = "";
                     reading = false;
-                }, 400); //200 works fine for me but you can adjust it
+                    timeoutId = null;
+                }, 100); // Reduced from 400ms to 100ms for faster response
             }
         });
 
@@ -519,6 +571,26 @@
                     return $(cards[i]).find('.addPct');
                 }
             }
+        }
+
+        // Build barcode map for O(1) lookup performance
+        function buildBarcodeMap() {
+            barcodeMap = {}; // Reset the map
+            let cards = $('#productList2').children();
+            
+            for (let i = 0; i < cards.length; i++) {
+                const barcode = $(cards[i]).find('#barcode').val();
+                if (barcode) {
+                    barcodeMap[barcode] = $(cards[i]).find('.addPct');
+                }
+            }
+            
+            console.log(`Barcode map built with ${Object.keys(barcodeMap).length} products`);
+        }
+
+        // Optimized barcode lookup using cached map - O(1) instead of O(n)
+        function getProductElementByBarcodeOptimized(barcode) {
+            return barcodeMap[barcode] || null;
         }
 
         $("#searchProd").keyup(function() {
