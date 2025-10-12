@@ -92,53 +92,34 @@ fi
 echo ""
 
 # ============================================
-# STEP 4: Install PHP Redis Extension
+# STEP 4: Install Predis Package (Recommended)
 # ============================================
-echo "Step 4: Checking PHP Redis extension..."
-echo ""
-
-if php -m | grep -q "redis"; then
-    echo "✓ PHP Redis extension is already installed"
-else
-    echo "⚠ PHP Redis extension not found"
-    echo ""
-    read -p "Do you want to install PHP Redis extension? (y/n) " -n 1 -r
-    echo ""
-    
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "Installing PHP Redis extension via PECL..."
-        pecl install redis
-        
-        # Add extension to php.ini if not already there
-        PHP_INI=$(php --ini | grep "Loaded Configuration File" | cut -d: -f2 | xargs)
-        if [ -f "$PHP_INI" ]; then
-            if ! grep -q "extension=redis.so" "$PHP_INI"; then
-                echo "extension=redis.so" >> "$PHP_INI"
-                echo "✓ Added redis.so to php.ini"
-            fi
-        fi
-        
-        echo "✓ PHP Redis extension installed"
-    else
-        echo "⚠ Skipped PHP Redis extension installation"
-        echo "   Note: Laravel can still use Redis via predis/predis package"
-    fi
-fi
-
-echo ""
-
-# ============================================
-# STEP 5: Install Predis Package
-# ============================================
-echo "Step 5: Checking Predis package..."
+echo "Step 4: Installing Predis package..."
 echo ""
 
 if grep -q "predis/predis" composer.json; then
     echo "✓ Predis package is already in composer.json"
 else
-    echo "Installing Predis package..."
+    echo "Installing Predis package (pure PHP Redis client)..."
     composer require predis/predis
     echo "✓ Predis package installed"
+fi
+
+echo ""
+
+# ============================================
+# STEP 5: Configure Redis Client
+# ============================================
+echo "Step 5: Configuring Redis client..."
+echo ""
+
+# Set Redis client to predis
+if grep -q "^REDIS_CLIENT=" .env; then
+    sed -i.bak 's/^REDIS_CLIENT=.*/REDIS_CLIENT=predis/' .env
+    echo "✓ Updated REDIS_CLIENT=predis"
+else
+    echo "REDIS_CLIENT=predis" >> .env
+    echo "✓ Added REDIS_CLIENT=predis"
 fi
 
 echo ""
