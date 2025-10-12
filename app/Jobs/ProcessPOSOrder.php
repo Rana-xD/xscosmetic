@@ -42,7 +42,7 @@ class ProcessPOSOrder implements ShouldQueue
      *
      * @var int
      */
-    public $timeout = 120;
+    public $timeout = 600; // 10 minutes
 
     /**
      * Create a new job instance.

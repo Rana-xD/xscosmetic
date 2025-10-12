@@ -39,7 +39,7 @@ class DeletePOSInvoice implements ShouldQueue
      *
      * @var int
      */
-    public $timeout = 180;
+    public $timeout = 600; // 10 minutes
 
     /**
      * Create a new job instance.
@@ -72,25 +72,11 @@ class DeletePOSInvoice implements ShouldQueue
             $invoice_no = $invoice->order_no;
             Log::info("Starting deletion of invoice: {$invoice_no}");
 
-            // Restore product stock using optimized batch operations
-            foreach ($invoice->items as $item) {
-                // Use atomic increment operation
-                DB::table('products')
-                    ->where('id', $item['product_id'])
-                    ->increment('stock', intval($item['quantity']));
-                
-                // Clear individual product cache
-                Cache::forget("product_{$item['product_id']}");
-                
-                Log::info("Stock restored for product {$item['product_id']}: +{$item['quantity']} units");
-            }
-
-            // Delete the invoice
+            // Delete the invoice (no stock restoration)
             $invoice->delete();
             Log::info("Invoice deleted: {$invoice_no}");
 
-            // Reset invoice numbers for all invoices after this one
-            // This is done in a single query for better performance
+            // Resequence invoice numbers for all invoices after this one
             $laterInvoices = POS::where('order_no', '>', $invoice_no)
                 ->orderBy('order_no', 'asc')
                 ->get();
@@ -99,19 +85,13 @@ class DeletePOSInvoice implements ShouldQueue
                 $currentNumber = intval(ltrim($laterInvoice->order_no, '0'));
                 $newNumber = str_pad($currentNumber - 1, 6, '0', STR_PAD_LEFT);
                 
-                // Use update query instead of save for better performance
+                // Use update query for better performance
                 DB::table('pos')
                     ->where('id', $laterInvoice->id)
                     ->update(['order_no' => $newNumber]);
                 
                 Log::info("Updated invoice number: {$laterInvoice->order_no} -> {$newNumber}");
             }
-
-            // Clear product cache to reflect stock changes
-            $cacheService = app(ProductCacheService::class);
-            $cacheService->clearCache();
-            
-            Log::info("Product cache cleared after invoice deletion");
 
             DB::commit();
             Log::info("Invoice deletion completed successfully: {$invoice_no}");
