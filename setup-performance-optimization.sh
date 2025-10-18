@@ -274,17 +274,16 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     php artisan config:cache
     echo "✓ Configuration cached"
     
-    # Try to cache routes (suppress PHP deprecation warnings)
+    # Try to cache routes
     echo "Attempting to cache routes..."
-    ROUTE_CACHE_OUTPUT=$(php -d error_reporting=E_ALL^E_DEPRECATED artisan route:cache 2>&1)
-    ROUTE_CACHE_EXIT=$?
     
-    if [ $ROUTE_CACHE_EXIT -ne 0 ] || echo "$ROUTE_CACHE_OUTPUT" | grep -qE "LogicException|Unable to prepare route|Fatal error"; then
-        echo "⚠ Skipping route cache (routes contain closures or compatibility issues)"
-        echo "  Note: This is normal for Laravel 7 with PHP 7.4 if routes contain closures"
-        php artisan route:clear
-    else
+    # Run route:cache and capture exit code
+    if php artisan route:cache > /tmp/route_cache.log 2>&1; then
         echo "✓ Route cache created"
+    else
+        echo "⚠ Skipping route cache (compatibility issues with PHP 7.4)"
+        echo "  Note: Config and view caching are more important for performance"
+        php artisan route:clear > /dev/null 2>&1
     fi
     
     echo "Caching views..."
