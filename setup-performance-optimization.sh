@@ -411,6 +411,8 @@ if [ "$SKIP_SUPERVISOR" != "true" ]; then
     
     echo "Creating Laravel worker configuration..."
     
+    # Note: On macOS, the 'user' directive might not work as expected
+    # Supervisor runs as the current user by default on macOS via Homebrew
     sudo tee "$WORKER_CONFIG" > /dev/null <<EOF
 [program:laravel-worker]
 process_name=%(program_name)s_%(process_num)02d
@@ -419,13 +421,13 @@ autostart=true
 autorestart=true
 stopasgroup=true
 killasgroup=true
-user=$CURRENT_USER
 numprocs=2
 redirect_stderr=true
 stdout_logfile=$SCRIPT_DIR/storage/logs/worker.log
 stdout_logfile_maxbytes=10MB
 stdout_logfile_backups=5
 stopwaitsecs=60
+directory=$SCRIPT_DIR
 environment=PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 EOF
     
@@ -433,15 +435,39 @@ EOF
     
     # Reload Supervisor
     echo "Reloading Supervisor configuration..."
-    supervisorctl reread
-    supervisorctl update
+    if supervisorctl reread 2>&1 | grep -q "ERROR"; then
+        echo "⚠ Warning: Supervisor reread had issues, trying to restart supervisor..."
+        brew services restart supervisor
+        sleep 3
+    fi
+    
+    supervisorctl update 2>&1 | grep -v "ERROR (no such group)" || true
     
     # Start Queue Worker
     echo "Starting queue workers..."
-    supervisorctl restart laravel-worker:* 2>/dev/null || supervisorctl start laravel-worker:* 2>/dev/null
-    sleep 3
+    sleep 2
     
-    echo "✓ Queue workers started"
+    if supervisorctl status laravel-worker:* 2>&1 | grep -q "no such group"; then
+        echo "⚠ Queue workers not started automatically"
+        echo "  This is normal on first setup. Restarting supervisor..."
+        brew services restart supervisor
+        sleep 5
+        supervisorctl reread
+        supervisorctl update
+        supervisorctl start laravel-worker:*
+    else
+        supervisorctl restart laravel-worker:* 2>/dev/null || supervisorctl start laravel-worker:* 2>/dev/null
+    fi
+    
+    sleep 2
+    
+    # Check status
+    if supervisorctl status laravel-worker:* 2>&1 | grep -q "RUNNING"; then
+        echo "✓ Queue workers started successfully"
+    else
+        echo "⚠ Queue workers may need manual start"
+        echo "  Run: supervisorctl start laravel-worker:*"
+    fi
 fi
 
 echo ""
