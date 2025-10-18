@@ -47,7 +47,7 @@ class WarmProductCache extends Command
     public function handle()
     {
         $this->info('Warming up cache...');
-        $this->newLine();
+        $this->line('');
         
         $totalStartTime = microtime(true);
         
@@ -67,7 +67,7 @@ class WarmProductCache extends Command
         
         $totalDuration = round(microtime(true) - $totalStartTime, 2);
         
-        $this->newLine();
+        $this->line('');
         $this->info("Cache warmed successfully in {$totalDuration}s!");
         
         return 0;
