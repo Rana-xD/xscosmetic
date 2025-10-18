@@ -27,7 +27,16 @@ Follow the on-screen instructions to complete the installation.
 xcode-select --install
 ```
 
-### 3. Install Git (if not already installed)
+### 3. Install PHP 7.4
+
+**IMPORTANT**: You must install PHP 7.4 before running the script:
+
+```bash
+brew install php@7.4
+brew link --force --overwrite php@7.4
+```
+
+### 4. Install Git (if not already installed)
 
 ```bash
 brew install git
@@ -47,25 +56,24 @@ The script will guide you through the entire setup process with interactive prom
 
 ### Step-by-Step Process
 
-1. **Pre-flight Checks** - Verifies Homebrew is installed
-2. **Install PHP 7.4** - Installs and configures PHP 7.4
-3. **Install MySQL** - Installs MySQL database server
-4. **Install Composer** - Installs PHP dependency manager
-5. **Install Laravel Valet** - Installs Valet and dependencies
-6. **Install Valet Dependencies** - Nginx and Dnsmasq
-7. **Configure Valet with PHP 7.4** - Properly switches to PHP 7.4 (important for older versions!)
-8. **Create Sites Directory** - Creates ~/Sites folder
-9. **Clone Repository** - Clones xscosmetic from GitHub
-10. **Install Dependencies** - Runs composer install
-11. **Configure Environment** - Sets up .env file
-12. **Configure Database** - Creates database and updates .env
-13. **Run Migrations** - Sets up database tables
-14. **Configure Valet** - Parks Sites directory and links project
-15. **Setup HTTPS** - Secures site with SSL certificate
-16. **Configure Custom TLD** - Sets up .cosmetic domain
-17. **Clear Caches** - Clears Laravel caches
-18. **Restart Services** - Restarts Valet services
-19. **Final Verification** - Checks all components
+1. **Pre-flight Checks** - Verifies Homebrew and PHP 7.4 are installed
+2. **Install MySQL** - Installs MySQL database server
+3. **Install Composer** - Installs PHP dependency manager
+4. **Install Laravel Valet** - Installs Valet and dependencies
+5. **Install Valet Dependencies** - Nginx and Dnsmasq
+6. **Configure Valet with PHP 7.4** - Properly switches to PHP 7.4 (important for older versions!)
+7. **Create Sites Directory** - Creates ~/Sites folder
+8. **Clone Repository** - Clones xscosmetic from GitHub
+9. **Install Dependencies** - Runs composer install
+10. **Configure Environment** - Sets up .env file
+11. **Configure Database** - Creates database and updates .env
+12. **Run Migrations** - Sets up database tables
+13. **Configure Valet** - Parks Sites directory and links project
+14. **Setup HTTPS** - Secures site with SSL certificate
+15. **Configure Custom TLD** - Sets up .cosmetic domain
+16. **Clear Caches** - Clears Laravel caches
+17. **Restart Services** - Restarts Valet services
+18. **Final Verification** - Checks all components
 
 ## Configuration
 

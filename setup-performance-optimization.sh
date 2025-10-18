@@ -270,10 +270,29 @@ read -p "Do you want to optimize for production? (y/n) " -n 1 -r
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Caching configuration..."
     php artisan config:cache
-    php artisan route:cache
+    echo "✓ Configuration cached"
+    
+    # Try to cache routes (suppress PHP deprecation warnings)
+    echo "Attempting to cache routes..."
+    ROUTE_CACHE_OUTPUT=$(php -d error_reporting=E_ALL^E_DEPRECATED artisan route:cache 2>&1)
+    ROUTE_CACHE_EXIT=$?
+    
+    if [ $ROUTE_CACHE_EXIT -ne 0 ] || echo "$ROUTE_CACHE_OUTPUT" | grep -qE "LogicException|Unable to prepare route|Fatal error"; then
+        echo "⚠ Skipping route cache (routes contain closures or compatibility issues)"
+        echo "  Note: This is normal for Laravel 7 with PHP 7.4 if routes contain closures"
+        php artisan route:clear
+    else
+        echo "✓ Route cache created"
+    fi
+    
+    echo "Caching views..."
     php artisan view:cache
-    echo "✓ Production optimizations applied"
+    echo "✓ View cache created"
+    
+    echo ""
+    echo "✓ Production optimizations applied (config + views)"
 fi
 
 echo ""

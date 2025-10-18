@@ -64,47 +64,26 @@ brew update
 echo "✓ Homebrew updated"
 echo ""
 
-# ============================================
-# STEP 1: Install PHP 7.4
-# ============================================
-echo "Step 1: Installing PHP 7.4..."
-echo "----------------------------------------"
-
-# Check if PHP 7.4 is already installed
-if brew list php@7.4 &> /dev/null; then
-    echo "✓ PHP 7.4 is already installed"
-else
-    echo "Installing PHP 7.4..."
-    brew install php@7.4
-    echo "✓ PHP 7.4 installed"
+# Check if PHP 7.4 is installed
+if ! brew list php@7.4 &> /dev/null; then
+    echo "❌ Error: PHP 7.4 is not installed"
+    echo ""
+    echo "Please install PHP 7.4 first:"
+    echo "  brew install php@7.4"
+    echo "  brew link --force --overwrite php@7.4"
+    echo ""
+    exit 1
 fi
 
-# Link PHP 7.4
-echo "Linking PHP 7.4..."
-brew link --force --overwrite php@7.4
-
-# Add PHP 7.4 to PATH
-if ! grep -q "php@7.4" ~/.zshrc 2>/dev/null; then
-    echo "" >> ~/.zshrc
-    echo "# PHP 7.4" >> ~/.zshrc
-    echo 'export PATH="/usr/local/opt/php@7.4/bin:$PATH"' >> ~/.zshrc
-    echo 'export PATH="/usr/local/opt/php@7.4/sbin:$PATH"' >> ~/.zshrc
-    echo "✓ Added PHP 7.4 to PATH in ~/.zshrc"
-fi
-
-# Source the updated PATH
-export PATH="/usr/local/opt/php@7.4/bin:$PATH"
-export PATH="/usr/local/opt/php@7.4/sbin:$PATH"
-
-# Verify PHP installation
+echo "✓ PHP 7.4 is installed"
 PHP_VERSION_INSTALLED=$(php -v | head -n 1)
-echo "✓ PHP installed: $PHP_VERSION_INSTALLED"
+echo "  Version: $PHP_VERSION_INSTALLED"
 echo ""
 
 # ============================================
-# STEP 2: Install MySQL
+# STEP 1: Install MySQL
 # ============================================
-echo "Step 2: Installing MySQL..."
+echo "Step 1: Installing MySQL..."
 echo "----------------------------------------"
 
 # Check if MySQL is already installed
@@ -136,9 +115,9 @@ echo "✓ MySQL version: $MYSQL_VERSION"
 echo ""
 
 # ============================================
-# STEP 3: Install Composer
+# STEP 2: Install Composer
 # ============================================
-echo "Step 3: Installing Composer..."
+echo "Step 2: Installing Composer..."
 echo "----------------------------------------"
 
 # Check if Composer is already installed
@@ -174,9 +153,9 @@ fi
 echo ""
 
 # ============================================
-# STEP 4: Install Laravel Valet
+# STEP 3: Install Laravel Valet
 # ============================================
-echo "Step 4: Installing Laravel Valet..."
+echo "Step 3: Installing Laravel Valet..."
 echo "----------------------------------------"
 
 # Check if Valet is already installed
@@ -204,9 +183,9 @@ fi
 echo ""
 
 # ============================================
-# STEP 5: Install Valet Dependencies
+# STEP 4: Install Valet Dependencies
 # ============================================
-echo "Step 5: Installing Valet dependencies..."
+echo "Step 4: Installing Valet dependencies..."
 echo "----------------------------------------"
 
 # Install nginx
@@ -230,9 +209,9 @@ fi
 echo ""
 
 # ============================================
-# STEP 6: Configure Valet with PHP 7.4
+# STEP 5: Configure Valet with PHP 7.4
 # ============================================
-echo "Step 6: Configuring Laravel Valet with PHP 7.4..."
+echo "Step 5: Configuring Laravel Valet with PHP 7.4..."
 echo "----------------------------------------"
 
 # Important: When using older PHP versions like 7.4, we need to follow
@@ -267,9 +246,9 @@ echo "✓ Valet installed and configured with PHP 7.4"
 echo ""
 
 # ============================================
-# STEP 7: Create Sites Directory
+# STEP 6: Create Sites Directory
 # ============================================
-echo "Step 7: Creating Sites directory..."
+echo "Step 6: Creating Sites directory..."
 echo "----------------------------------------"
 
 if [ -d "$SITES_DIR" ]; then
@@ -283,9 +262,9 @@ fi
 echo ""
 
 # ============================================
-# STEP 8: Clone XS Cosmetic Repository
+# STEP 7: Clone XS Cosmetic Repository
 # ============================================
-echo "Step 8: Cloning XS Cosmetic repository..."
+echo "Step 7: Cloning XS Cosmetic repository..."
 echo "----------------------------------------"
 
 if [ -d "$PROJECT_DIR" ]; then
@@ -315,9 +294,9 @@ fi
 echo ""
 
 # ============================================
-# STEP 9: Install Composer Dependencies
+# STEP 8: Install Composer Dependencies
 # ============================================
-echo "Step 9: Installing Composer dependencies..."
+echo "Step 8: Installing Composer dependencies..."
 echo "----------------------------------------"
 
 cd "$PROJECT_DIR"
@@ -334,9 +313,9 @@ fi
 echo ""
 
 # ============================================
-# STEP 10: Configure Environment
+# STEP 9: Configure Environment
 # ============================================
-echo "Step 10: Configuring environment..."
+echo "Step 9: Configuring environment..."
 echo "----------------------------------------"
 
 # Copy .env file
@@ -366,9 +345,9 @@ echo "✓ Permissions set"
 echo ""
 
 # ============================================
-# STEP 11: Configure Database
+# STEP 10: Configure Database
 # ============================================
-echo "Step 11: Configuring database..."
+echo "Step 10: Configuring database..."
 echo "----------------------------------------"
 
 DB_NAME="tyche_cosmetic"
@@ -411,9 +390,9 @@ fi
 echo ""
 
 # ============================================
-# STEP 12: Run Migrations
+# STEP 11: Run Migrations
 # ============================================
-echo "Step 12: Running database migrations..."
+echo "Step 11: Running database migrations..."
 echo "----------------------------------------"
 
 read -p "Do you want to run migrations now? (y/n) " -n 1 -r
@@ -431,9 +410,9 @@ fi
 echo ""
 
 # ============================================
-# STEP 13: Configure Valet for Project
+# STEP 12: Configure Valet for Project
 # ============================================
-echo "Step 13: Configuring Valet for project..."
+echo "Step 12: Configuring Valet for project..."
 echo "----------------------------------------"
 
 cd "$SITES_DIR"
@@ -456,9 +435,9 @@ valet links
 echo ""
 
 # ============================================
-# STEP 14: Secure with HTTPS
+# STEP 13: Secure with HTTPS
 # ============================================
-echo "Step 14: Setting up HTTPS..."
+echo "Step 13: Setting up HTTPS..."
 echo "----------------------------------------"
 
 read -p "Do you want to secure the site with HTTPS? (y/n) " -n 1 -r
@@ -478,9 +457,9 @@ fi
 echo ""
 
 # ============================================
-# STEP 15: Configure Custom TLD (Optional)
+# STEP 14: Configure Custom TLD (Optional)
 # ============================================
-echo "Step 15: Configuring custom TLD..."
+echo "Step 14: Configuring custom TLD..."
 echo "----------------------------------------"
 
 echo "By default, Valet uses .test TLD"
@@ -512,9 +491,9 @@ fi
 echo ""
 
 # ============================================
-# STEP 16: Clear Caches and Optimize
+# STEP 15: Clear Caches and Optimize
 # ============================================
-echo "Step 16: Clearing caches and optimizing..."
+echo "Step 15: Clearing caches and optimizing..."
 echo "----------------------------------------"
 
 cd "$PROJECT_DIR"
@@ -529,9 +508,9 @@ echo "✓ Caches cleared"
 echo ""
 
 # ============================================
-# STEP 17: Restart Valet Services
+# STEP 16: Restart Valet Services
 # ============================================
-echo "Step 17: Restarting Valet services..."
+echo "Step 16: Restarting Valet services..."
 echo "----------------------------------------"
 
 valet restart
@@ -540,9 +519,9 @@ echo "✓ Valet services restarted"
 echo ""
 
 # ============================================
-# STEP 18: Final Verification
+# STEP 17: Final Verification
 # ============================================
-echo "Step 18: Running final verification..."
+echo "Step 17: Running final verification..."
 echo "----------------------------------------"
 
 # Check PHP version

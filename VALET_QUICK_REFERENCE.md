@@ -6,7 +6,11 @@
 # 1. Install Homebrew first (do this manually)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# 2. Run the setup script
+# 2. Install PHP 7.4 (REQUIRED before running script)
+brew install php@7.4
+brew link --force --overwrite php@7.4
+
+# 3. Run the setup script
 ./setup-new-mac-valet.sh
 ```
 

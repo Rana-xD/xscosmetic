@@ -14,9 +14,11 @@ use App\Http\Controllers\Api\DeliveryController;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Commented out to enable route caching (closures cannot be serialized)
+// If you need this route, create a controller method instead
+// Route::middleware('auth:api')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
 // Delivery API routes
 Route::get('/delivery/{id}', [DeliveryController::class, 'show']);
