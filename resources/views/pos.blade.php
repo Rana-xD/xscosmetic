@@ -3,12 +3,15 @@
 <style>
     #searchContainer {
         margin-top: 20px;
-        display: flex;
-        gap: 20px;
     }
 
     #searchContainer .stylish-input-group {
-        flex: 1;
+        width: 100%;
+    }
+
+    /* Hide products by default, but allow JavaScript to show them */
+    #productList2 .div {
+        display: none;
     }
 
     .delivery {
@@ -141,7 +144,7 @@
 <!-- Page Content -->
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-6 left-side">
+        <div class="col-md-9 left-side">
             <div class="col-xs-3 table-header">
                 <h3>{{ __('messages.product') }}</h3>
             </div>
@@ -200,35 +203,14 @@
 
         </div>
 
-        <div class="col-md-6 right-side nopadding">
+        <div class="col-md-3 right-side nopadding">
             <div class="row row-horizon">
-                <span class="categories selectedGat" id=""><i class="fa fa-home"></i></span>
-                @foreach (App\Category::orderBy('name', 'ASC')->get() as $category)
-                <span class="categories categories-name" id="{{$category->id}}">{{$category->name}}</span>
-                @endforeach
-
-
+                <span class="categories selectedGat" id=""><i class="fa fa-home"></i> All</span>
             </div>
             <div class="col-sm-12">
                 <div id="searchContainer">
                     <div class="input-group stylish-input-group">
-                        <input type="text" id="searchBrand" class="form-control" placeholder="{{ __('messages.search_brand') }}">
-                        <span class="input-group-addon">
-                            <button type="submit">
-                                <span class="glyphicon glyphicon-search"></span>
-                            </button>
-                        </span>
-                    </div>
-                    <div class="input-group stylish-input-group">
-                        <input type="text" id="searchProd" class="form-control" placeholder="{{ __('messages.search_product_name') }}">
-                        <span class="input-group-addon">
-                            <button type="submit">
-                                <span class="glyphicon glyphicon-search"></span>
-                            </button>
-                        </span>
-                    </div>
-                    <div class="input-group stylish-input-group">
-                        <input type="text" id="searchBarcode" class="form-control" placeholder="{{ __('messages.search_product_barcode') }}">
+                        <input type="text" id="unifiedSearch" class="form-control" placeholder="Search by Product Name or Barcode">
                         <span class="input-group-addon">
                             <button type="submit">
                                 <span class="glyphicon glyphicon-search"></span>
@@ -239,7 +221,7 @@
             </div> <!-- product list section -->
             <div id="productList2">
                 @foreach ( $products as $product)
-                <div class="col-xs-4 div">
+                <div class="col-xs-6 div">
                     <a href="javascript:void(0)" class="addPct" id="product-{{$product->product_code}}" data-id="{{ $product->id }}" style="display: block;">
                         <div class="product color06 flat-box" data-id="{{ $product->id }}">
                             <h3 id="proname" data-id="{{ $product->id }}">{{ $product->name }} <br><br> ({{ $product->stock }})</h3>
@@ -274,9 +256,8 @@
         // Build barcode map for O(1) lookup instead of O(n)
         buildBarcodeMap();
 
-        e = $.Event('keypress');
-        e.keyCode = 13; // enter
-        $('#searchBrand').trigger(e);
+        // Initialize with no products visible
+        $('#productList2 .div').hide();
 
         // Payment type selection handler
         $('#payment-type').on('change', function() {
@@ -593,49 +574,39 @@
             return barcodeMap[barcode] || null;
         }
 
-        $("#searchProd").keyup(function() {
-            // Retrieve the input field text
+        // Unified search for product name, brand (category), and barcode with debouncing
+        let searchTimeout;
+        $("#unifiedSearch").on('input', function() {
             var filter = $(this).val();
-            // Loop through the list
-            $("#productList2 #proname").each(function() {
-                // If the list item does not contain the text phrase fade it out
-                if ($(this).text().search(new RegExp(filter, "i")) < 0) {
-                    $(this).parent().parent().parent().hide();
-                    // Show the list item if the phrase matches
-                } else {
-                    $(this).parent().parent().parent().show();
-                }
-            });
-
-        });
-
-        $("#searchBrand").keyup(function() {
-            // Retrieve the input field text
-            var filter = $(this).val();
-
-            $(".categories-name").each(function() {
-                if ($(this).text().search(new RegExp(filter, "i")) < 0) {
-                    $(this).hide();
-
-                } else {
-                    $(this).show();
-                }
-            })
-        });
-
-        $("#searchBarcode").keyup(function() {
-            // Retrieve the input field text
-            var filter = $(this).val();
-
-            $("#productList2 #barcode").each(function() {
-                // If the list item does not contain the text phrase fade it out
-                if ($(this).val().search(new RegExp(filter, "i")) < 0) {
-                    $(this).parent().parent().parent().hide();
-                    // Show the list item if the phrase matches
-                } else {
-                    $(this).parent().parent().parent().show();
-                }
-            });
+            
+            // Clear previous timeout
+            clearTimeout(searchTimeout);
+            
+            // If search is empty, hide all products immediately
+            if (filter === '') {
+                $('#productList2 .div').hide();
+                return;
+            }
+            
+            // Debounce search to reduce lag
+            searchTimeout = setTimeout(function() {
+                // Create regex once for better performance
+                var regex = new RegExp(filter, "i");
+                
+                // Search through all products
+                $("#productList2 .div").each(function() {
+                    var $this = $(this);
+                    var productName = $this.find('#proname').text();
+                    var barcode = $this.find('#barcode').val() || '';
+                    
+                    // Check if filter matches product name or barcode
+                    if (regex.test(productName) || regex.test(barcode)) {
+                        $this.show();
+                    } else {
+                        $this.hide();
+                    }
+                });
+            }, 50); // 50ms debounce delay for faster response
         });
 
         $('#payment-type').on('change', function() {
@@ -1331,23 +1302,9 @@
     }
 
     $(".categories").on("click", function() {
-
-        //   console.log("HELLOI");
-        //Retrieve the input field text
-        var filter = $(this).attr('id');
-        $(this).parent().children().removeClass('selectedGat');
-
-        $(this).addClass('selectedGat');
-        // Loop through the list
-        $("#productList2 #category").each(function() {
-            // If the list item does not contain the text phrase fade it out
-            if ($(this).val().search(new RegExp(filter, "i")) < 0) {
-                $(this).parent().parent().parent().hide();
-                // Show the list item if the phrase matches
-            } else {
-                $(this).parent().parent().parent().show();
-            }
-        });
+        // Clear search and hide all products
+        $('#unifiedSearch').val('');
+        $('#productList2 .div').hide();
     });
 
     $('.size').on('click', function(e) {
