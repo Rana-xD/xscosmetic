@@ -411,6 +411,9 @@ if [ "$SKIP_SUPERVISOR" != "true" ]; then
     
     echo "Creating Laravel worker configuration..."
     
+    # Get the full PHP path and its directory
+    PHP_DIR=$(dirname "$PHP_PATH")
+    
     # Note: On macOS, the 'user' directive might not work as expected
     # Supervisor runs as the current user by default on macOS via Homebrew
     sudo tee "$WORKER_CONFIG" > /dev/null <<EOF
@@ -428,7 +431,7 @@ stdout_logfile_maxbytes=10MB
 stdout_logfile_backups=5
 stopwaitsecs=60
 directory=$SCRIPT_DIR
-environment=PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+environment=PATH="$PHP_DIR:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin",HOME="$HOME"
 EOF
     
     echo "✓ Created worker config at: $WORKER_CONFIG"
