@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Services\ProductCacheService;
+use App\Services\UserCacheService;
 
 class WarmProductCache extends Command
 {
@@ -19,20 +20,23 @@ class WarmProductCache extends Command
      *
      * @var string
      */
-    protected $description = 'Warm up the products cache by loading all products from database';
+    protected $description = 'Warm up the products and users cache by loading all data from database';
 
-    protected $cacheService;
+    protected $productCacheService;
+    protected $userCacheService;
 
     /**
      * Create a new command instance.
      *
-     * @param ProductCacheService $cacheService
+     * @param ProductCacheService $productCacheService
+     * @param UserCacheService $userCacheService
      * @return void
      */
-    public function __construct(ProductCacheService $cacheService)
+    public function __construct(ProductCacheService $productCacheService, UserCacheService $userCacheService)
     {
         parent::__construct();
-        $this->cacheService = $cacheService;
+        $this->productCacheService = $productCacheService;
+        $this->userCacheService = $userCacheService;
     }
 
     /**
@@ -42,17 +46,29 @@ class WarmProductCache extends Command
      */
     public function handle()
     {
-        $this->info('Warming up products cache...');
+        $this->info('Warming up cache...');
+        $this->newLine();
         
-        $startTime = microtime(true);
+        $totalStartTime = microtime(true);
         
-        $products = $this->cacheService->refreshCache();
+        // Warm products cache
+        $this->info('→ Loading products...');
+        $productStartTime = microtime(true);
+        $products = $this->productCacheService->refreshCache();
+        $productDuration = round(microtime(true) - $productStartTime, 2);
+        $this->info("  ✓ Loaded {$products->count()} products in {$productDuration}s");
         
-        $endTime = microtime(true);
-        $duration = round($endTime - $startTime, 2);
+        // Warm users cache
+        $this->info('→ Loading users...');
+        $userStartTime = microtime(true);
+        $users = $this->userCacheService->refreshCache();
+        $userDuration = round(microtime(true) - $userStartTime, 2);
+        $this->info("  ✓ Loaded {$users->count()} users in {$userDuration}s");
         
-        $this->info("Products cache warmed successfully!");
-        $this->info("Loaded {$products->count()} products in {$duration} seconds");
+        $totalDuration = round(microtime(true) - $totalStartTime, 2);
+        
+        $this->newLine();
+        $this->info("Cache warmed successfully in {$totalDuration}s!");
         
         return 0;
     }

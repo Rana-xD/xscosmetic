@@ -305,13 +305,13 @@ echo ""
 # ============================================
 # STEP 8: Warm Up Cache
 # ============================================
-echo "Step 8: Warming up product cache..."
+echo "Step 8: Warming up cache (products & users)..."
 echo "----------------------------------------"
 
 if php artisan list | grep -q "cache:warm-products"; then
-    echo "Warming product cache (this may take a few moments)..."
+    echo "Warming cache (this may take a few moments)..."
     php artisan cache:warm-products
-    echo "✓ Product cache warmed"
+    echo "✓ Cache warmed (products & users)"
 else
     echo "⚠ cache:warm-products command not found, skipping..."
 fi

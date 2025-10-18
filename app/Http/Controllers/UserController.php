@@ -6,18 +6,23 @@ use Illuminate\Http\Request;
 use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Services\UserCacheService;
 
 
 class UserController extends Controller {
 
-    public function __construct()
+    protected $userCacheService;
+
+    public function __construct(UserCacheService $userCacheService)
     {
         $this->middleware('auth');
         $this->middleware('admin');
+        $this->userCacheService = $userCacheService;
     }
 
     public function show(){
-        $users = User::where('role','!=','SUPERADMIN')->get();
+        // Use cached users instead of querying database every time
+        $users = $this->userCacheService->getUsers();
         return view('user.view',[
             'users' => $users
         ]);
@@ -33,6 +38,9 @@ class UserController extends Controller {
             "role" => $role
         ];
         DB::table('users')->insert($data);
+        
+        // Clear cache after creating new user
+        $this->userCacheService->clearCache();
 
         return response()->json([
             'code' => 200,
@@ -42,15 +50,16 @@ class UserController extends Controller {
 
     public function destroy(Request $request){
         $id = (int)$request->id;
-        User::destroy($id);
+        
+        // Use cache service to delete user and clear cache
+        $this->userCacheService->deleteUser($id);
+        
         return response()->json([
             'code' => 200
         ]);
     }
 
     public function update(Request $request){
-
-        
         $id = $request->id;
 
         $user = User::find($id);
@@ -60,6 +69,10 @@ class UserController extends Controller {
             $user->password = Hash::make($request->password);
         }
         $user->save();
+        
+        // Clear cache after updating user
+        $this->userCacheService->clearUserCache($id);
+        $this->userCacheService->clearCache();
         
         return response()->json([
             'code' => 200
