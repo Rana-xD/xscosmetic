@@ -9,18 +9,23 @@ use App\Product;
 use App\ProductLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ProductCacheService;
 
 class ProductController extends Controller
 {
-    public function __construct()
+    protected $productCacheService;
+
+    public function __construct(ProductCacheService $productCacheService)
     {
         $this->middleware('auth');
         $this->middleware('adminormanager');
+        $this->productCacheService = $productCacheService;
     }
 
     public function show()
     {
-        $products = Product::with('category')->get();
+        // Use cached products for better performance
+        $products = $this->productCacheService->getProducts();
 
         return view('product.view', [
             'products' => $products
@@ -63,6 +68,10 @@ class ProductController extends Controller
 
         $result = Product::create($data);
         $this->createProductLog($result, 'create', $result->stock, $result->product_barcode);
+        
+        // Clear cache after creating new product
+        $this->productCacheService->clearCache();
+        Log::info('Cache cleared after product creation');
 
         return response()->json([
             'code' => 200,
@@ -77,6 +86,11 @@ class ProductController extends Controller
         $product->delete();
 
         $this->createProductLog($product, 'delete', $product->stock, $product->product_barcode);
+        
+        // Clear cache after deleting product
+        $this->productCacheService->clearProductCache($id);
+        $this->productCacheService->clearCache();
+        Log::info('Cache cleared after product deletion');
 
         return response()->json([
             'code' => 200
@@ -130,6 +144,11 @@ class ProductController extends Controller
         $isUpdatedBarcode = $product->product_barcode !== $request->product_barcode;
 
         $product->update($data);
+        
+        // Clear cache after updating product
+        $this->productCacheService->clearProductCache($id);
+        $this->productCacheService->clearCache();
+        Log::info('Cache cleared after product update');
 
         if ($isUpdatedName && $isUpdatedBarcode && intval($request->new_stock) != 0) {
             $this->createProductLog($product, 'edit', intval($request->new_stock), $product->product_barcode, 'edit name and product barcode and update stock');
