@@ -932,19 +932,49 @@
                     totalItem();
                     totalCash();
                     hideSpinner();
-                    swal({
-                        title: 'DONE',
-                        text: 'Order complete',
-                        type: "success",
-                        timer: 1500,
-                        showCancelButton: false,
-                        showConfirmButton: false
-                    }, function(data) {
-                        location.reload(true);
-                    });
+                    
+                    // Print invoice automatically if data is available
+                    if (res.invoice_data) {
+                        // Automatically print to USB thermal printer
+                        thermalPrinter.print(res.invoice_data).then(function(success) {
+                            swal({
+                                title: 'Order Complete!',
+                                text: 'Receipt sent to printer',
+                                type: "success",
+                                timer: 1500,
+                                showConfirmButton: false
+                            }, function() {
+                                location.reload(true);
+                            });
+                        }).catch(function(error) {
+                            console.error('Print error:', error);
+                            swal({
+                                title: 'Order Complete!',
+                                text: 'Could not print receipt - check printer connection',
+                                type: "warning",
+                                timer: 2000,
+                                showConfirmButton: false
+                            }, function() {
+                                location.reload(true);
+                            });
+                        });
+                    } else {
+                        // No invoice data, just show success
+                        swal({
+                            title: 'DONE',
+                            text: 'Order complete',
+                            type: "success",
+                            timer: 1500,
+                            showCancelButton: false,
+                            showConfirmButton: false
+                        }, function(data) {
+                            location.reload(true);
+                        });
+                    }
                 },
                 error: function(err) {
                     console.log(err);
+                    hideSpinner();
                 }
             });
         });
@@ -1610,4 +1640,10 @@
     </div>
 </div>
 <!-- /.Modal -->
+
+<script src="/js/thermal-printer.js"></script>
+<script>
+    // Initialize thermal printer for POS
+    const thermalPrinter = new ThermalPrinter();
+</script>
 @endsection

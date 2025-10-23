@@ -39,6 +39,8 @@ Route::get('/order', 'OrderController@show');
 Route::get('/order/update', 'OrderController@update');
 Route::get('/order/print-invoice', 'OrderController@printInvoice')->name('order.print-invoice');
 Route::get('/order/print-daily-invoice', 'OrderController@printDailyInvoice')->name('order.print-daily-invoice');
+Route::get('/order/get-invoice-data', 'OrderController@getInvoiceData')->name('order.get-invoice-data');
+Route::get('/order/get-daily-invoice-data', 'OrderController@getDailyInvoiceData')->name('order.get-daily-invoice-data');
 
 Route::get('/category', 'CategoryController@show');
 Route::post('/category/add', 'CategoryController@store');

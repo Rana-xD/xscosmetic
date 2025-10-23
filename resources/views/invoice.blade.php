@@ -453,8 +453,11 @@
   </div>
 </div>
 
+<script src="/js/thermal-printer.js"></script>
 <script type="text/javascript">
   $(document).ready(function() {
+    // Initialize thermal printer
+    const thermalPrinter = new ThermalPrinter();
 
     // Get the datepicker input element
     const datepickerInput = document.getElementById('datepicker-input');
@@ -569,35 +572,41 @@
       });
     });
 
-    // Print invoice handler
+    // Print invoice handler - Frontend thermal printing
     $('.print-invoice').on('click', function() {
       const invoiceId = $(this).data('invoice');
       
+      // Fetch invoice data from API
       $.ajax({
-        url: '/order/print-invoice',
+        url: '/order/get-invoice-data',
         method: 'GET',
         data: {
           id: invoiceId,
           _token: '{{ csrf_token() }}'
         },
-        success: function(response) {
-          if (response.success) {
-            swal({
-              title: "Success!",
-              text: '{{ __("messages.print_success") }}',
-              type: "success",
-              timer: 2000,
-              showConfirmButton: false
-            });
-          } else {
+        success: function(invoiceData) {
+          // Print using thermal printer
+          thermalPrinter.print(invoiceData).then(function(success) {
+            if (success) {
+              swal({
+                title: "Success!",
+                text: '{{ __("messages.print_success") }}',
+                type: "success",
+                timer: 2000,
+                showConfirmButton: false
+              });
+            }
+          }).catch(function(error) {
+            console.error('Print error:', error);
             swal({
               title: "Error!",
               text: '{{ __("messages.print_error") }}',
               type: "error"
             });
-          }
+          });
         },
-        error: function() {
+        error: function(xhr) {
+          console.error('Failed to fetch invoice data:', xhr);
           swal({
             title: "Error!",
             text: '{{ __("messages.print_error") }}',
@@ -715,7 +724,7 @@
       });
     });
     
-    // Handle print daily invoice click
+    // Handle print daily invoice click - Frontend thermal printing
     $('.print-daily-invoice').on('click', function() {
         const selectedDate = $('#date').val();
         
@@ -748,29 +757,34 @@
                     timer: 2000
                 });
 
+                // Fetch daily invoice data from API
                 $.ajax({
-                    url: '/order/print-daily-invoice',
+                    url: '/order/get-daily-invoice-data',
                     type: 'GET',
                     data: {
                         date: selectedDate,
                         _token: '{{ csrf_token() }}'
                     },
-                    success: function(response) {
-                        if (response.success) {
-                            swal({
-                                title: "Success!",
-                                text: '{{ __("messages.daily_summary_printed_successfully") }}',
-                                type: "success",
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                        } else {
+                    success: function(invoiceData) {
+                        // Print using thermal printer
+                        thermalPrinter.print(invoiceData).then(function(success) {
+                            if (success) {
+                                swal({
+                                    title: "Success!",
+                                    text: '{{ __("messages.daily_summary_printed_successfully") }}',
+                                    type: "success",
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            }
+                        }).catch(function(error) {
+                            console.error('Print error:', error);
                             swal({
                                 title: "Error!",
-                                text: response.message || '{{ __("messages.error_printing_daily_summary") }}',
+                                text: '{{ __("messages.error_printing_daily_summary") }}',
                                 type: "error"
                             });
-                        }
+                        });
                     },
                     error: function(xhr) {
                         let errorMessage = '{{ __("messages.error_printing_daily_summary") }}';

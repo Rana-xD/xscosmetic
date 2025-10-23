@@ -152,29 +152,46 @@ class POSController extends Controller
 
         $invoice = $request->invoice;
 
-        if (Auth::user()->role !== "SUPERADMIN") {
-            $this->printInvoice(
-                $invoice,
-                Auth::user()->username,
-                $additional_info['total'],
-                $additional_info['total_riel'],
-                $additional_info['total_discount'],
-                $additional_info['received_in_usd'],
-                $additional_info['received_in_riel'],
-                $additional_info['change_in_usd'],
-                $additional_info['change_in_riel']
-            );
-        }
+        // Backend printing disabled - now handled by frontend
+        // Uncomment below if you want to re-enable backend printing
+        // if (Auth::user()->role !== "SUPERADMIN") {
+        //     $this->printInvoice(
+        //         $invoice,
+        //         Auth::user()->username,
+        //         $additional_info['total'],
+        //         $additional_info['total_riel'],
+        //         $additional_info['total_discount'],
+        //         $additional_info['received_in_usd'],
+        //         $additional_info['received_in_riel'],
+        //         $additional_info['change_in_usd'],
+        //         $additional_info['change_in_riel']
+        //     );
+        // }
 
         // Dispatch background job to process order and update stock
         // This runs asynchronously in the queue
         ProcessPOSOrder::dispatch($data, $temp_data, $this->isAddToTPosValid());
 
-        // Return immediately with invoice number
+        // Return immediately with invoice number and ID for frontend printing
         // The job will handle order creation and stock updates in the background
         return response()->json([
             'code' => 200,
             'data' => $invoice,
+            'invoice_data' => [
+                'store_name' => 'cosmetic',
+                'cashier' => Auth::user()->username,
+                'order_no' => $request->invoice_no,
+                'date' => date("d-m-Y"),
+                'time' => $this->getLocaleTime(),
+                'items' => $invoice,
+                'total' => $additional_info['total'],
+                'total_riel' => $additional_info['total_riel'],
+                'total_discount' => $additional_info['total_discount'],
+                'received_in_usd' => $additional_info['received_in_usd'],
+                'received_in_riel' => $additional_info['received_in_riel'],
+                'change_in_usd' => $additional_info['change_in_usd'],
+                'change_in_riel' => $additional_info['change_in_riel'],
+            ],
             'message' => 'Order is being processed'
         ]);
     }

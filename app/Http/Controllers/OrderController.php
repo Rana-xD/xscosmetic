@@ -299,4 +299,93 @@ class OrderController extends Controller
         }
         return 0;
     }
+
+    /**
+     * Get invoice data as JSON for frontend printing
+     * 
+     * @param Request $request HTTP request containing invoice ID
+     * @return JsonResponse Invoice data formatted for thermal printing
+     */
+    public function getInvoiceData(Request $request) {
+        $order = POS::find($request->id);
+        
+        if (!$order || $order->additional_info == null) {
+            return response()->json(['error' => 'Invoice not found'], 404);
+        }
+
+        // Format the invoice data for frontend printing
+        $invoiceData = [
+            'store_name' => 'cosmetic',
+            'cashier' => $order->cashier,
+            'order_no' => $order->order_no,
+            'date' => date("d-m-Y", strtotime($order->created_at)),
+            'time' => $order->time,
+            'items' => [],
+            'total' => $order->additional_info['total'],
+            'total_riel' => $order->additional_info['total_riel'],
+            'total_discount' => $order->additional_info['total_discount'],
+            'received_in_usd' => $order->additional_info['received_in_usd'],
+            'received_in_riel' => $order->additional_info['received_in_riel'],
+            'change_in_usd' => $order->additional_info['change_in_usd'],
+            'change_in_riel' => $order->additional_info['change_in_riel'],
+        ];
+
+        // Add items
+        foreach ($order->items as $item) {
+            $invoiceData['items'][] = [
+                'name' => $item['product_name'],
+                'price' => $item['price'],
+                'quantity' => $item['quantity'],
+                'discount' => $item['discount'],
+                'total' => $item['total']
+            ];
+        }
+
+        return response()->json($invoiceData);
+    }
+
+    /**
+     * Get daily invoice data as JSON for frontend printing
+     * 
+     * @param Request $request HTTP request containing date
+     * @return JsonResponse Daily invoice data formatted for thermal printing
+     */
+    public function getDailyInvoiceData(Request $request) {
+        try {
+            $date = $request->date;
+            $orders = POS::whereDate('created_at', $date)->get();
+            
+            if ($orders->isEmpty()) {
+                return response()->json([
+                    'success' => false, 
+                    'message' => __('messages.no_invoices_found')
+                ], 404);
+            }
+
+            // Process items and calculate totals
+            $arrange_items = $this->processOrderItems($orders);
+            $totals = $this->calculateDailyTotals($orders);
+
+            $invoiceData = [
+                'store_name' => 'cosmetic',
+                'cashier' => "Daily Sale ($date)",
+                'date' => $date,
+                'items' => $arrange_items,
+                'total' => $totals['total'],
+                'total_riel' => $totals['total_riel'],
+                'total_discount' => 0,
+                'received_in_usd' => 0,
+                'received_in_riel' => 0,
+                'change_in_usd' => 0,
+                'change_in_riel' => 0,
+            ];
+
+            return response()->json($invoiceData);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => __('messages.error_printing_daily_summary') . ': ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
