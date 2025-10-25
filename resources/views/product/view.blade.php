@@ -223,6 +223,17 @@
         return false;
       }
       
+      // Validate required fields
+      if (!$("#ProductName").val() || !$("#ProductBarcode").val() || !$("#stock").val()) {
+        swal({
+          title: '{{ __("messages.error") }}',
+          type: "error",
+          text: "Please fill in all required fields",
+          timer: 2000
+        });
+        return false;
+      }
+      
       let formData = new FormData();
       formData.append("_token", $('meta[name="csrf_token"]').attr('content'));
       formData.append('name', $("#ProductName").val());
@@ -234,6 +245,7 @@
       formData.append('price', $("#price").val() === '' || $("#price").val() === undefined ? 0 : $("#price").val());
       formData.append('cost', $("#cost").val() === '' || $("#cost").val() === undefined ? 0 : $("#cost").val());
       formData.append('photo', $("#Image")[0].files[0]);
+      
       showSpinner();
       $.ajax({
         url: '/product/add',
@@ -360,6 +372,17 @@
       
       // Prevent double submission
       if ($('.modal-btn').prop('disabled')) {
+        return false;
+      }
+      
+      // Validate required fields
+      if (!$("#ProductName-edit").val() || !$("#stock-edit").val()) {
+        swal({
+          title: '{{ __("messages.error") }}',
+          type: "error",
+          text: "Please fill in all required fields",
+          timer: 2000
+        });
         return false;
       }
       
