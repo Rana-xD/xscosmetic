@@ -222,14 +222,14 @@
             <div id="productList2">
                 @foreach ( $products as $product)
                 <div class="col-xs-6 div">
-                    <a href="javascript:void(0)" class="addPct" id="product-{{$product->product_code}}" data-id="{{ $product->id }}" style="display: block;">
-                        <div class="product color06 flat-box" data-id="{{ $product->id }}">
-                            <h3 id="proname" data-id="{{ $product->id }}">{{ $product->name }} <br><br> ({{ $product->stock }})</h3>
-                            <input type="hidden" id="idname-{{ $product->id }}" name="name" value="{{$product->name}}" />
-                            <input type="hidden" id="idprice-{{$product->id}}" name="price" value="{{$product->price}}" />
-                            <input type="hidden" id="idcost-{{$product->id}}" name="cost" value="{{$product->cost}}" />
-                            <input type="hidden" id="category" name="category" value="{{$product->category->id}}" />
-                            <input type="hidden" id="barcode" name="barcode" value="{{$product->product_barcode}}" />
+                    <a href="javascript:void(0)" class="addPct" id="product-{{$product['product_barcode']}}" data-id="{{ $product['id'] }}" style="display: block;">
+                        <div class="product color06 flat-box" data-id="{{ $product['id'] }}">
+                            <h3 id="proname" data-id="{{ $product['id'] }}">{{ $product['name'] }} <br><br> ({{ $product['stock'] }})</h3>
+                            <input type="hidden" id="idname-{{ $product['id'] }}" name="name" value="{{$product['name']}}" />
+                            <input type="hidden" id="idprice-{{$product['id']}}" name="price" value="{{$product['price']}}" />
+                            <input type="hidden" id="idcost-{{$product['id']}}" name="cost" value="{{$product['cost']}}" />
+                            <input type="hidden" id="category" name="category" value="{{$product['category']['id']}}" />
+                            <input type="hidden" id="barcode" name="barcode" value="{{$product['product_barcode']}}" />
                             <input type="hidden" id="temp-barcode" name="temp-barcode" value="" />
                         </div>
                     </a>
