@@ -60,13 +60,26 @@ class ProductCacheService
             
             // Convert arrays back to Product model instances
             $products = collect($data)->map(function ($item) {
-                $product = new Product((array) $item);
-                $product->exists = true; // Mark as existing record
+                // Create product with attributes
+                $product = new Product();
+                $product->exists = true;
+                
+                // Set all attributes except relationships
+                foreach ($item as $key => $value) {
+                    if ($key !== 'category') {
+                        $product->setAttribute($key, $value);
+                    }
+                }
                 
                 // Restore category relationship if exists
                 if (isset($item['category']) && is_array($item['category'])) {
-                    $category = new \App\Category((array) $item['category']);
+                    $category = new \App\Category();
                     $category->exists = true;
+                    
+                    foreach ($item['category'] as $catKey => $catValue) {
+                        $category->setAttribute($catKey, $catValue);
+                    }
+                    
                     $product->setRelation('category', $category);
                 }
                 
@@ -169,13 +182,25 @@ class ProductCacheService
                 
                 if ($cached) {
                     $data = unserialize($cached);
-                    $product = new Product((array) $data);
+                    $product = new Product();
                     $product->exists = true;
+                    
+                    // Set all attributes except relationships
+                    foreach ($data as $key => $value) {
+                        if ($key !== 'category') {
+                            $product->setAttribute($key, $value);
+                        }
+                    }
                     
                     // Restore category relationship if exists
                     if (isset($data['category']) && is_array($data['category'])) {
-                        $category = new \App\Category((array) $data['category']);
+                        $category = new \App\Category();
                         $category->exists = true;
+                        
+                        foreach ($data['category'] as $catKey => $catValue) {
+                            $category->setAttribute($catKey, $catValue);
+                        }
+                        
                         $product->setRelation('category', $category);
                     }
                     
