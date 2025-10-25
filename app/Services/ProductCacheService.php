@@ -57,7 +57,23 @@ class ProductCacheService
             Log::info('Products loaded from Redis cache');
             // Decompress and unserialize
             $data = unserialize(gzuncompress($cached));
-            return collect($data);
+            
+            // Convert arrays back to Product model instances
+            $products = collect($data)->map(function ($item) {
+                $product = new Product((array) $item);
+                $product->exists = true; // Mark as existing record
+                
+                // Restore category relationship if exists
+                if (isset($item['category']) && is_array($item['category'])) {
+                    $category = new \App\Category((array) $item['category']);
+                    $category->exists = true;
+                    $product->setRelation('category', $category);
+                }
+                
+                return $product;
+            });
+            
+            return $products;
         }
         
         Log::info('Loading products from database and caching to Redis');
@@ -153,7 +169,17 @@ class ProductCacheService
                 
                 if ($cached) {
                     $data = unserialize($cached);
-                    return new Product($data);
+                    $product = new Product((array) $data);
+                    $product->exists = true;
+                    
+                    // Restore category relationship if exists
+                    if (isset($data['category']) && is_array($data['category'])) {
+                        $category = new \App\Category((array) $data['category']);
+                        $category->exists = true;
+                        $product->setRelation('category', $category);
+                    }
+                    
+                    return $product;
                 }
                 
                 $product = Product::with('category')->find($id);
