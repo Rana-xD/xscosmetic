@@ -151,15 +151,19 @@
     });
 
     function showSpinner() {
-
       $('.loader').css('display', 'block');
       $('.modal-btn').prop('disabled', true);
-
+      $('.modal-btn').html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+      $('.delete-btn').prop('disabled', true);
+      $('.edit-product').prop('disabled', true);
     }
 
     function hideSpinner() {
       $('.loader').css('display', 'none');
       $('.modal-btn').prop('disabled', false);
+      $('.modal-btn').html('{{ __('messages.submit') }}');
+      $('.delete-btn').prop('disabled', false);
+      $('.edit-product').prop('disabled', false);
     }
 
     $("#openFileInput").on("click", (e) => {
@@ -213,6 +217,12 @@
 
     $("#addProducts").on("submit", (e) => {
       e.preventDefault();
+      
+      // Prevent double submission
+      if ($('.modal-btn').prop('disabled')) {
+        return false;
+      }
+      
       let formData = new FormData();
       formData.append("_token", $('meta[name="csrf_token"]').attr('content'));
       formData.append('name', $("#ProductName").val());
@@ -249,12 +259,24 @@
           }
         },
         error: function(err) {
+          hideSpinner();
           console.log(err);
+          swal({
+            title: '{{ __('messages.error') }}',
+            type: "error",
+            text: "Failed to create product. Please try again.",
+            timer: 2500
+          });
         }
       });
     });
 
     $(".delete-product").on("click", (e) => {
+      // Prevent double click
+      if ($(e.target).prop('disabled')) {
+        return false;
+      }
+      
       swal({
           title: '{{ __("messages.are_you_sure") }}',
           text: '{{ __("messages.delete_confirm") }}',
@@ -264,7 +286,13 @@
           confirmButtonText: '{{ __("messages.yes") }}',
           closeOnConfirm: false
         },
-        function() {
+        function(isConfirm) {
+          if (!isConfirm) return;
+          
+          // Disable delete button
+          $(e.target).prop('disabled', true);
+          $(e.target).html('<i class="fa fa-spinner fa-spin"></i>');
+          
           console.log(e.target)
           let id = e.target.getAttribute('data-id');
           let formData = {
@@ -282,6 +310,13 @@
             },
             error: function(err) {
               console.log(err);
+              $(e.target).prop('disabled', false);
+              $(e.target).html('<i class="fa fa-times"></i>');
+              swal({
+                title: '{{ __("messages.error") }}',
+                type: "error",
+                text: "Failed to delete product. Please try again."
+              });
             }
           });
         })
@@ -322,6 +357,12 @@
 
     $("#editProduct").on("submit", (e) => {
       e.preventDefault();
+      
+      // Prevent double submission
+      if ($('.modal-btn').prop('disabled')) {
+        return false;
+      }
+      
       let formData = new FormData();
       formData.append("_token", $('meta[name="csrf_token"]').attr('content'));
       formData.append('id', $("#productID").val());
@@ -353,7 +394,14 @@
           location.reload();
         },
         error: function(err) {
+          hideSpinner();
           console.log(err);
+          swal({
+            title: '{{ __("messages.error") }}',
+            type: "error",
+            text: "Failed to update product. Please try again.",
+            timer: 2500
+          });
         }
       });
     })
