@@ -86,7 +86,7 @@ class DeletePOSInvoice implements ShouldQueue
                 $newNumber = str_pad($currentNumber - 1, 6, '0', STR_PAD_LEFT);
                 
                 // Use update query for better performance
-                DB::table('pos')
+                DB::table('p_o_s_s')
                     ->where('id', $laterInvoice->id)
                     ->update(['order_no' => $newNumber]);
                 
