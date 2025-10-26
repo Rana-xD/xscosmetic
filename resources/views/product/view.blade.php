@@ -217,6 +217,7 @@
 
     $("#addProducts").on("submit", (e) => {
       e.preventDefault();
+      hideSpinner();
       
       // Prevent double submission
       if ($('.modal-btn').prop('disabled')) {
@@ -254,8 +255,8 @@
         contentType: false,
         processData: false,
         success: function(res) {
-          hideSpinner();
           if (res.code === 404) {
+            hideSpinner();
             swal({
               title: '{{ __("messages.error") }}',
               type: "error",
@@ -267,6 +268,8 @@
               location.reload(true);
             });
           } else {
+            // Don't hide spinner - just reload immediately
+            // Keep button disabled until page reloads
             location.reload();
           }
         },
@@ -369,7 +372,7 @@
 
     $("#editProduct").on("submit", (e) => {
       e.preventDefault();
-      
+      hideSpinner();
       // Prevent double submission
       if ($('.modal-btn').prop('disabled')) {
         return false;
@@ -411,9 +414,9 @@
         contentType: false,
         processData: false,
         success: function(res) {
-          hideSpinner();
+          // Don't hide spinner - just reload immediately
+          // Keep button disabled until page reloads
           isImageUpdate = 0;
-          // console.log(res)
           location.reload();
         },
         error: function(err) {
