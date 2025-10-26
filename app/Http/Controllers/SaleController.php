@@ -82,10 +82,10 @@ class SaleController extends Controller
                 ->whereNotIn('order_no', $pos_order_numbers)
                 ->get();
 
-            // Merge the collections and sort by created_at
-            $orders = $pos_orders->concat($tpos_orders)->sortByDesc('created_at')->values();
+            // Merge the collections and sort by order_no (invoice number)
+            $orders = $pos_orders->concat($tpos_orders)->sortByDesc('order_no')->values();
         } else {
-            $orders = POS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->get();
+            $orders = POS::whereBetween('created_at', [$start_date, $end_date])->orderBy('order_no', 'DESC')->get();
         }
 
         return view('invoice', [
@@ -111,10 +111,10 @@ class SaleController extends Controller
                 ->whereNotIn('order_no', $pos_order_numbers)
                 ->get();
 
-            // Merge the collections and sort by created_at
-            $orders = $pos_orders->concat($tpos_orders)->sortByDesc('created_at')->values();
+            // Merge the collections and sort by order_no (invoice number)
+            $orders = $pos_orders->concat($tpos_orders)->sortByDesc('order_no')->values();
         } else {
-            $orders = POS::whereBetween('created_at', [$start_date, $end_date])->orderBy('created_at', 'DESC')->get();
+            $orders = POS::whereBetween('created_at', [$start_date, $end_date])->orderBy('order_no', 'DESC')->get();
         }
 
         return view('invoice', [
