@@ -390,29 +390,21 @@ class ThermalPrinter {
     async printWithESCPOS(invoiceData) {
         // Check if WebUSB is supported
         if (!navigator.usb) {
-            console.warn('WebUSB not supported. Falling back to browser print.');
-            return this.printInvoice(invoiceData);
+            throw new Error('WebUSB not supported. Please use a compatible browser (Chrome/Edge).');
         }
 
         try {
-            // Request USB device - try with filters first
-            let device;
-            try {
-                device = await navigator.usb.requestDevice({
-                    filters: [
-                        { vendorId: 0x04b8 }, // Epson
-                        { vendorId: 0x0519 }, // Star Micronics
-                        { vendorId: 0x154f }, // Xprinter
-                        { vendorId: 0x1FC9 }, // Generic POS Printer (your printer)
-                        { vendorId: 0x0483 }, // STMicroelectronics
-                        { vendorId: 0x1a86 }, // QinHeng Electronics
-                    ]
-                });
-            } catch (filterError) {
-                // If filtered search fails, show all USB devices
-                console.log('Filtered search failed, showing all USB devices');
-                device = await navigator.usb.requestDevice({ filters: [] });
-            }
+            // Request USB device with filters
+            const device = await navigator.usb.requestDevice({
+                filters: [
+                    { vendorId: 0x04b8 }, // Epson
+                    { vendorId: 0x0519 }, // Star Micronics
+                    { vendorId: 0x154f }, // Xprinter
+                    { vendorId: 0x1FC9 }, // Generic POS Printer (your printer)
+                    { vendorId: 0x0483 }, // STMicroelectronics
+                    { vendorId: 0x1a86 }, // QinHeng Electronics
+                ]
+            });
 
             await device.open();
             await device.selectConfiguration(1);
@@ -549,8 +541,8 @@ class ThermalPrinter {
             return true;
         } catch (error) {
             console.error('ESC/POS printing failed:', error);
-            // Fallback to browser print
-            return this.printInvoice(invoiceData);
+            // Re-throw the error instead of falling back to browser print
+            throw error;
         }
     }
 
@@ -672,8 +664,8 @@ class ThermalPrinter {
             return await this.printWithESCPOS(invoiceData);
         } catch (error) {
             console.error('USB printing failed:', error);
-            alert('USB printer not found or connection failed. Please check printer connection.');
-            return false;
+            // Re-throw error to be handled by caller (no alert)
+            throw error;
         }
     }
 }

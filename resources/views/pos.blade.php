@@ -920,62 +920,67 @@
                 formData.abaAmount = (totalAmount * ((100 - cashPercentage) / 100)).toFixed(2);
             }
 
+            // Prepare invoice data for printing BEFORE saving to database
+            let invoiceDataForPrint = {
+                'store_name': 'cosmetic',
+                'cashier': '{{ Auth::user()->username }}',
+                'order_no': formData.invoice_no,
+                'date': new Date().toLocaleDateString('en-GB'),
+                'time': new Date().toLocaleTimeString('en-US', { hour12: false }),
+                'items': formData.invoice,
+                'total': formData.additional_info.total,
+                'total_riel': formData.additional_info.total_riel,
+                'total_discount': formData.additional_info.total_discount,
+                'received_in_usd': formData.additional_info.received_in_usd,
+                'received_in_riel': formData.additional_info.received_in_riel,
+                'change_in_usd': formData.additional_info.change_in_usd,
+                'change_in_riel': formData.additional_info.change_in_riel,
+            };
+
             showSpinner();
-            $.ajax({
-                url: '/pos/add',
-                type: "GET",
-                data: formData,
-                contentType: false,
-                processData: true,
-                success: function(res) {
-                    $(cards).remove();
-                    totalItem();
-                    totalCash();
-                    hideSpinner();
-                    
-                    // Print invoice automatically if data is available
-                    if (res.invoice_data) {
-                        // Automatically print to USB thermal printer
-                        thermalPrinter.print(res.invoice_data).then(function(success) {
-                            swal({
-                                title: 'Order Complete!',
-                                text: 'Receipt sent to printer',
-                                type: "success",
-                                timer: 1500,
-                                showConfirmButton: false
-                            }, function() {
-                                location.reload(true);
-                            });
-                        }).catch(function(error) {
-                            console.error('Print error:', error);
-                            swal({
-                                title: 'Order Complete!',
-                                text: 'Could not print receipt - check printer connection',
-                                type: "warning",
-                                timer: 2000,
-                                showConfirmButton: false
-                            }, function() {
-                                location.reload(true);
-                            });
-                        });
-                    } else {
-                        // No invoice data, just show success
+            
+            // Try to print FIRST, only save order if print succeeds
+            thermalPrinter.print(invoiceDataForPrint).then(function(success) {
+                // Print succeeded, now save the order to database
+                $.ajax({
+                    url: '/pos/add',
+                    type: "GET",
+                    data: formData,
+                    contentType: false,
+                    processData: true,
+                    success: function(res) {
+                        $(cards).remove();
+                        totalItem();
+                        totalCash();
+                        hideSpinner();
+                        
                         swal({
-                            title: 'DONE',
-                            text: 'Order complete',
+                            title: 'Order Complete!',
+                            text: 'Receipt sent to printer',
                             type: "success",
                             timer: 1500,
-                            showCancelButton: false,
                             showConfirmButton: false
-                        }, function(data) {
+                        }, function() {
                             location.reload(true);
                         });
+                    },
+                    error: function(err) {
+                        console.log(err);
+                        hideSpinner();
+                        swal({
+                            title: 'Error!',
+                            text: 'Failed to save order. Please try again.',
+                            type: "error"
+                        });
                     }
-                },
-                error: function(err) {
-                    console.log(err);
-                    hideSpinner();
-                }
+                });
+            }).catch(function(error) {
+                // Print failed or user cancelled - DO NOT save order
+                console.error('Print error:', error);
+                hideSpinner();
+                
+                // Simply close the modal and return to normal screen
+                $('#OrderModal').modal('hide');
             });
         });
     });
