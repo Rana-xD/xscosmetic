@@ -79,4 +79,40 @@ class UserController extends Controller {
         ]);        
     }
 
+    public function resetLockout(Request $request){
+        // Only SUPERADMIN can reset lockout
+        if (!auth()->user()->isSuperAdmin()) {
+            return response()->json([
+                'code' => 403,
+                'message' => 'Unauthorized. Only SUPERADMIN can reset lockout.'
+            ], 403);
+        }
+
+        $id = $request->id;
+        $user = User::find($id);
+        
+        if (!$user) {
+            return response()->json([
+                'code' => 404,
+                'message' => 'User not found.'
+            ], 404);
+        }
+
+        // Reset lockout fields
+        $user->update([
+            'failed_login_attempts' => 0,
+            'locked_until' => null,
+            'lockout_level' => 0
+        ]);
+        
+        // Clear cache after resetting lockout
+        $this->userCacheService->clearUserCache($id);
+        $this->userCacheService->clearCache();
+        
+        return response()->json([
+            'code' => 200,
+            'message' => 'Lockout reset successfully.'
+        ]);
+    }
+
 }

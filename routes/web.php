@@ -85,6 +85,7 @@ Route::get('/user', 'UserController@show');
 Route::post('/user/add', 'UserController@store');
 Route::get('/user/delete', 'UserController@destroy');
 Route::post('/user/update', 'UserController@update');
+Route::post('/user/reset-lockout', 'UserController@resetLockout');
 
 Route::get('/product-income', 'ProductIncomeController@show');
 

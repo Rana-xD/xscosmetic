@@ -16,7 +16,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'email', 'password', 'failed_login_attempts', 'locked_until', 'lockout_level',
     ];
 
     /**
@@ -35,6 +35,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'locked_until' => 'datetime',
     ];
 
     const SUPERADMIN = 'SUPERADMIN';

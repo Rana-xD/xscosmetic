@@ -8,6 +8,24 @@
                 <div class="card-header">{{ __('Login') }}</div>
 
                 <div class="card-body">
+                    @if(session('error'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>{{ session('error') }}</strong>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+                    
+                    @if(session('message'))
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <strong>{{ session('message') }}</strong>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+                    
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
 

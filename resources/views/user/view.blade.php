@@ -12,6 +12,7 @@
                   <th class="hidden-xs">{{ __('messages.sale_table_number') }}</th>
                   <th>{{ __('messages.user_name') }}</th>
                   <th>{{ __('messages.user_role') }}</th>
+                  <th>Lockout Status</th>
                   <th>{{ __('messages.edit') }}</th>
               </tr>
           </thead>
@@ -23,6 +24,15 @@
                  <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
                  <td class="user-name">{{ $user->username }}</td>
                  <td class="user-role">{{ $user->role }}</td>
+                 <td class="user-lockout-status">
+                   @if($user->locked_until && now()->lessThan($user->locked_until))
+                     <span class="badge badge-danger">Locked until {{ $user->locked_until->format('Y-m-d H:i') }}</span>
+                   @elseif($user->failed_login_attempts > 0)
+                     <span class="badge badge-warning">{{ $user->failed_login_attempts }} failed attempt(s)</span>
+                   @else
+                     <span class="badge badge-success">Active</span>
+                   @endif
+                 </td>
                  <td>
                    @if (Auth::user()->username != $user->username)
                     <div class="btn-group">
@@ -32,6 +42,11 @@
                      <div class="btn-group">
                       <a class="btn btn-default edit-user" data-id="{{ $user->id }}" ><i class="fa fa-pencil-square-o" data-id="{{ $user->id }}"></i></a>
                      </div>
+                     @if(Auth::user()->isSuperAdmin() && ($user->locked_until || $user->failed_login_attempts > 0))
+                     <div class="btn-group">
+                      <a class="btn btn-warning reset-lockout" data-id="{{ $user->id }}" title="Reset Lockout"><i class="fa fa-unlock" data-id="{{ $user->id }}"></i></a>
+                     </div>
+                     @endif
                   </td>
               </tr>
               @endforeach
@@ -143,6 +158,44 @@
           } 
         });
       })
+
+      $(".reset-lockout").on("click",(e)=>{
+        swal({   
+            title: 'Reset Lockout',
+            text: 'Are you sure you want to reset the lockout for this user?',
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: 'Yes, Reset',
+            cancelButtonText: '{{ __("messages.cancel") }}',
+            closeOnConfirm: true,
+        }, function(confirmed) {
+            if (confirmed) {
+                let id = e.target.getAttribute('data-id');
+                let formData = new FormData();
+                formData.append("_token",$('meta[name="csrf_token"]').attr('content'));
+                formData.append("id", id);
+                
+                $.ajax({
+                  url: '/user/reset-lockout',
+                  type: "POST", 
+                  data: formData,
+                  contentType: false,
+                  processData: false,
+                  success: function(res){
+                    swal("Success!", "Lockout has been reset successfully.", "success");
+                    setTimeout(function(){
+                      location.reload();
+                    }, 1500);
+                  },
+                  error: function(err){
+                    console.log(err);
+                    swal("Error!", "Failed to reset lockout. " + (err.responseJSON?.message || "Please try again."), "error");
+                  } 
+                });
+            }
+        });
+      });
   });
 </script>
 <!-- Add Modal -->
