@@ -54,4 +54,8 @@ class User extends Authenticatable
     public function isSuperAdmin(){
         return $this->role === self::SUPERADMIN;
     }
+
+    public function isStaff(){
+        return $this->role === self::STAFF;
+    }
 }

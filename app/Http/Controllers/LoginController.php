@@ -45,6 +45,12 @@ class LoginController extends Controller
                     'lockout_level' => 0
                 ]);
             }
+            
+            // Redirect based on user role
+            if ($user->isStaff()) {
+                return Redirect::to('/clock-in-out');
+            }
+            
             return Redirect::to('/pos');
         }
         

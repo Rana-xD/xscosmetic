@@ -97,3 +97,13 @@ Route::get('/product-log/filter', 'ProductLogController@showCustomProductLog');
 
 Route::get('/exchange-rate', 'SettingController@show');
 Route::post('/exchange-rate/update', 'SettingController@update');
+
+// Clock In/Out Routes
+Route::get('/clock-in-out', 'ClockInOutController@index')->name('clockinout.index');
+Route::post('/clock-in', 'ClockInOutController@clockIn')->name('clockinout.clockin');
+Route::post('/clock-out', 'ClockInOutController@clockOut')->name('clockinout.clockout');
+Route::get('/clock-status', 'ClockInOutController@getStatus')->name('clockinout.status');
+
+// Clock Report Routes
+Route::get('/clock-report', 'ClockReportController@index')->name('clockreport.index');
+Route::get('/clock-report/export', 'ClockReportController@export')->name('clockreport.export');

@@ -71,7 +71,12 @@
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                
                <ul class="nav navbar-nav">
+                  @if (Auth::user()->role == "STAFF")
                   <li class="flat-box"><a href="/pos"><i class="fa fa-credit-card"></i> {{ __('messages.pos') }}</a></li>
+                  <li class="flat-box"><a href="/clock-in-out"><i class="fa fa-clock-o"></i> Clock In/Out</a></li>
+                  @else
+                  <li class="flat-box"><a href="/pos"><i class="fa fa-credit-card"></i> {{ __('messages.pos') }}</a></li>
+                  @endif
                   <li class="dropdown">
                         <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-thumb-tack"></i> {{ __('messages.tracking') }} <span class="caret"></span></a>
                            <ul class="dropdown-menu">
@@ -91,13 +96,12 @@
                               <li class="flat-box"><a href="/category"><i class="fa fa-cog"></i> {{ __('messages.brand') }}</a></li>
                            </ul>
                      </li>
-                  @endif
-                  @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
                      <li class="dropdown">
                         <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-ticket"></i> {{ __('messages.report') }} <span class="caret"></span></a>
                            <ul class="dropdown-menu">
                               <li class="flat-box"><a href="/income-report"><i class="fa fa-money"></i> {{ __('messages.daily_income') }}</a></li>
                               <li class="flat-box"><a href="/invoice"><i class="fa fa-file-text-o"></i> {{ __('messages.invoice') }}</a></li>
+                              <li class="flat-box"><a href="/clock-report"><i class="fa fa-clock-o"></i> Clock Report</a></li>
                         </ul>
                      </li>
                      <li class="flat-box"><a href="/delivery"><i class="fa fa-motorcycle"></i> {{ __('messages.delivery') }}</a></li>
