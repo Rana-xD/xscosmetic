@@ -25,7 +25,23 @@ class ClockReportController extends Controller
         }
 
         $reportType = request('report_type', 'daily');
-        $userId = request('user_id', 'all');
+        
+        // Debug: Log what we're receiving
+        \Log::info('Request user_id:', [
+            'raw' => request()->input('user_id'),
+            'query' => request()->query('user_id'),
+            'all_inputs' => request()->all()
+        ]);
+        
+        $userId = request('user_id');
+        
+        // Ensure userId defaults to 'all' if not provided or empty
+        // Keep it as string to properly compare with 'all'
+        if (empty($userId) || $userId === null) {
+            $userId = 'all';
+        } else {
+            $userId = (string) $userId;
+        }
         
         // Handle date/month input based on report type
         if ($reportType === 'monthly') {
@@ -78,7 +94,44 @@ class ClockReportController extends Controller
         // Get staff users for filter dropdown
         $staffUsers = User::where('role', User::STAFF)->orderBy('username')->get();
 
-        return view('clockinout.report', compact('records', 'title', 'stats', 'reportType', 'date', 'userId', 'staffUsers'));
+        // Prepare monthly report data if needed
+        $monthlyData = [];
+        $datesInMonth = [];
+        if ($reportType === 'monthly') {
+            $monthStart = Carbon::parse($date)->startOfMonth();
+            $monthEnd = Carbon::parse($date)->endOfMonth();
+            
+            // Generate all dates in the month
+            $currentDate = $monthStart->copy();
+            while ($currentDate <= $monthEnd) {
+                $datesInMonth[] = $currentDate->copy();
+                $currentDate->addDay();
+            }
+            
+            // Group records by user and date
+            $userRecords = [];
+            foreach ($records as $record) {
+                $userId = $record->user_id;
+                $dateKey = $record->clock_in_time->format('Y-m-d');
+                
+                if (!isset($userRecords[$userId])) {
+                    $userRecords[$userId] = [
+                        'user' => $record->user,
+                        'dates' => []
+                    ];
+                }
+                
+                if (!isset($userRecords[$userId]['dates'][$dateKey])) {
+                    $userRecords[$userId]['dates'][$dateKey] = [];
+                }
+                
+                $userRecords[$userId]['dates'][$dateKey][] = $record;
+            }
+            
+            $monthlyData = $userRecords;
+        }
+
+        return view('clockinout.report', compact('records', 'title', 'stats', 'reportType', 'date', 'userId', 'staffUsers', 'monthlyData', 'datesInMonth'));
     }
 
     public function export(Request $request)
