@@ -301,7 +301,13 @@
 <script type="text/javascript">
   $(document).ready(function() {
 
-    $('.expense-btn').toggle($('.selected-date').val() === new Date().toISOString().split('T')[0]);
+    // Get today's date in local timezone (YYYY-MM-DD format)
+    const today = new Date();
+    const localDate = today.getFullYear() + '-' + 
+                     String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                     String(today.getDate()).padStart(2, '0');
+    
+    $('.expense-btn').toggle($('.selected-date').val() === localDate);
 
     // Get the datepicker input element
     const datepickerInput = document.getElementById('datepicker-input');
