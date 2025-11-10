@@ -104,6 +104,11 @@ Route::post('/clock-in', 'ClockInOutController@clockIn')->name('clockinout.clock
 Route::post('/clock-out', 'ClockInOutController@clockOut')->name('clockinout.clockout');
 Route::get('/clock-status', 'ClockInOutController@getStatus')->name('clockinout.status');
 
+// Attendance Routes (Barcode Scanner)
+Route::get('/attendance', 'ClockScanController@index')->name('attendance.index');
+Route::post('/attendance/process', 'ClockScanController@processScan')->name('attendance.process');
+Route::get('/attendance/today', 'ClockScanController@getTodayRecords')->name('attendance.today');
+
 // Clock Report Routes
 Route::get('/clock-report', 'ClockReportController@index')->name('clockreport.index');
 Route::get('/clock-report/export', 'ClockReportController@export')->name('clockreport.export');

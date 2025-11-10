@@ -6,22 +6,31 @@
         <h3 style="margin: 0; padding-bottom: 10px;"><i class="fa fa-clock-o"></i> Clock In / Clock Out</h3>
     </div>
 
-    @if(session('error'))
-        <div class="alert alert-danger alert-dismissible fade in">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <strong><i class="fa fa-exclamation-circle"></i> Error!</strong> {{ session('error') }}
-        </div>
-    @endif
-    
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade in">
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            <strong><i class="fa fa-check-circle"></i> Success!</strong> {{ session('success') }}
-        </div>
-    @endif
-
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
+            <!-- Barcode Scanning Notice -->
+            <div class="panel panel-info">
+                <div class="panel-heading" style="background-color: #5bc0de; border-color: #46b8da; color: white;">
+                    <h4 class="panel-title"><i class="fa fa-barcode"></i> Barcode Scanning System</h4>
+                </div>
+                <div class="panel-body text-center" style="padding: 50px 30px;">
+                    <i class="fa fa-barcode fa-5x" style="color: #5bc0de; margin-bottom: 25px;"></i>
+                    <h3 style="color: #337ab7; margin-bottom: 20px;">Clock In/Out via Barcode Scanner</h3>
+                    <p style="font-size: 1.2em; color: #666; line-height: 1.6; margin-bottom: 25px;">
+                        The clock in/out system has been updated to use barcode scanning.<br>
+                        Please present your staff card to the manager or admin for scanning.
+                    </p>
+                    <div style="background-color: #f9f9f9; padding: 20px; border-radius: 5px; border-left: 4px solid #5bc0de; margin-top: 30px;">
+                        <h4 style="margin-top: 0; color: #337ab7;"><i class="fa fa-info-circle"></i> How It Works</h4>
+                        <ul style="text-align: left; font-size: 1.1em; color: #666; line-height: 2;">
+                            <li>Each staff member has a unique barcode card</li>
+                            <li>Present your card to the manager/admin at the scanning station</li>
+                            <li>The system will automatically clock you in or out</li>
+                            <li>You'll receive confirmation on the screen</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
             <!-- Current Time & Status -->
             <div class="panel panel-primary">
                 <div class="panel-heading" style="background-color: #337ab7; border-color: #2e6da4;">
@@ -46,30 +55,6 @@
                 </div>
             </div>
 
-            <!-- Clock In/Out Actions -->
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h4 class="panel-title"><i class="fa fa-edit"></i> Actions</h4>
-                </div>
-                <div class="panel-body" style="padding: 20px;">
-                    <div class="form-group">
-                        <label for="notes" style="font-weight: 600;">Notes (Optional)</label>
-                        <textarea class="form-control" id="notes" rows="3" placeholder="Add any notes about your shift..." style="resize: vertical;"></textarea>
-                    </div>
-                    
-                    <div class="text-center" style="margin-top: 20px;">
-                        @if($activeClock)
-                            <button type="button" class="btn btn-danger btn-lg" id="clock-out-btn" style="padding: 12px 40px; font-size: 18px;">
-                                <i class="fa fa-sign-out"></i> Clock Out
-                            </button>
-                        @else
-                            <button type="button" class="btn btn-success btn-lg" id="clock-in-btn" style="padding: 12px 40px; font-size: 18px;">
-                                <i class="fa fa-sign-in"></i> Clock In
-                            </button>
-                        @endif
-                    </div>
-                </div>
-            </div>
 
             <!-- Today's History -->
             @if($todayClocks->count() > 0)
@@ -151,79 +136,6 @@ $(document).ready(function() {
         updateCurrentHours();
     @endif
 
-    // Clock In button click
-    $('#clock-in-btn').click(function() {
-        var notes = $('#notes').val();
-        var btn = $(this);
-        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Clocking In...');
-        
-        $.ajax({
-            url: '{{ route("clockinout.clockin") }}',
-            method: 'POST',
-            data: {
-                notes: notes,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.success) {
-                    swal({
-                        title: "Success!",
-                        text: response.message,
-                        type: "success",
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                    setTimeout(function() {
-                        location.reload();
-                    }, 2000);
-                } else {
-                    swal("Error", response.message, "error");
-                    btn.prop('disabled', false).html('<i class="fa fa-sign-in"></i> Clock In');
-                }
-            },
-            error: function() {
-                swal("Error", "An error occurred. Please try again.", "error");
-                btn.prop('disabled', false).html('<i class="fa fa-sign-in"></i> Clock In');
-            }
-        });
-    });
-
-    // Clock Out button click
-    $('#clock-out-btn').click(function() {
-        var notes = $('#notes').val();
-        var btn = $(this);
-        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Clocking Out...');
-        
-        $.ajax({
-            url: '{{ route("clockinout.clockout") }}',
-            method: 'POST',
-            data: {
-                notes: notes,
-                _token: '{{ csrf_token() }}'
-            },
-            success: function(response) {
-                if (response.success) {
-                    swal({
-                        title: "Success!",
-                        text: response.message + "\nTotal Hours: " + response.total_hours,
-                        type: "success",
-                        timer: 3000,
-                        showConfirmButton: false
-                    });
-                    setTimeout(function() {
-                        location.reload();
-                    }, 3000);
-                } else {
-                    swal("Error", response.message, "error");
-                    btn.prop('disabled', false).html('<i class="fa fa-sign-out"></i> Clock Out');
-                }
-            },
-            error: function() {
-                swal("Error", "An error occurred. Please try again.", "error");
-                btn.prop('disabled', false).html('<i class="fa fa-sign-out"></i> Clock Out');
-            }
-        });
-    });
 });
 </script>
 @endsection
