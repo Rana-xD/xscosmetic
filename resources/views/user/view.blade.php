@@ -20,7 +20,7 @@
           <tbody>
               @foreach ( $users as $user)
               
-              <tr class="user-data">
+              <tr class="user-data" data-barcode="{{ $user->barcode }}">
                  <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
                  <td class="user-name">{{ $user->username }}</td>
                  <td class="user-role">{{ $user->role }}</td>
@@ -71,6 +71,7 @@
         formData.append('username',$("#username").val());
         formData.append('password',$("#user-password").val());
         formData.append('role',$("#role").val());
+        formData.append('barcode',$("#barcode").val());
         $.ajax({
           url: '/user/add',
           type: "POST", 
@@ -81,6 +82,7 @@
             $('#username').val('');
             $('#password').val('');
             $("#role").val('ADMIN');
+            $('#barcode').val('');
             location.reload();
           },
           error: function(err){
@@ -126,11 +128,13 @@
         let self = e.target,
             id = $(self).attr('data-id'),
             username = $(self).parents('.user-data').find('.user-name').text(),
-            role = $(self).parents('.user-data').find('.user-role').text();
+            role = $(self).parents('.user-data').find('.user-role').text(),
+            barcode = $(self).parents('.user-data').attr('data-barcode');
 
             $('#user-id-edit').val(id);
             $('#username-edit').val(username);
             $('#role-edit').val(role);
+            $('#barcode-edit').val(barcode);
             $('#UpdateUser').modal('show');
       });
 
@@ -143,6 +147,7 @@
         formData.append('username',$("#username-edit").val());
         formData.append('password',$("#user-password-edit").val() === '' || $("#user-password-edit").val() === undefined ? '' : $("#user-password-edit").val());
         formData.append('role',$("#role-edit").val());
+        formData.append('barcode',$("#barcode-edit").val());
      
         $.ajax({
           url: '/user/update',
@@ -218,12 +223,17 @@
              <input type="password" name="password" Required class="form-control" id="user-password" placeholder="{{ __('messages.password') }}">
            </div>
            <div class="form-group">
-             <label for="role">{{ __('messages.user_role') }}</label>
+             <label for="role">{{ __("messages.user_role") }}</label>
               <select class="form-control" id="role" name="role">
-                  <option value="ADMIN" selected>{{ __('messages.admin') }}</option>
-                  <option value="MANAGER">{{ __('messages.manager') }}</option>
-                  <option value="STAFF">{{ __('messages.staff') }}</option>
+                  <option value="ADMIN" selected>{{ __("messages.admin") }}</option>
+                  <option value="MANAGER">{{ __("messages.manager") }}</option>
+                  <option value="STAFF">{{ __("messages.staff") }}</option>
               </select>
+           </div>
+           <div class="form-group">
+             <label for="barcode">Barcode</label>
+             <input type="text" name="barcode" class="form-control" id="barcode" placeholder="Barcode (optional)">
+             <small class="form-text text-muted">Used for attendance clock in/out scanning</small>
            </div>
       </div>
       <div class="modal-footer">
@@ -262,6 +272,11 @@
                   <option value="MANAGER">{{ __('messages.manager') }}</option>
                   <option value="STAFF">{{ __('messages.staff') }}</option>
               </select>
+           </div>
+           <div class="form-group">
+             <label for="barcode-edit">Barcode</label>
+             <input type="text" name="barcode-edit" class="form-control" id="barcode-edit" placeholder="Barcode (optional)">
+             <small class="form-text text-muted">Used for attendance clock in/out scanning</small>
            </div>
            <input type="hidden"  name="user-id-edit" id="user-id-edit">
        </div>

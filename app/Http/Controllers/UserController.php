@@ -32,10 +32,12 @@ class UserController extends Controller {
         $username = $request->username;
         $password = $request->password;
         $role = $request->role;
+        $barcode = $request->barcode;
         $data = [
             "username" => $username,
             "password" => Hash::make($password),
-            "role" => $role
+            "role" => $role,
+            "barcode" => $barcode
         ];
         DB::table('users')->insert($data);
         
@@ -65,7 +67,8 @@ class UserController extends Controller {
         $user = User::find($id);
         $user->username = $request->username;
         $user->role = $request->role;
-        if(isset($request->password)){
+        $user->barcode = $request->barcode;
+        if(isset($request->password) && !empty($request->password)){
             $user->password = Hash::make($request->password);
         }
         $user->save();

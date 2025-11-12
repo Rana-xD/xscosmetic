@@ -132,4 +132,24 @@ class UserCacheService
         
         return $result;
     }
+    
+    /**
+     * Get user by barcode with caching (optimized for attendance scanning)
+     * Uses cached users list to avoid database query on each scan
+     * 
+     * @param string $barcode
+     * @return \App\User|null
+     */
+    public function getUserByBarcode($barcode)
+    {
+        if (empty($barcode)) {
+            return null;
+        }
+        
+        // Get all users from cache
+        $users = $this->getAllUsers();
+        
+        // Search in cached collection - O(n) but cached in memory
+        return $users->firstWhere('barcode', $barcode);
+    }
 }

@@ -17,7 +17,7 @@
 
     <div class="row">
         <!-- Barcode Scanner Section -->
-        <div class="col-md-6">
+        <div class="col-md-4">
             <div class="panel panel-primary">
                 <div class="panel-heading" style="background-color: #337ab7; border-color: #2e6da4;">
                     <h4 class="panel-title"><i class="fa fa-barcode"></i> Scan Barcode</h4>
@@ -25,7 +25,7 @@
                 <div class="panel-body" style="padding: 30px;">
                     <form id="scanForm">
                         <div class="form-group">
-                            <label for="barcode" style="font-size: 1.1em;">Barcode Number</label>
+                            <label for="barcode" style="font-size: 1.2em; font-weight: bold;">Barcode Number</label>
                             <input type="text" 
                                    id="barcode" 
                                    name="barcode" 
@@ -33,53 +33,64 @@
                                    placeholder="Scan or enter barcode..." 
                                    autocomplete="off"
                                    autofocus
-                                   style="font-size: 1.3em; padding: 15px;">
+                                   style="font-size: 1.5em; padding: 20px; text-align: center; border: 2px solid #337ab7;">
                         </div>
                         <div id="scanMessage" style="margin-top: 20px; display: none;"></div>
                     </form>
-
-                    <!-- Recent Scans Display -->
-                    <div id="recentScans" style="margin-top: 30px;">
-                        <h4 style="border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 15px;">
-                            <i class="fa fa-history"></i> Recent Scans
-                        </h4>
-                        <div id="scansList"></div>
+                    
+                    <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 5px; text-align: center;">
+                        <i class="fa fa-info-circle" style="color: #337ab7; font-size: 1.2em;"></i>
+                        <p style="margin: 10px 0 0 0; color: #666;">
+                            Position cursor in the barcode field and scan the staff barcode to clock in/out
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Today's Records Section -->
-        <div class="col-md-6">
-            <div class="panel panel-default">
-                <div class="panel-heading" style="background-color: #f5f5f5;">
-                    <h4 class="panel-title"><i class="fa fa-list"></i> Today's Clock Records</h4>
+        <div class="col-md-8">
+            <div class="panel panel-success">
+                <div class="panel-heading" style="background-color: #5cb85c; border-color: #4cae4c; color: white;">
+                    <h4 class="panel-title">
+                        <i class="fa fa-clock-o"></i> Today's Clock Records
+                        <span id="recordCount" class="badge" style="background-color: white; color: #5cb85c; margin-left: 10px;">{{ $todayRecords->count() }}</span>
+                    </h4>
                 </div>
-                <div class="panel-body" style="max-height: 600px; overflow-y: auto;">
+                <div class="panel-body" style="max-height: 550px; overflow-y: auto; padding: 0;">
                     <div id="todayRecordsList">
                         @if($todayRecords->count() > 0)
                             @foreach($todayRecords as $record)
-                            <div class="record-item" style="padding: 12px; border-bottom: 1px solid #eee; background-color: {{ $record->status == 'active' ? '#f0f8ff' : '#fff' }};">
+                            <div class="record-item" style="padding: 15px 20px; border-bottom: 1px solid #e0e0e0; background-color: {{ $record->status == 'active' ? '#e8f5e9' : '#fff' }}; transition: background-color 0.2s;">
                                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <strong style="color: #337ab7; font-size: 1.1em;">{{ $record->user->username }}</strong>
-                                        <div style="margin-top: 5px;">
-                                            <span style="color: #5cb85c;">
-                                                <i class="fa fa-sign-in"></i> {{ $record->clock_in_time->format('h:i A') }}
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                            <strong style="color: #2c3e50; font-size: 1.2em;">{{ $record->user->username }}</strong>
+                                            @if($record->status == 'active')
+                                                <span class="label label-success" style="margin-left: 12px; font-size: 0.85em; padding: 4px 10px;">
+                                                    <i class="fa fa-circle" style="font-size: 0.7em;"></i> Active
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 20px;">
+                                            <span style="color: #27ae60; font-weight: 500;">
+                                                <i class="fa fa-sign-in"></i> In: {{ $record->clock_in_time->format('h:i A') }}
                                             </span>
                                             @if($record->clock_out_time)
-                                                <span style="color: #d9534f; margin-left: 15px;">
-                                                    <i class="fa fa-sign-out"></i> {{ $record->clock_out_time->format('h:i A') }}
+                                                <span style="color: #e74c3c; font-weight: 500;">
+                                                    <i class="fa fa-sign-out"></i> Out: {{ $record->clock_out_time->format('h:i A') }}
                                                 </span>
                                             @else
-                                                <span class="label label-info" style="margin-left: 10px;">Active</span>
+                                                <span style="color: #95a5a6; font-style: italic;">
+                                                    <i class="fa fa-clock-o"></i> Still clocked in
+                                                </span>
                                             @endif
                                         </div>
                                     </div>
                                     @if($record->total_hours)
-                                    <div style="text-align: right;">
-                                        <strong style="color: #5cb85c; font-size: 1.2em;">{{ number_format($record->total_hours, 2) }}</strong>
-                                        <div style="font-size: 0.9em; color: #666;">hours</div>
+                                    <div style="text-align: right; padding-left: 20px; border-left: 2px solid #e0e0e0;">
+                                        <strong style="color: #27ae60; font-size: 1.5em; display: block;">{{ number_format($record->total_hours, 2) }}</strong>
+                                        <div style="font-size: 0.85em; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px;">hours</div>
                                     </div>
                                     @endif
                                 </div>
@@ -114,39 +125,12 @@
     border-radius: 4px;
     color: #a94442;
 }
-
-.scan-item {
-    padding: 12px;
-    margin-bottom: 10px;
-    border-left: 4px solid #337ab7;
-    background-color: #f9f9f9;
-    border-radius: 3px;
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.clock-in-item {
-    border-left-color: #5cb85c;
-}
-
-.clock-out-item {
-    border-left-color: #d9534f;
-}
 </style>
 
 <script>
 $(document).ready(function() {
-    let recentScans = [];
+    let lastScanTime = 0; // Prevent duplicate scans
+    const SCAN_DEBOUNCE_MS = 500; // Minimum time between scans (same as POS)
     
     // Auto-focus on barcode input
     $('#barcode').focus();
@@ -172,6 +156,15 @@ $(document).ready(function() {
             return;
         }
         
+        // Prevent duplicate scans within debounce period (same optimization as POS)
+        const currentTime = Date.now();
+        if (currentTime - lastScanTime < SCAN_DEBOUNCE_MS) {
+            console.log('Scan ignored - too soon after last scan');
+            $('#barcode').val('').focus();
+            return;
+        }
+        lastScanTime = currentTime;
+        
         // Disable input during processing
         $('#barcode').prop('disabled', true);
         
@@ -185,7 +178,6 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     showMessage(response.message, 'success');
-                    addRecentScan(response);
                     refreshTodayRecords();
                     
                     // Play success sound (optional)
@@ -218,38 +210,10 @@ $(document).ready(function() {
                   .addClass(className)
                   .fadeIn();
         
-        // Auto-hide after 3 seconds
+        // Auto-hide after 5 seconds
         setTimeout(function() {
             messageDiv.fadeOut();
-        }, 3000);
-    }
-    
-    function addRecentScan(scanData) {
-        const scanItem = $('<div>')
-            .addClass('scan-item')
-            .addClass(scanData.action === 'clock_in' ? 'clock-in-item' : 'clock-out-item')
-            .html(
-                '<div style="display: flex; justify-content: space-between; align-items: center;">' +
-                    '<div>' +
-                        '<strong style="font-size: 1.1em;">' + scanData.staff_name + '</strong>' +
-                        '<div style="margin-top: 3px; color: #666;">' +
-                            '<i class="fa fa-' + (scanData.action === 'clock_in' ? 'sign-in' : 'sign-out') + '"></i> ' +
-                            (scanData.action === 'clock_in' ? 'Clocked In' : 'Clocked Out') +
-                        '</div>' +
-                    '</div>' +
-                    '<div style="text-align: right;">' +
-                        '<strong style="font-size: 1.2em;">' + scanData.time + '</strong>' +
-                        (scanData.total_hours ? '<div style="font-size: 0.9em; color: #666;">' + scanData.total_hours + ' hrs</div>' : '') +
-                    '</div>' +
-                '</div>'
-            );
-        
-        $('#scansList').prepend(scanItem);
-        
-        // Keep only last 5 scans
-        if ($('#scansList .scan-item').length > 5) {
-            $('#scansList .scan-item:last').remove();
-        }
+        }, 5000);
     }
     
     function refreshTodayRecords() {
@@ -268,6 +232,9 @@ $(document).ready(function() {
         const listDiv = $('#todayRecordsList');
         listDiv.empty();
         
+        // Update record count badge
+        $('#recordCount').text(records.length);
+        
         if (records.length === 0) {
             listDiv.html(
                 '<div style="text-align: center; padding: 40px; color: #999;">' +
@@ -285,30 +252,40 @@ $(document).ready(function() {
             const recordItem = $('<div>')
                 .addClass('record-item')
                 .css({
-                    'padding': '12px',
-                    'border-bottom': '1px solid #eee',
-                    'background-color': record.status === 'active' ? '#f0f8ff' : '#fff'
+                    'padding': '15px 20px',
+                    'border-bottom': '1px solid #e0e0e0',
+                    'background-color': record.status === 'active' ? '#e8f5e9' : '#fff',
+                    'transition': 'background-color 0.2s'
                 })
                 .html(
                     '<div style="display: flex; justify-content: space-between; align-items: center;">' +
-                        '<div>' +
-                            '<strong style="color: #337ab7; font-size: 1.1em;">' + record.user.username + '</strong>' +
-                            '<div style="margin-top: 5px;">' +
-                                '<span style="color: #5cb85c;">' +
-                                    '<i class="fa fa-sign-in"></i> ' + formatTime(clockInTime) +
+                        '<div style="flex: 1;">' +
+                            '<div style="display: flex; align-items: center; margin-bottom: 8px;">' +
+                                '<strong style="color: #2c3e50; font-size: 1.2em;">' + record.user.username + '</strong>' +
+                                (record.status === 'active' ? 
+                                    '<span class="label label-success" style="margin-left: 12px; font-size: 0.85em; padding: 4px 10px;">' +
+                                        '<i class="fa fa-circle" style="font-size: 0.7em;"></i> Active' +
+                                    '</span>' : ''
+                                ) +
+                            '</div>' +
+                            '<div style="display: flex; align-items: center; gap: 20px;">' +
+                                '<span style="color: #27ae60; font-weight: 500;">' +
+                                    '<i class="fa fa-sign-in"></i> In: ' + formatTime(clockInTime) +
                                 '</span>' +
                                 (clockOutTime ? 
-                                    '<span style="color: #d9534f; margin-left: 15px;">' +
-                                        '<i class="fa fa-sign-out"></i> ' + formatTime(clockOutTime) +
+                                    '<span style="color: #e74c3c; font-weight: 500;">' +
+                                        '<i class="fa fa-sign-out"></i> Out: ' + formatTime(clockOutTime) +
                                     '</span>' : 
-                                    '<span class="label label-info" style="margin-left: 10px;">Active</span>'
+                                    '<span style="color: #95a5a6; font-style: italic;">' +
+                                        '<i class="fa fa-clock-o"></i> Still clocked in' +
+                                    '</span>'
                                 ) +
                             '</div>' +
                         '</div>' +
                         (record.total_hours ? 
-                            '<div style="text-align: right;">' +
-                                '<strong style="color: #5cb85c; font-size: 1.2em;">' + parseFloat(record.total_hours).toFixed(2) + '</strong>' +
-                                '<div style="font-size: 0.9em; color: #666;">hours</div>' +
+                            '<div style="text-align: right; padding-left: 20px; border-left: 2px solid #e0e0e0;">' +
+                                '<strong style="color: #27ae60; font-size: 1.5em; display: block;">' + parseFloat(record.total_hours).toFixed(2) + '</strong>' +
+                                '<div style="font-size: 0.85em; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px;">hours</div>' +
                             '</div>' : ''
                         ) +
                     '</div>'

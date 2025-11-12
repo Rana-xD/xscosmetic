@@ -48,7 +48,7 @@ class ClockScanController extends Controller
 
         $barcode = $request->barcode;
 
-        // Find user by barcode
+        // Find user by barcode - optimized with indexed query
         $staff = User::where('barcode', $barcode)->first();
 
         if (!$staff) {
@@ -79,6 +79,19 @@ class ClockScanController extends Controller
                 'message' => $staff->username . ' clocked out at ' . $clockOutTime->format('h:i A')
             ]);
         } else {
+            // Check if staff already has a completed session today (prevent multiple clock-ins per day)
+            $todayCompletedSession = ClockInOut::where('user_id', $staff->id)
+                ->whereDate('clock_in_time', Carbon::today())
+                ->where('status', 'completed')
+                ->first();
+
+            if ($todayCompletedSession) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $staff->username . ' has already completed a clock session today. Only one clock in/out per day is allowed.'
+                ]);
+            }
+
             // Clock In
             $clockInTime = Carbon::now();
             $clockIn = ClockInOut::create([

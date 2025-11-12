@@ -144,11 +144,10 @@
                 <table class="table table-bordered table-striped table-hover">
                     <thead style="background-color: #f5f5f5;">
                         <tr>
-                            <th style="width: 18%;"><i class="fa fa-user"></i> Employee</th>
-                            <th style="width: 24%;"><i class="fa fa-sign-in"></i> Clock In</th>
-                            <th style="width: 24%;"><i class="fa fa-sign-out"></i> Clock Out</th>
-                            <th style="width: 14%;"><i class="fa fa-clock-o"></i> Total Hours</th>
-                            <th style="width: 20%;"><i class="fa fa-comment"></i> Notes</th>
+                            <th style="width: 20%;"><i class="fa fa-user"></i> Employee</th>
+                            <th style="width: 30%;"><i class="fa fa-sign-in"></i> Clock In</th>
+                            <th style="width: 30%;"><i class="fa fa-sign-out"></i> Clock Out</th>
+                            <th style="width: 20%;"><i class="fa fa-clock-o"></i> Total Hours</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -174,7 +173,6 @@
                                 <span class="text-muted">-</span>
                                 @endif
                             </td>
-                            <td style="color: #666;">{{ $record->notes ?: '-' }}</td>
                         </tr>
                         @endforeach
                     </tbody>
