@@ -79,7 +79,7 @@
                         <i class="fa fa-user"></i> Staff Name
                     </div>
                     @foreach($monthlyData as $userData)
-                    <div style="padding: 15px 10px; border-bottom: 1px solid #ddd; font-weight: bold; color: #337ab7; min-height: 60px; display: flex; align-items: center; background-color: #f9f9f9;">
+                    <div style="padding: 15px 10px; border-bottom: 1px solid #ddd; font-weight: bold; color: #337ab7; height: 90px; display: flex; align-items: center; background-color: #f9f9f9;">
                         {{ $userData['user']->username }}
                     </div>
                     @endforeach
@@ -99,7 +99,7 @@
                             $dateKey = $date->format('Y-m-d');
                             $dayRecords = $userData['dates'][$dateKey] ?? [];
                             @endphp
-                            <div style="padding: 8px 5px; border-bottom: 1px solid #ddd; min-height: 60px; text-align: center; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <div style="padding: 8px 5px; border-bottom: 1px solid #ddd; height: 90px; text-align: center; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
                                 @if(count($dayRecords) > 0)
                                 @foreach($dayRecords as $record)
                                 <div style="margin-bottom: 3px;">
@@ -108,6 +108,15 @@
                                     <div style="color: #d9534f;">{{ $record->clock_out_time->format('h:i A') }}</div>
                                     @else
                                     <div style="color: #999; font-style: italic;">Active</div>
+                                    @endif
+                                    @if($record->overtime_minutes > 0)
+                                    <div style="color: #5cb85c; font-size: 0.75em; margin-top: 2px;">
+                                        <i class="fa fa-arrow-up"></i> {{ $record->overtime }}
+                                    </div>
+                                    @elseif($record->late_minutes > 0)
+                                    <div style="color: #d9534f; font-size: 0.75em; margin-top: 2px;">
+                                        <i class="fa fa-arrow-down"></i> {{ $record->late_time }}
+                                    </div>
                                     @endif
                                 </div>
                                 @endforeach

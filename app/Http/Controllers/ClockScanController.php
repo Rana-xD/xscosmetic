@@ -69,6 +69,7 @@ class ClockScanController extends Controller
             $activeClock->clock_out_time = $clockOutTime;
             $activeClock->status = 'completed';
             $activeClock->calculateTotalHours();
+            $activeClock->save(); // Explicit save to ensure all changes are persisted
 
             return response()->json([
                 'success' => true,

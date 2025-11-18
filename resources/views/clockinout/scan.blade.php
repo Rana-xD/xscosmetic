@@ -89,8 +89,7 @@
                                     </div>
                                     @if($record->total_hours)
                                     <div style="text-align: right; padding-left: 20px; border-left: 2px solid #e0e0e0;">
-                                        <strong style="color: #27ae60; font-size: 1.5em; display: block;">{{ number_format($record->total_hours, 2) }}</strong>
-                                        <div style="font-size: 0.85em; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px;">hours</div>
+                                        <strong style="color: #27ae60; font-size: 1.2em; display: block;">{{ $record->total_hours_formatted }}</strong>
                                     </div>
                                     @endif
                                 </div>
@@ -139,13 +138,6 @@ $(document).ready(function() {
     $('#scanForm').on('submit', function(e) {
         e.preventDefault();
         processScan();
-    });
-    
-    // Also trigger on input change (for barcode scanners that don't press Enter)
-    $('#barcode').on('change', function() {
-        if ($(this).val().trim() !== '') {
-            processScan();
-        }
     });
     
     function processScan() {
@@ -284,8 +276,7 @@ $(document).ready(function() {
                         '</div>' +
                         (record.total_hours ? 
                             '<div style="text-align: right; padding-left: 20px; border-left: 2px solid #e0e0e0;">' +
-                                '<strong style="color: #27ae60; font-size: 1.5em; display: block;">' + parseFloat(record.total_hours).toFixed(2) + '</strong>' +
-                                '<div style="font-size: 0.85em; color: #7f8c8d; text-transform: uppercase; letter-spacing: 0.5px;">hours</div>' +
+                                '<strong style="color: #27ae60; font-size: 1.2em; display: block;">' + formatHoursMinutes(record.total_hours) + '</strong>' +
                             '</div>' : ''
                         ) +
                     '</div>'
@@ -303,6 +294,21 @@ $(document).ready(function() {
         hours = hours ? hours : 12;
         const minutesStr = minutes < 10 ? '0' + minutes : minutes;
         return hours + ':' + minutesStr + ' ' + ampm;
+    }
+    
+    function formatHoursMinutes(decimalHours) {
+        const totalMinutes = Math.round(decimalHours * 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        
+        if (hours > 0 && minutes > 0) {
+            return hours + ' hour' + (hours > 1 ? 's' : '') + ' ' + minutes + ' minute' + (minutes > 1 ? 's' : '');
+        } else if (hours > 0) {
+            return hours + ' hour' + (hours > 1 ? 's' : '');
+        } else if (minutes > 0) {
+            return minutes + ' minute' + (minutes > 1 ? 's' : '');
+        }
+        return '0 minutes';
     }
     
     function playBeep() {
