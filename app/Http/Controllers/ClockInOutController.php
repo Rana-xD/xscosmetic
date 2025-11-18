@@ -17,7 +17,7 @@ class ClockInOutController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // Only staff can access clock in/out functionality
         if (!$user->isStaff()) {
             return redirect()->back()->with('error', 'Access denied. Staff only.');
@@ -47,7 +47,7 @@ class ClockInOutController extends Controller
     public function clockIn(Request $request)
     {
         $user = Auth::user();
-        
+
         if (!$user->isStaff()) {
             return response()->json(['success' => false, 'message' => 'Access denied. Staff only.']);
         }
@@ -56,27 +56,27 @@ class ClockInOutController extends Controller
         $activeClock = ClockInOut::where('user_id', $user->id)
             ->where('status', 'active')
             ->first();
-            
+
         if ($activeClock) {
             return response()->json([
                 'success' => false,
                 'message' => 'You are already clocked in. Please clock out first.'
             ]);
         }
-        
+
         // Check if user already clocked in today (completed session)
         $todayClockIn = ClockInOut::where('user_id', $user->id)
             ->whereDate('clock_in_time', today())
             ->where('status', 'completed')
             ->first();
-            
+
         if ($todayClockIn) {
             return response()->json([
                 'success' => false,
                 'message' => 'You have already clocked in and out today. Only one session per day is allowed.'
             ]);
         }
-        
+
         // Create new clock-in record
         $clockIn = ClockInOut::create([
             'user_id' => $user->id,
@@ -84,7 +84,11 @@ class ClockInOutController extends Controller
             'notes' => $request->notes,
             'status' => 'active'
         ]);
-        
+
+        // Calculate late time immediately
+        $clockIn->calculateLateAndOvertime();
+        $clockIn->save();
+
         return response()->json([
             'success' => true,
             'message' => 'Successfully clocked in at ' . $clockIn->clock_in_time->format('h:i A')
@@ -94,7 +98,7 @@ class ClockInOutController extends Controller
     public function clockOut(Request $request)
     {
         $user = Auth::user();
-        
+
         if (!$user->isStaff()) {
             return response()->json(['success' => false, 'message' => 'Access denied. Staff only.']);
         }
@@ -114,7 +118,7 @@ class ClockInOutController extends Controller
         $activeClock->calculateTotalHours();
 
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'message' => 'Clocked out successfully at ' . $clockOutTime->format('h:i A'),
             'total_hours' => $activeClock->total_hours,
             'clock_out_time' => $clockOutTime->format('Y-m-d H:i:s')
@@ -124,7 +128,7 @@ class ClockInOutController extends Controller
     public function getStatus()
     {
         $user = Auth::user();
-        
+
         if (!$user->isStaff()) {
             return response()->json(['success' => false, 'message' => 'Access denied.']);
         }
@@ -136,7 +140,7 @@ class ClockInOutController extends Controller
         $status = [
             'is_clocked_in' => $activeClock ? true : false,
             'clock_in_time' => $activeClock ? $activeClock->clock_in_time->format('Y-m-d H:i:s') : null,
-            'current_hours' => $activeClock ? 
+            'current_hours' => $activeClock ?
                 round($activeClock->clock_in_time->diffInMinutes(Carbon::now()) / 60, 2) : 0
         ];
 

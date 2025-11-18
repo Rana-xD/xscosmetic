@@ -124,11 +124,17 @@
         </div>
         <div class="panel-footer" style="background-color: #f5f5f5;">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <p style="margin: 0;"><i class="fa fa-info-circle text-muted"></i> Showing <strong>{{ count($monthlyData) }}</strong> employees</p>
                 </div>
-                <div class="col-md-6 text-right">
-                    <p style="margin: 0;"><i class="fa fa-clock-o text-muted"></i> Total Hours: <strong style="color: #5cb85c; font-size: 1.2em;">{{ number_format($stats['total_hours'], 2) }}</strong> hrs</p>
+                <div class="col-md-3 text-right">
+                    <p style="margin: 0;"><i class="fa fa-clock-o text-muted"></i> Total Hours: <strong style="color: #337ab7; font-size: 1.1em;">{{ number_format($stats['total_hours'], 2) }}</strong> hrs</p>
+                </div>
+                <div class="col-md-3 text-right">
+                    <p style="margin: 0;"><i class="fa fa-hourglass-start text-muted"></i> Total Late: <strong style="color: #d9534f; font-size: 1.1em;">{{ $stats['total_late_formatted'] }}</strong></p>
+                </div>
+                <div class="col-md-3 text-right">
+                    <p style="margin: 0;"><i class="fa fa-hourglass-end text-muted"></i> Total Overtime: <strong style="color: #5cb85c; font-size: 1.1em;">{{ $stats['total_overtime_formatted'] }}</strong></p>
                 </div>
             </div>
         </div>
@@ -144,10 +150,12 @@
                 <table class="table table-bordered table-striped table-hover">
                     <thead style="background-color: #f5f5f5;">
                         <tr>
-                            <th style="width: 20%;"><i class="fa fa-user"></i> Employee</th>
-                            <th style="width: 30%;"><i class="fa fa-sign-in"></i> Clock In</th>
-                            <th style="width: 30%;"><i class="fa fa-sign-out"></i> Clock Out</th>
-                            <th style="width: 20%;"><i class="fa fa-clock-o"></i> Total Hours</th>
+                            <th style="width: 15%;"><i class="fa fa-user"></i> Employee</th>
+                            <th style="width: 20%;"><i class="fa fa-sign-in"></i> Clock In</th>
+                            <th style="width: 20%;"><i class="fa fa-sign-out"></i> Clock Out</th>
+                            <th style="width: 15%;"><i class="fa fa-clock-o"></i> Total Hours</th>
+                            <th style="width: 15%;"><i class="fa fa-hourglass-start"></i> Late</th>
+                            <th style="width: 15%;"><i class="fa fa-hourglass-end"></i> Overtime</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -168,7 +176,21 @@
                             </td>
                             <td>
                                 @if($record->total_hours)
-                                <strong style="color: #5cb85c; font-size: 1.1em;">{{ number_format($record->total_hours, 2) }}</strong> hrs
+                                <strong style="color: #5cb85c; font-size: 1.1em;">{{ $record->total_hours_formatted }}</strong>
+                                @else
+                                <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($record->late_minutes > 0)
+                                <strong style="color: #d9534f; font-size: 1.0em;">{{ $record->late_time }}</strong>
+                                @else
+                                <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($record->overtime_minutes > 0)
+                                <strong style="color: #5cb85c; font-size: 1.0em;">{{ $record->overtime }}</strong>
                                 @else
                                 <span class="text-muted">-</span>
                                 @endif
@@ -179,11 +201,17 @@
                 </table>
             </div>
             <div class="row" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <p style="margin: 0;"><i class="fa fa-info-circle text-muted"></i> Showing <strong>{{ $records->count() }}</strong> records</p>
                 </div>
-                <div class="col-md-6 text-right">
-                    <p style="margin: 0;"><i class="fa fa-clock-o text-muted"></i> Total Hours: <strong style="color: #5cb85c; font-size: 1.2em;">{{ number_format($stats['total_hours'], 2) }}</strong> hrs</p>
+                <div class="col-md-3 text-right">
+                    <p style="margin: 0;"><i class="fa fa-clock-o text-muted"></i> Total Hours: <strong style="color: #337ab7; font-size: 1.1em;">{{ number_format($stats['total_hours'], 2) }}</strong> hrs</p>
+                </div>
+                <div class="col-md-3 text-right">
+                    <p style="margin: 0;"><i class="fa fa-hourglass-start text-muted"></i> Total Late: <strong style="color: #d9534f; font-size: 1.1em;">{{ $stats['total_late_formatted'] }}</strong></p>
+                </div>
+                <div class="col-md-3 text-right">
+                    <p style="margin: 0;"><i class="fa fa-hourglass-end text-muted"></i> Total Overtime: <strong style="color: #5cb85c; font-size: 1.1em;">{{ $stats['total_overtime_formatted'] }}</strong></p>
                 </div>
             </div>
         </div>
@@ -230,13 +258,13 @@
 
     // Initialize on page load
     toggleDateFields();
-    
+
     // Force select to match URL parameter
     window.addEventListener('DOMContentLoaded', function() {
         var urlParams = new URLSearchParams(window.location.search);
         var userIdParam = urlParams.get('user_id');
         var userIdSelect = document.getElementById('user_id');
-        
+
         if (userIdParam && userIdSelect) {
             userIdSelect.value = userIdParam;
             console.log('URL user_id:', userIdParam, 'Select value:', userIdSelect.value);

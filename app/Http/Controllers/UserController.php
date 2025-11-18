@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Services\UserCacheService;
 
 
-class UserController extends Controller {
+class UserController extends Controller
+{
 
     protected $userCacheService;
 
@@ -20,15 +21,17 @@ class UserController extends Controller {
         $this->userCacheService = $userCacheService;
     }
 
-    public function show(){
+    public function show()
+    {
         // Use cached users instead of querying database every time
         $users = $this->userCacheService->getUsers();
-        return view('user.view',[
+        return view('user.view', [
             'users' => $users
         ]);
     }
 
-    public function store(Request $request){
+    public function store(Request $request)
+    {
         $username = $request->username;
         $password = $request->password;
         $role = $request->role;
@@ -37,10 +40,12 @@ class UserController extends Controller {
             "username" => $username,
             "password" => Hash::make($password),
             "role" => $role,
-            "barcode" => $barcode
+            "barcode" => $barcode,
+            "default_clock_in" => $request->default_clock_in,
+            "default_clock_out" => $request->default_clock_out
         ];
         DB::table('users')->insert($data);
-        
+
         // Clear cache after creating new user
         $this->userCacheService->clearCache();
 
@@ -50,39 +55,44 @@ class UserController extends Controller {
         ]);
     }
 
-    public function destroy(Request $request){
+    public function destroy(Request $request)
+    {
         $id = (int)$request->id;
-        
+
         // Use cache service to delete user and clear cache
         $this->userCacheService->deleteUser($id);
-        
+
         return response()->json([
             'code' => 200
         ]);
     }
 
-    public function update(Request $request){
+    public function update(Request $request)
+    {
         $id = $request->id;
 
         $user = User::find($id);
         $user->username = $request->username;
         $user->role = $request->role;
         $user->barcode = $request->barcode;
-        if(isset($request->password) && !empty($request->password)){
+        $user->default_clock_in = $request->default_clock_in;
+        $user->default_clock_out = $request->default_clock_out;
+        if (isset($request->password) && !empty($request->password)) {
             $user->password = Hash::make($request->password);
         }
         $user->save();
-        
+
         // Clear cache after updating user
         $this->userCacheService->clearUserCache($id);
         $this->userCacheService->clearCache();
-        
+
         return response()->json([
             'code' => 200
-        ]);        
+        ]);
     }
 
-    public function resetLockout(Request $request){
+    public function resetLockout(Request $request)
+    {
         // Only SUPERADMIN can reset lockout
         if (!auth()->user()->isSuperAdmin()) {
             return response()->json([
@@ -93,7 +103,7 @@ class UserController extends Controller {
 
         $id = $request->id;
         $user = User::find($id);
-        
+
         if (!$user) {
             return response()->json([
                 'code' => 404,
@@ -107,15 +117,14 @@ class UserController extends Controller {
             'locked_until' => null,
             'lockout_level' => 0
         ]);
-        
+
         // Clear cache after resetting lockout
         $this->userCacheService->clearUserCache($id);
         $this->userCacheService->clearCache();
-        
+
         return response()->json([
             'code' => 200,
             'message' => 'Lockout reset successfully.'
         ]);
     }
-
 }

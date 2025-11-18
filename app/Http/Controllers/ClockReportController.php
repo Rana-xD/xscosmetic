@@ -18,23 +18,23 @@ class ClockReportController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // Only MANAGER, ADMIN, and SUPERADMIN can view reports
         if (!$user->isManager() && !$user->isAdmin() && !$user->isSuperAdmin()) {
             return redirect()->back()->with('error', 'Access denied. Managers and Admins only.');
         }
 
         $reportType = request('report_type', 'daily');
-        
+
         // Debug: Log what we're receiving
         \Log::info('Request user_id:', [
             'raw' => request()->input('user_id'),
             'query' => request()->query('user_id'),
             'all_inputs' => request()->all()
         ]);
-        
+
         $userId = request('user_id');
-        
+
         // Ensure userId defaults to 'all' if not provided or empty
         // Keep it as string to properly compare with 'all'
         if (empty($userId) || $userId === null) {
@@ -42,7 +42,7 @@ class ClockReportController extends Controller
         } else {
             $userId = (string) $userId;
         }
-        
+
         // Handle date/month input based on report type
         if ($reportType === 'monthly') {
             $month = request('month', Carbon::today()->format('Y-m'));
@@ -63,25 +63,27 @@ class ClockReportController extends Controller
                 $query->whereDate('clock_in_time', $date);
                 $title = "Daily Clock In/Out Report - " . Carbon::parse($date)->format('F j, Y');
                 break;
-                
+
             case 'monthly':
                 $monthStart = Carbon::parse($date)->startOfMonth();
                 $monthEnd = Carbon::parse($date)->endOfMonth();
                 $query->whereBetween('clock_in_time', [$monthStart, $monthEnd]);
                 $title = "Monthly Clock In/Out Report - " . $monthStart->format('F Y');
                 break;
-                
+
             default:
                 $query->whereDate('clock_in_time', $date);
                 $title = "Daily Clock In/Out Report - " . Carbon::parse($date)->format('F j, Y');
         }
 
         $records = $query->orderBy('clock_in_time', 'desc')->get();
-        
+
         // Calculate statistics
         $stats = [
             'total_employees' => $records->pluck('user_id')->unique()->count(),
             'total_hours' => $records->sum('total_hours'),
+            'total_late_minutes' => $records->sum('late_minutes'),
+            'total_overtime_minutes' => $records->sum('overtime_minutes'),
             'average_hours_per_employee' => 0,
             'clock_ins' => $records->count(),
             'active_sessions' => $records->where('status', 'active')->count()
@@ -90,6 +92,10 @@ class ClockReportController extends Controller
         if ($stats['total_employees'] > 0) {
             $stats['average_hours_per_employee'] = round($stats['total_hours'] / $stats['total_employees'], 2);
         }
+
+        // Format late and overtime
+        $stats['total_late_formatted'] = $this->formatMinutesToHoursMinutes($stats['total_late_minutes']);
+        $stats['total_overtime_formatted'] = $this->formatMinutesToHoursMinutes($stats['total_overtime_minutes']);
 
         // Get staff users for filter dropdown
         $staffUsers = User::where('role', User::STAFF)->orderBy('username')->get();
@@ -100,34 +106,34 @@ class ClockReportController extends Controller
         if ($reportType === 'monthly') {
             $monthStart = Carbon::parse($date)->startOfMonth();
             $monthEnd = Carbon::parse($date)->endOfMonth();
-            
+
             // Generate all dates in the month
             $currentDate = $monthStart->copy();
             while ($currentDate <= $monthEnd) {
                 $datesInMonth[] = $currentDate->copy();
                 $currentDate->addDay();
             }
-            
+
             // Group records by user and date
             $userRecords = [];
             foreach ($records as $record) {
                 $userId = $record->user_id;
                 $dateKey = $record->clock_in_time->format('Y-m-d');
-                
+
                 if (!isset($userRecords[$userId])) {
                     $userRecords[$userId] = [
                         'user' => $record->user,
                         'dates' => []
                     ];
                 }
-                
+
                 if (!isset($userRecords[$userId]['dates'][$dateKey])) {
                     $userRecords[$userId]['dates'][$dateKey] = [];
                 }
-                
+
                 $userRecords[$userId]['dates'][$dateKey][] = $record;
             }
-            
+
             $monthlyData = $userRecords;
         }
 
@@ -137,7 +143,7 @@ class ClockReportController extends Controller
     public function export(Request $request)
     {
         $user = Auth::user();
-        
+
         if (!$user->isManager() && !$user->isAdmin() && !$user->isSuperAdmin()) {
             return response()->json(['success' => false, 'message' => 'Access denied.']);
         }
@@ -184,9 +190,9 @@ class ClockReportController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
 
-        $callback = function() use ($records) {
+        $callback = function () use ($records) {
             $file = fopen('php://output', 'w');
-            
+
             // CSV header
             fputcsv($file, [
                 'Employee Name',
@@ -196,7 +202,7 @@ class ClockReportController extends Controller
                 'Status',
                 'Notes'
             ]);
-            
+
             // CSV data
             foreach ($records as $record) {
                 fputcsv($file, [
@@ -208,10 +214,25 @@ class ClockReportController extends Controller
                     $record->notes ?: ''
                 ]);
             }
-            
+
             fclose($file);
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    private function formatMinutesToHoursMinutes($minutes)
+    {
+        $hours = floor($minutes / 60);
+        $mins = $minutes % 60;
+
+        if ($hours > 0 && $mins > 0) {
+            return $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ' . $mins . ' minute' . ($mins > 1 ? 's' : '');
+        } elseif ($hours > 0) {
+            return $hours . ' hour' . ($hours > 1 ? 's' : '');
+        } elseif ($mins > 0) {
+            return $mins . ' minute' . ($mins > 1 ? 's' : '');
+        }
+        return '0 minutes';
     }
 }

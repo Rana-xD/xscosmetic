@@ -16,7 +16,15 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'failed_login_attempts', 'locked_until', 'lockout_level', 'barcode',
+        'name',
+        'email',
+        'password',
+        'failed_login_attempts',
+        'locked_until',
+        'lockout_level',
+        'barcode',
+        'default_clock_in',
+        'default_clock_out',
     ];
 
     /**
@@ -25,7 +33,8 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -42,20 +51,24 @@ class User extends Authenticatable
     const ADMIN = 'ADMIN';
     const MANAGER = 'MANAGER';
     const STAFF = 'STAFF';
-    
-    public function isAdmin(){
+
+    public function isAdmin()
+    {
         return $this->role === self::ADMIN;
     }
 
-    public function isManager(){
+    public function isManager()
+    {
         return $this->role === self::MANAGER;
     }
 
-    public function isSuperAdmin(){
+    public function isSuperAdmin()
+    {
         return $this->role === self::SUPERADMIN;
     }
 
-    public function isStaff(){
+    public function isStaff()
+    {
         return $this->role === self::STAFF;
     }
 }
