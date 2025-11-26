@@ -30,9 +30,9 @@ Route::post('/invoice/update-payment', 'SaleController@updatePaymentType');
 Route::get('/invoice/get-delivery-id', 'SaleController@getDeliveryId');
 
 Route::get('/pos', 'POSController@show')->name('pos');
-Route::get('/pos/add', 'POSController@store')->name('pos');
-Route::get('/pos/get-invoice-no', 'POSController@getInvoiceNo')->name('pos');
-Route::get('/pos/daily', 'POSController@printTotalInvoiceDaily')->name('pos');
+Route::get('/pos/add', 'POSController@store')->name('pos.add');
+Route::get('/pos/get-invoice-no', 'POSController@getInvoiceNo')->name('pos.get-invoice-no');
+Route::get('/pos/daily', 'POSController@printTotalInvoiceDaily')->name('pos.daily');
 Route::delete('/pos/delete/{id}', 'POSController@destroy')->name('pos.delete');
 
 Route::get('/order', 'OrderController@show');
