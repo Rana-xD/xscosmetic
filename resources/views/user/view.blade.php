@@ -20,7 +20,14 @@
       <tbody>
         @foreach ( $users as $user)
 
-        <tr class="user-data" data-barcode="{{ $user->barcode }}" data-default-clock-in="{{ $user->default_clock_in }}" data-default-clock-out="{{ $user->default_clock_out }}">
+        <tr class="user-data"
+          data-barcode="{{ $user->barcode }}"
+          data-default-clock-in="{{ $user->default_clock_in }}"
+          data-default-clock-out="{{ $user->default_clock_out }}"
+          data-weekday-clock-in="{{ $user->weekday_clock_in }}"
+          data-weekday-clock-out="{{ $user->weekday_clock_out }}"
+          data-weekend-clock-in="{{ $user->weekend_clock_in }}"
+          data-weekend-clock-out="{{ $user->weekend_clock_out }}">
           <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
           <td class="user-name">{{ $user->username }}</td>
           <td class="user-role">{{ $user->role }}</td>
@@ -74,6 +81,10 @@
       formData.append('barcode', $("#barcode").val());
       formData.append('default_clock_in', $("#default-clock-in").val());
       formData.append('default_clock_out', $("#default-clock-out").val());
+      formData.append('weekday_clock_in', $("#weekday-clock-in").val());
+      formData.append('weekday_clock_out', $("#weekday-clock-out").val());
+      formData.append('weekend_clock_in', $("#weekend-clock-in").val());
+      formData.append('weekend_clock_out', $("#weekend-clock-out").val());
       $.ajax({
         url: '/user/add',
         type: "POST",
@@ -135,7 +146,11 @@
         role = $(self).parents('.user-data').find('.user-role').text(),
         barcode = $(self).parents('.user-data').attr('data-barcode'),
         defaultClockIn = $(self).parents('.user-data').attr('data-default-clock-in'),
-        defaultClockOut = $(self).parents('.user-data').attr('data-default-clock-out');
+        defaultClockOut = $(self).parents('.user-data').attr('data-default-clock-out'),
+        weekdayClockIn = $(self).parents('.user-data').attr('data-weekday-clock-in'),
+        weekdayClockOut = $(self).parents('.user-data').attr('data-weekday-clock-out'),
+        weekendClockIn = $(self).parents('.user-data').attr('data-weekend-clock-in'),
+        weekendClockOut = $(self).parents('.user-data').attr('data-weekend-clock-out');
 
       $('#user-id-edit').val(id);
       $('#username-edit').val(username);
@@ -143,6 +158,10 @@
       $('#barcode-edit').val(barcode);
       $('#default-clock-in-edit').val(defaultClockIn !== 'null' && defaultClockIn ? defaultClockIn : '');
       $('#default-clock-out-edit').val(defaultClockOut !== 'null' && defaultClockOut ? defaultClockOut : '');
+      $('#weekday-clock-in-edit').val(weekdayClockIn !== 'null' && weekdayClockIn ? weekdayClockIn : '');
+      $('#weekday-clock-out-edit').val(weekdayClockOut !== 'null' && weekdayClockOut ? weekdayClockOut : '');
+      $('#weekend-clock-in-edit').val(weekendClockIn !== 'null' && weekendClockIn ? weekendClockIn : '');
+      $('#weekend-clock-out-edit').val(weekendClockOut !== 'null' && weekendClockOut ? weekendClockOut : '');
       $('#UpdateUser').modal('show');
     });
 
@@ -158,6 +177,10 @@
       formData.append('barcode', $("#barcode-edit").val());
       formData.append('default_clock_in', $("#default-clock-in-edit").val());
       formData.append('default_clock_out', $("#default-clock-out-edit").val());
+      formData.append('weekday_clock_in', $("#weekday-clock-in-edit").val());
+      formData.append('weekday_clock_out', $("#weekday-clock-out-edit").val());
+      formData.append('weekend_clock_in', $("#weekend-clock-in-edit").val());
+      formData.append('weekend_clock_out', $("#weekend-clock-out-edit").val());
 
       $.ajax({
         url: '/user/update',
@@ -245,15 +268,58 @@
             <input type="text" name="barcode" class="form-control" id="barcode" placeholder="Barcode (optional)">
             <small class="form-text text-muted">Used for attendance clock in/out scanning</small>
           </div>
+
+          <!-- Weekday Clock Times -->
           <div class="form-group">
-            <label for="default-clock-in">Default Clock In Time</label>
+            <label><strong>Weekday Clock Times (Monday - Friday)</strong></label>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="weekday-clock-in">Weekday Clock In</label>
+                <input type="time" name="weekday_clock_in" class="form-control" id="weekday-clock-in" placeholder="09:00">
+                <small class="form-text text-muted">Start time for weekdays</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="weekday-clock-out">Weekday Clock Out</label>
+                <input type="time" name="weekday_clock_out" class="form-control" id="weekday-clock-out" placeholder="17:00">
+                <small class="form-text text-muted">End time for weekdays</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Weekend Clock Times -->
+          <div class="form-group">
+            <label><strong>Weekend Clock Times (Saturday - Sunday)</strong></label>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="weekend-clock-in">Weekend Clock In</label>
+                <input type="time" name="weekend_clock_in" class="form-control" id="weekend-clock-in" placeholder="09:00">
+                <small class="form-text text-muted">Start time for weekends</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="weekend-clock-out">Weekend Clock Out</label>
+                <input type="time" name="weekend_clock_out" class="form-control" id="weekend-clock-out" placeholder="17:00">
+                <small class="form-text text-muted">End time for weekends</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="default-clock-in">Default Clock In Time (Legacy)</label>
             <input type="time" name="default_clock_in" class="form-control" id="default-clock-in" placeholder="09:00">
-            <small class="form-text text-muted">Expected start time for late tracking (e.g., 09:00)</small>
+            <small class="form-text text-muted">Fallback if weekday/weekend not set</small>
           </div>
           <div class="form-group">
-            <label for="default-clock-out">Default Clock Out Time</label>
+            <label for="default-clock-out">Default Clock Out Time (Legacy)</label>
             <input type="time" name="default_clock_out" class="form-control" id="default-clock-out" placeholder="17:00">
-            <small class="form-text text-muted">Expected end time for overtime tracking (e.g., 17:00)</small>
+            <small class="form-text text-muted">Fallback if weekday/weekend not set</small>
           </div>
         </div>
         <div class="modal-footer">
@@ -298,15 +364,58 @@
             <input type="text" name="barcode-edit" class="form-control" id="barcode-edit" placeholder="Barcode (optional)">
             <small class="form-text text-muted">Used for attendance clock in/out scanning</small>
           </div>
+
+          <!-- Weekday Clock Times -->
           <div class="form-group">
-            <label for="default-clock-in-edit">Default Clock In Time</label>
+            <label><strong>Weekday Clock Times (Monday - Friday)</strong></label>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="weekday-clock-in-edit">Weekday Clock In</label>
+                <input type="time" name="weekday_clock_in" class="form-control" id="weekday-clock-in-edit" placeholder="09:00">
+                <small class="form-text text-muted">Start time for weekdays</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="weekday-clock-out-edit">Weekday Clock Out</label>
+                <input type="time" name="weekday_clock_out" class="form-control" id="weekday-clock-out-edit" placeholder="17:00">
+                <small class="form-text text-muted">End time for weekdays</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Weekend Clock Times -->
+          <div class="form-group">
+            <label><strong>Weekend Clock Times (Saturday - Sunday)</strong></label>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="weekend-clock-in-edit">Weekend Clock In</label>
+                <input type="time" name="weekend_clock_in" class="form-control" id="weekend-clock-in-edit" placeholder="09:00">
+                <small class="form-text text-muted">Start time for weekends</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="weekend-clock-out-edit">Weekend Clock Out</label>
+                <input type="time" name="weekend_clock_out" class="form-control" id="weekend-clock-out-edit" placeholder="17:00">
+                <small class="form-text text-muted">End time for weekends</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="default-clock-in-edit">Default Clock In Time (Legacy)</label>
             <input type="time" name="default_clock_in" class="form-control" id="default-clock-in-edit" placeholder="09:00">
-            <small class="form-text text-muted">Expected start time for late tracking (e.g., 09:00)</small>
+            <small class="form-text text-muted">Fallback if weekday/weekend not set</small>
           </div>
           <div class="form-group">
-            <label for="default-clock-out-edit">Default Clock Out Time</label>
+            <label for="default-clock-out-edit">Default Clock Out Time (Legacy)</label>
             <input type="time" name="default_clock_out" class="form-control" id="default-clock-out-edit" placeholder="17:00">
-            <small class="form-text text-muted">Expected end time for overtime tracking (e.g., 17:00)</small>
+            <small class="form-text text-muted">Fallback if weekday/weekend not set</small>
           </div>
           <input type="hidden" name="user-id-edit" id="user-id-edit">
         </div>

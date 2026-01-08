@@ -127,6 +127,40 @@
                             @endforeach
                         </div>
                         @endforeach
+
+                        <!-- Total Overtime Column -->
+                        <div style="flex-shrink: 0; width: 150px; border-right: 1px solid #ddd; border-left: 2px solid #5cb85c;">
+                            <div style="padding: 10px 5px; background-color: #d4edda; border-bottom: 2px solid #5cb85c; text-align: center; font-weight: bold; height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #155724;">
+                                <div style="font-size: 0.85em;"><i class="fa fa-hourglass-end"></i></div>
+                                <div style="font-size: 0.95em;">Total Overtime</div>
+                            </div>
+                            @foreach($monthlyData as $userData)
+                            <div style="padding: 8px 5px; border-bottom: 1px solid #ddd; height: 90px; text-align: center; font-size: 0.85em; display: flex; align-items: center; justify-content: center; background-color: #f0f9f4;">
+                                @if($userData['total_overtime_minutes'] > 0)
+                                <strong style="color: #5cb85c; font-size: 1.0em;">{{ $userData['total_overtime_formatted'] }}</strong>
+                                @else
+                                <span style="color: #ccc;">-</span>
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Total Late Column -->
+                        <div style="flex-shrink: 0; width: 150px; border-right: 1px solid #ddd;">
+                            <div style="padding: 10px 5px; background-color: #f8d7da; border-bottom: 2px solid #d9534f; text-align: center; font-weight: bold; height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #721c24;">
+                                <div style="font-size: 0.85em;"><i class="fa fa-hourglass-start"></i></div>
+                                <div style="font-size: 0.95em;">Total Late</div>
+                            </div>
+                            @foreach($monthlyData as $userData)
+                            <div style="padding: 8px 5px; border-bottom: 1px solid #ddd; height: 90px; text-align: center; font-size: 0.85em; display: flex; align-items: center; justify-content: center; background-color: #fef5f5;">
+                                @if($userData['total_late_minutes'] > 0)
+                                <strong style="color: #d9534f; font-size: 1.0em;">{{ $userData['total_late_formatted'] }}</strong>
+                                @else
+                                <span style="color: #ccc;">-</span>
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>

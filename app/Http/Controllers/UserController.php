@@ -42,7 +42,11 @@ class UserController extends Controller
             "role" => $role,
             "barcode" => $barcode,
             "default_clock_in" => $request->default_clock_in,
-            "default_clock_out" => $request->default_clock_out
+            "default_clock_out" => $request->default_clock_out,
+            "weekday_clock_in" => $request->weekday_clock_in,
+            "weekday_clock_out" => $request->weekday_clock_out,
+            "weekend_clock_in" => $request->weekend_clock_in,
+            "weekend_clock_out" => $request->weekend_clock_out
         ];
         DB::table('users')->insert($data);
 
@@ -77,6 +81,10 @@ class UserController extends Controller
         $user->barcode = $request->barcode;
         $user->default_clock_in = $request->default_clock_in;
         $user->default_clock_out = $request->default_clock_out;
+        $user->weekday_clock_in = $request->weekday_clock_in;
+        $user->weekday_clock_out = $request->weekday_clock_out;
+        $user->weekend_clock_in = $request->weekend_clock_in;
+        $user->weekend_clock_out = $request->weekend_clock_out;
         if (isset($request->password) && !empty($request->password)) {
             $user->password = Hash::make($request->password);
         }

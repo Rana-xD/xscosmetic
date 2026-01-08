@@ -123,7 +123,9 @@ class ClockReportController extends Controller
                 if (!isset($userRecords[$userId])) {
                     $userRecords[$userId] = [
                         'user' => $record->user,
-                        'dates' => []
+                        'dates' => [],
+                        'total_overtime_minutes' => 0,
+                        'total_late_minutes' => 0
                     ];
                 }
 
@@ -132,6 +134,16 @@ class ClockReportController extends Controller
                 }
 
                 $userRecords[$userId]['dates'][$dateKey][] = $record;
+
+                // Accumulate totals for each user
+                $userRecords[$userId]['total_overtime_minutes'] += $record->overtime_minutes;
+                $userRecords[$userId]['total_late_minutes'] += $record->late_minutes;
+            }
+
+            // Format the totals for each user
+            foreach ($userRecords as $userId => &$userData) {
+                $userData['total_overtime_formatted'] = $this->formatMinutesToHoursMinutes($userData['total_overtime_minutes']);
+                $userData['total_late_formatted'] = $this->formatMinutesToHoursMinutes($userData['total_late_minutes']);
             }
 
             $monthlyData = $userRecords;

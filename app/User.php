@@ -26,6 +26,10 @@ class User extends Authenticatable
         'barcode',
         'default_clock_in',
         'default_clock_out',
+        'weekday_clock_in',
+        'weekday_clock_out',
+        'weekend_clock_in',
+        'weekend_clock_out',
     ];
 
     /**

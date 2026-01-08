@@ -43,14 +43,36 @@ class ClockInOut extends Model
     {
         $user = $this->user;
 
-        if (!$user || !$user->default_clock_in || !$user->default_clock_out) {
+        if (!$user) {
+            $this->late_minutes = 0;
+            $this->overtime_minutes = 0;
+            return;
+        }
+
+        // Determine if it's a weekday or weekend
+        $dayOfWeek = $this->clock_in_time->dayOfWeek; // 0 = Sunday, 6 = Saturday
+        $isWeekend = ($dayOfWeek == 0 || $dayOfWeek == 6);
+
+        // Get appropriate clock in/out times based on day type
+        if ($isWeekend) {
+            // Use weekend times if available, otherwise fall back to default
+            $defaultClockInTime = $user->weekend_clock_in ?: $user->default_clock_in;
+            $defaultClockOutTime = $user->weekend_clock_out ?: $user->default_clock_out;
+        } else {
+            // Use weekday times if available, otherwise fall back to default
+            $defaultClockInTime = $user->weekday_clock_in ?: $user->default_clock_in;
+            $defaultClockOutTime = $user->weekday_clock_out ?: $user->default_clock_out;
+        }
+
+        // If no times are set at all, set to 0
+        if (!$defaultClockInTime || !$defaultClockOutTime) {
             $this->late_minutes = 0;
             $this->overtime_minutes = 0;
             return;
         }
 
         // Calculate late minutes (clock in after default time)
-        $defaultClockIn = \Carbon\Carbon::parse($this->clock_in_time->format('Y-m-d') . ' ' . $user->default_clock_in);
+        $defaultClockIn = \Carbon\Carbon::parse($this->clock_in_time->format('Y-m-d') . ' ' . $defaultClockInTime);
         if ($this->clock_in_time->gt($defaultClockIn)) {
             $this->late_minutes = $defaultClockIn->diffInMinutes($this->clock_in_time);
         } else {
@@ -59,7 +81,7 @@ class ClockInOut extends Model
 
         // Calculate overtime minutes (clock out after default time)
         if ($this->clock_out_time) {
-            $defaultClockOut = \Carbon\Carbon::parse($this->clock_out_time->format('Y-m-d') . ' ' . $user->default_clock_out);
+            $defaultClockOut = \Carbon\Carbon::parse($this->clock_out_time->format('Y-m-d') . ' ' . $defaultClockOutTime);
             if ($this->clock_out_time->gt($defaultClockOut)) {
                 $this->overtime_minutes = $defaultClockOut->diffInMinutes($this->clock_out_time);
             } else {
