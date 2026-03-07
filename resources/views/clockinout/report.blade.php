@@ -1,6 +1,9 @@
 @extends('layouts.application')
 
 @section('content')
+@php
+    $today = \Carbon\Carbon::today();
+@endphp
 <div class="container-fluid" style="padding: 20px;">
     <!-- Header -->
     <div class="page-header" style="margin-top: 0; border-bottom: 2px solid #337ab7;">
@@ -98,6 +101,7 @@
                             @php
                             $dateKey = $date->format('Y-m-d');
                             $dayRecords = $userData['dates'][$dateKey] ?? [];
+                            $showDayOff = $date->lt($today);
                             @endphp
                             <div style="padding: 8px 5px; border-bottom: 1px solid #ddd; height: 90px; text-align: center; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
                                 @if(count($dayRecords) > 0)
@@ -120,7 +124,7 @@
                                     @endif
                                 </div>
                                 @endforeach
-                                @else
+                                @elseif($showDayOff)
                                 <span style="color: #d9534f; font-weight: bold; text-transform: uppercase; letter-spacing: 0.03em;">Day OFF</span>
                                 @endif
                             </div>
