@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Product;
 use App\ProductLog;
+use App\Category;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ProductCacheService;
@@ -24,11 +25,116 @@ class ProductController extends Controller
 
     public function show()
     {
-        // Use cached products for better performance
-        $products = $this->productCacheService->getProducts();
-
         return view('product.view', [
-            'products' => $products
+            'categories' => Category::orderBy('name', 'ASC')->get(['id', 'name'])
+        ]);
+    }
+
+    public function data(Request $request)
+    {
+        $draw = (int) $request->input('draw', 1);
+        $start = max((int) $request->input('start', 0), 0);
+        $length = (int) $request->input('length', 25);
+        $length = $length > 0 ? min($length, 100) : 25;
+        $searchValue = trim((string) $request->input('search.value', ''));
+
+        $query = Product::query()
+            ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->select([
+                'products.id',
+                'products.updated_at',
+                'products.name',
+                'products.product_barcode',
+                'products.stock',
+                'products.price',
+                'products.cost',
+                'products.cost_group',
+                'products.expire_date',
+                'products.photo',
+                'products.category_id',
+                'categories.name as category_name',
+            ]);
+
+        if ($searchValue !== '') {
+            $like = '%' . $searchValue . '%';
+
+            $query->where(function ($builder) use ($like) {
+                $builder->where('products.name', 'like', $like)
+                    ->orWhere('products.product_barcode', 'like', $like)
+                    ->orWhere('categories.name', 'like', $like)
+                    ->orWhere('products.stock', 'like', $like)
+                    ->orWhere('products.price', 'like', $like)
+                    ->orWhere('products.cost', 'like', $like)
+                    ->orWhere('products.expire_date', 'like', $like)
+                    ->orWhereRaw("DATE_FORMAT(products.updated_at, '%d-%m-%Y') like ?", [$like])
+                    ->orWhereRaw("DATE_FORMAT(products.updated_at, '%Y-%m-%d') like ?", [$like]);
+            });
+        }
+
+        $sortableColumns = [
+            1 => 'products.updated_at',
+            2 => 'products.name',
+            3 => 'products.product_barcode',
+            4 => 'products.stock',
+            5 => 'products.price',
+            6 => 'products.cost',
+            7 => 'categories.name',
+            8 => 'products.expire_date',
+        ];
+
+        $orderColumnIndex = (int) $request->input('order.0.column', 1);
+        $orderDirection = strtolower((string) $request->input('order.0.dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $orderColumn = $sortableColumns[$orderColumnIndex] ?? 'products.updated_at';
+
+        $query->orderBy($orderColumn, $orderDirection)
+            ->orderBy('products.id', 'desc');
+
+        $recordsTotal = Product::count();
+        $recordsFiltered = (clone $query)->count('products.id');
+
+        $products = $query->skip($start)->take($length)->get();
+
+        $data = $products->values()->map(function ($product, $index) use ($start) {
+            $costGroup = $product->cost_group;
+
+            if (!is_array($costGroup)) {
+                $decodedCostGroup = json_decode($costGroup ?? '[]', true);
+                $costGroup = is_array($decodedCostGroup) ? $decodedCostGroup : [];
+            }
+
+            $costGroup = array_values(array_filter($costGroup, function ($value) {
+                return $value !== null && $value !== '';
+            }));
+
+            return [
+                'id' => $product->id,
+                'row_number' => $start + $index + 1,
+                'updated_at_display' => optional($product->updated_at)->format('d-m-Y'),
+                'updated_at_order' => optional($product->updated_at)->format('Y-m-d H:i:s'),
+                'name' => $product->name,
+                'product_barcode' => $product->product_barcode ?? '',
+                'stock' => $product->stock,
+                'price' => $product->price,
+                'price_display' => $product->price !== null ? $product->price . '$' : '-',
+                'cost' => $product->cost,
+                'cost_group_raw' => implode(', ', $costGroup),
+                'cost_group_display' => empty($costGroup)
+                    ? ($product->cost !== null ? $product->cost . '$' : '-')
+                    : collect($costGroup)->map(function ($value) {
+                        return $value . '$';
+                    })->implode(' , '),
+                'category_id' => $product->category_id,
+                'category_name' => $product->category_name ?? '-',
+                'expire_date' => $product->expire_date ?? '',
+                'photo_url' => '/storage/product_images/' . ($product->photo ?: 'default.jpg'),
+            ];
+        })->all();
+
+        return response()->json([
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $data,
         ]);
     }
 

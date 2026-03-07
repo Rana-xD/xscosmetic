@@ -45,12 +45,54 @@
       transform: rotate(.5turn)
     }
   }
+
+  .product-toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1080;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+  }
+
+  .product-toast {
+    min-width: 260px;
+    max-width: 360px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: #fff;
+    background: #1f7a45;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: auto;
+  }
+
+  .product-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .product-toast__title {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .product-toast__message {
+    display: block;
+    line-height: 1.4;
+  }
 </style>
 @endsection
 @section('content')
 <div class="container">
+  <div class="product-toast-container" id="productToastContainer" aria-live="polite" aria-atomic="true"></div>
   <div class="row" style="margin-top:100px;">
-    <table id="Table" class="table table-striped table-bordered" cellspacing="0" width="100%">
+    <table id="ProductTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
       <thead>
         <tr>
           <th class="hidden-xs">{{ __('messages.sale_table_number') }}</th>
@@ -69,41 +111,7 @@
           <th>{{ __('messages.action') }}</th>
         </tr>
       </thead>
-
-      <tbody>
-        @foreach ( $products as $product)
-
-        <tr class="product-data">
-          <td class="hidden-xs productcode">{{ $loop->index + 1 }}</td>
-          <td class="input-date" data-order="{{ date('Y-m-d',strtotime($product->updated_at)) }}">{{ date('d-m-Y',strtotime($product->updated_at)) }}</td>
-          <td class="name">{{ $product->name }}</td>
-          <td class="barcode">{{ $product->product_barcode }}</td>
-          <td class="product-stock">{{ $product->stock }}</td>
-          <td class="product-price" price-data="{{ $product->price }}">{{ $product->price }}$</td>
-          @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
-          <td class="product-cost" cost-data="{{ implode(', ', $product->cost_group)  }}">{{ implode('$ , ', $product->cost_group) }}$</td>
-          @else
-          <td style="display: none;" class="product-cost" cost-data="{{ implode(', ', $product->cost_group)  }}">{{ implode('$ , ', $product->cost_group) }}$</td>
-          @endif
-          <td class="product-category" category-id="{{ $product->category->id}}">{{ $product->category->name }}</td>
-          <td class="product-expire-date" expire-date-data="{{ $product->expire_date }}">{{ $product->expire_date }}</td>
-          <input type="hidden" class="product-barcode" value="{{ $product->product_barcode }}">
-          <td>
-            <div class="btn-group">
-              @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
-              <a class="btn btn-default delete-btn delete-product" data-id="{{ $product->id }}"><i class="fa fa-times" data-id="{{ $product->id }}"></i></a>
-              @endif
-            </div>
-            <div class="btn-group">
-              <a class="btn btn-default edit-product" data-id="{{ $product->id }}" image-data="/storage/product_images/{{$product->photo}}"><i class="fa fa-pencil-square-o" data-id="{{ $product->id }}" image-data="/storage/product_images/{{$product->photo}}"></i></a>
-            </div>
-            <!-- <div class="btn-group">
-              <a class="btn btn-default view-product-image" data-id="{{ $product->id }}" image-data="/storage/product_images/{{$product->photo}}"><i class="fa fa-picture-o " data-id="{{ $product->id }}" image-data="/storage/product_images/{{$product->photo}}"></i></a>
-            </div> -->
-          </td>
-        </tr>
-        @endforeach
-      </tbody>
+      <tbody></tbody>
     </table>
   </div>
   <!-- Button trigger modal -->
@@ -116,10 +124,196 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
-
     let isImageUpdate = 0;
     let code = "";
     let reading = false;
+    const canDelete = @json(Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN");
+    const canSeeCost = @json(Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN");
+    const defaultCategoryId = @json(optional($categories->first())->id);
+    const productToastTitle = @json(__('messages.success'));
+    const productCreatedMessage = @json(__('messages.product_created'));
+    const productUpdatedMessage = @json(__('messages.product_updated'));
+    const productDeletedMessage = @json(__('messages.product_deleted'));
+
+    function getProductTableLanguage() {
+      const currentLang = $('html').attr('lang') || 'en';
+
+      if (currentLang !== 'kh') {
+        return {};
+      }
+
+      return {
+        processing: "ដំណើរការ...",
+        search: "ស្វែងរក:",
+        lengthMenu: "បង្ហាញ _MENU_ ធាតុ",
+        info: "បង្ហាញ _START_ ដល់ _END_ នៃ _TOTAL_ ធាតុ",
+        infoEmpty: "បង្ហាញ 0 ដល់ 0 នៃ 0 ធាតុ",
+        infoFiltered: "(បានចម្រាញ់ចេញពី _MAX_ ធាតុសរុប)",
+        loadingRecords: "កំពុងផ្ទុកទិន្នន័យ...",
+        zeroRecords: "មិនមានទិន្នន័យត្រូវបង្ហាញ",
+        emptyTable: "មិនមានទិន្នន័យក្នុងតារាង",
+        paginate: {
+          first: "ទំព័រដំបូង",
+          previous: "មុន",
+          next: "បន្ទាប់",
+          last: "ទំព័រចុងក្រោយ"
+        },
+        aria: {
+          sortAscending: ": ធ្វើការតម្រៀបតាមលំដាប់ឡើង",
+          sortDescending: ": ធ្វើការតម្រៀបតាមលំដាប់ចុះ"
+        }
+      };
+    }
+
+    function renderActionButtons() {
+      let buttons = '';
+
+      if (canDelete) {
+        buttons += '<div class="btn-group"><a href="#" class="btn btn-default delete-btn delete-product"><i class="fa fa-times"></i></a></div>';
+      }
+
+      buttons += '<div class="btn-group"><a href="#" class="btn btn-default edit-product"><i class="fa fa-pencil-square-o"></i></a></div>';
+      return buttons;
+    }
+
+    function refreshCategoryPicker($element, value) {
+      $element.val(value);
+      if ($.fn.selectpicker) {
+        $element.selectpicker('refresh');
+      }
+    }
+
+    function showProductToast(message) {
+      const container = document.getElementById('productToastContainer');
+
+      if (!container) {
+        return;
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'product-toast';
+      toast.innerHTML = `
+        <span class="product-toast__title">${productToastTitle}</span>
+        <span class="product-toast__message">${message}</span>
+      `;
+
+      container.appendChild(toast);
+
+      window.requestAnimationFrame(function() {
+        toast.classList.add('show');
+      });
+
+      window.setTimeout(function() {
+        toast.classList.remove('show');
+        window.setTimeout(function() {
+          toast.remove();
+        }, 200);
+      }, 3000);
+    }
+
+    function resetAddForm() {
+      $('#addProducts')[0].reset();
+      $('#Image').val(null);
+      $('#ProductImage').attr('src', '');
+      $('.image-content .text-danger').remove();
+      if (defaultCategoryId) {
+        refreshCategoryPicker($('#Category'), defaultCategoryId);
+      }
+    }
+
+    function resetEditForm() {
+      $('#editProduct')[0].reset();
+      $('#ImageEdit').val(null);
+      $('#ProductImageEdit').attr('src', '');
+      $('#productID').val('');
+      isImageUpdate = 0;
+    }
+
+    const productTable = $("#ProductTable").DataTable({
+      processing: true,
+      serverSide: true,
+      searchDelay: 350,
+      dom: 'T<"clear">lfrtip',
+      ajax: {
+        url: '{{ route("product.data") }}',
+        type: 'GET'
+      },
+      order: [
+        [1, 'desc']
+      ],
+      pageLength: 25,
+      lengthMenu: [
+        [10, 25, 50, 100],
+        [10, 25, 50, 100]
+      ],
+      language: getProductTableLanguage(),
+      tableTools: {
+        sSwfPath: "https://cdn.datatables.net/tabletools/2.2.4/swf/copy_csv_xls_pdf.swf",
+        bProcessing: true,
+        aButtons: [
+          "xls",
+          {
+            sExtends: "pdf",
+            sPdfOrientation: "landscape",
+            sPdfMessage: ""
+          },
+          "print"
+        ]
+      },
+      columns: [{
+          data: 'row_number',
+          orderable: false,
+          searchable: false,
+          className: 'hidden-xs productcode'
+        },
+        {
+          data: 'updated_at_display',
+          className: 'input-date'
+        },
+        {
+          data: 'name',
+          className: 'name'
+        },
+        {
+          data: 'product_barcode',
+          className: 'barcode'
+        },
+        {
+          data: 'stock',
+          className: 'product-stock'
+        },
+        {
+          data: 'price_display',
+          className: 'product-price'
+        },
+        {
+          data: 'cost_group_display',
+          className: 'product-cost',
+          visible: canSeeCost,
+          searchable: canSeeCost
+        },
+        {
+          data: 'category_name',
+          className: 'product-category'
+        },
+        {
+          data: 'expire_date',
+          className: 'product-expire-date'
+        },
+        {
+          data: null,
+          orderable: false,
+          searchable: false,
+          render: function() {
+            return renderActionButtons();
+          }
+        }
+      ]
+    });
+
+    function getRowDataFromButton(button) {
+      return productTable.row($(button).closest('tr')).data();
+    }
 
     document.addEventListener('keypress', e => {
       //usually scanners throw an 'Enter' key at the end of read
@@ -166,14 +360,27 @@
       $('.edit-product').prop('disabled', false);
     }
 
+    hideSpinner();
+    resetAddForm();
+    resetEditForm();
+
+    $('#Addproduct').on('show.bs.modal', function(event) {
+      if (event.target !== this) {
+        return;
+      }
+
+      resetAddForm();
+    });
+
     $("#openFileInput").on("click", (e) => {
       $('#Image').click();
-    })
+    });
 
     $("body").on("change", "#Image", function(e) {
       var self = e.target;
       if (self.files[0].size / 1024 / 1024 > 5) {
-        html = `<h2 class="text-danger">*{{ __('messages.image_size_error') }}</h2>`
+        $('.image-content .text-danger').remove();
+        html = `<h2 class="text-danger">*{{ __('messages.image_size_error') }}</h2>`;
         $('.image-content').append(html);
         $('#Image').val(null);
         return;
@@ -192,7 +399,7 @@
 
     $("#openFileInputEdit").on("click", (e) => {
       $('#ImageEdit').click();
-    })
+    });
 
     $("body").on("change", "#ImageEdit", function(e) {
       var self = e.target;
@@ -209,11 +416,6 @@
       }
 
     });
-
-    $('#handleAddProduct').on("click", (e) => {
-      $('#addProducts')[0].reset();
-      $('#Addproduct').modal('show');
-    })
 
     $("#addProducts").on("submit", (e) => {
       e.preventDefault();
@@ -260,17 +462,15 @@
             swal({
               title: '{{ __("messages.error") }}',
               type: "error",
-              text: "{{ __('messages.product_exists') }}",
-              timer: 2500,
-              showCancelButton: false,
-              showConfirmButton: false
-            }, function(data) {
-              location.reload(true);
+              text: "{{ __('messages.product_exists') }}"
             });
           } else {
-            // Don't hide spinner - just reload immediately
-            // Keep button disabled until page reloads
-            location.reload();
+            $('#Addproduct').modal('hide');
+            resetAddForm();
+            productTable.ajax.reload(function() {
+              hideSpinner();
+              showProductToast(productCreatedMessage);
+            }, true);
           }
         },
         error: function(err) {
@@ -286,9 +486,12 @@
       });
     });
 
-    $(".delete-product").on("click", (e) => {
+    $("#ProductTable tbody").on("click", ".delete-product", function(e) {
+      e.preventDefault();
+      const $button = $(this);
+
       // Prevent double click
-      if ($(e.target).prop('disabled')) {
+      if ($button.prop('disabled')) {
         return false;
       }
       
@@ -303,30 +506,34 @@
         },
         function(isConfirm) {
           if (!isConfirm) return;
-          
-          // Disable delete button
-          $(e.target).prop('disabled', true);
-          $(e.target).html('<i class="fa fa-spinner fa-spin"></i>');
-          
-          console.log(e.target)
-          let id = e.target.getAttribute('data-id');
-          let formData = {
-            "id": id
-          };
-          console.log(formData);
+
+          const rowData = getRowDataFromButton($button);
+
+          if (!rowData) {
+            return;
+          }
+
+          $button.prop('disabled', true);
+          $button.html('<i class="fa fa-spinner fa-spin"></i>');
+
           $.ajax({
             url: '/product/delete',
             type: "GET",
-            data: formData,
+            data: {
+              id: rowData.id
+            },
             contentType: false,
             processData: true,
-            success: function(res) {
-              location.reload();
+            success: function() {
+              swal.close();
+              productTable.ajax.reload(function() {
+                showProductToast(productDeletedMessage);
+              }, false);
             },
             error: function(err) {
               console.log(err);
-              $(e.target).prop('disabled', false);
-              $(e.target).html('<i class="fa fa-times"></i>');
+              $button.prop('disabled', false);
+              $button.html('<i class="fa fa-times"></i>');
               swal({
                 title: '{{ __("messages.error") }}',
                 type: "error",
@@ -334,41 +541,30 @@
               });
             }
           });
-        })
-    })
+        });
+    });
 
-    $(".edit-product").on("click", (e) => {
+    $("#ProductTable tbody").on("click", ".edit-product", function(e) {
       e.preventDefault();
-      let self = e.target,
-        id = $(self).attr('data-id'),
-        parentDiv = $(self).parents('.product-data'),
-        productName = $(parentDiv).find('.name').text(),
-        productBarcode = $(parentDiv).find('.barcode').text()
-      productStock = $(parentDiv).find('.product-stock').text(),
-        // unitId = $(parentDiv).find('.product-unit').attr('unit-id'),
-        size = $(parentDiv).find('.product-size').text(),
-        price = $(parentDiv).find('.product-price').attr('price-data'),
-        cost = $(parentDiv).find('.product-cost').attr('cost-data'),
-        categoryId = $(parentDiv).find('.product-category').attr('category-id'),
-        expireDate = $(parentDiv).find('.product-expire-date').attr('expire-date-data'),
-        image = $(self).attr('image-data');
+      const rowData = getRowDataFromButton(this);
 
-      console.log(categoryId);
-      $('#ProductName-edit').val(productName);
-      $('#ProductBarcode-edit').val(productBarcode);
-      $('#productID').val(id);
-      $('#stock-edit').val(productStock);
-      $('#size-edit').val(size);
-      $('#price-edit').val(price);
-      $('#cost-edit').val(cost);
-      $('#Category-edit').val(categoryId);
-      // $('Unit-edit').val(unitId);
-      $("#ProductImageEdit").attr('src', image);
-      $('#expire-date-edit').val(expireDate);
+      if (!rowData) {
+        return;
+      }
+
+      resetEditForm();
+      $('#ProductName-edit').val(rowData.name);
+      $('#ProductBarcode-edit').val(rowData.product_barcode);
+      $('#productID').val(rowData.id);
+      $('#stock-edit').val(rowData.stock);
+      $('#price-edit').val(rowData.price);
+      $('#cost-edit').val(rowData.cost_group_raw);
+      $('#Category-edit').val(rowData.category_id);
+      $("#ProductImageEdit").attr('src', rowData.photo_url);
+      $('#expire-date-edit').val(rowData.expire_date);
 
       $('#Editproduct').modal('show');
-
-    })
+    });
 
     $("#editProduct").on("submit", (e) => {
       e.preventDefault();
@@ -414,10 +610,12 @@
         contentType: false,
         processData: false,
         success: function(res) {
-          // Don't hide spinner - just reload immediately
-          // Keep button disabled until page reloads
+          $('#Editproduct').modal('hide');
           isImageUpdate = 0;
-          location.reload();
+          productTable.ajax.reload(function() {
+            hideSpinner();
+            showProductToast(productUpdatedMessage);
+          }, false);
         },
         error: function(err) {
           hideSpinner();
@@ -430,18 +628,19 @@
           });
         }
       });
-    })
+    });
 
-    $(".view-product-image").on("click", (e) => {
+    $("#ProductTable tbody").on("click", ".view-product-image", function(e) {
       let self = e.target,
         image = $(self).attr('image-data');
 
       $("#ProductimageView").attr('src', image);
       $("#ImageModal").modal('show');
-    })
+    });
 
-    $('.datepicker').datepicker({
-      format: 'mm/dd/yyyy',
+    $('.product-expire-datepicker').datepicker({
+      format: 'yyyy-mm-dd',
+      autoclose: true,
       startDate: 'today'
     });
 
@@ -485,7 +684,7 @@
           <div class="form-group">
             <label for="Category">{{ __('messages.product_type') }}</label>
             <select class="form-control selectpicker" id="Category" name="filtertype" data-live-search="true">
-              @foreach (App\Category::orderBy('name', 'ASC')->get() as $category)
+              @foreach ($categories as $category)
               <option value="{{ $category->id }}">{{ $category->name }}</option>
               @endforeach
             </select>
@@ -500,8 +699,8 @@
           </div> -->
           <div class="form-group">
             <label for="Category">{{ __('messages.expire_date') }}</label>
-            <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
-              <input type="text" class="form-control expired-date datepicker" id="expire-data">
+            <div class="input-group date product-expire-datepicker">
+              <input type="text" class="form-control expired-date" id="expire-data">
               <div class="input-group-addon">
                 <span class="glyphicon glyphicon-th"></span>
               </div>
@@ -582,7 +781,7 @@
           <div class="form-group">
             <label for="Category">{{ __('messages.product_type') }}</label>
             <select class="form-control" id="Category-edit" name="filtertype">
-              @foreach (App\Category::orderBy('name', 'ASC')->get() as $category)
+              @foreach ($categories as $category)
               <option value="{{ $category->id }}">{{ $category->name }}</option>
               @endforeach
             </select>
@@ -597,8 +796,8 @@
            </div> -->
           <div class="form-group">
             <label for="Category">{{ __('messages.expire_date') }}</label>
-            <div class="input-group date" data-provide="datepicker" data-date-format="yyyy-mm-dd">
-              <input type="text" class="form-control expired-date datepicker" id="expire-date-edit">
+            <div class="input-group date product-expire-datepicker">
+              <input type="text" class="form-control expired-date" id="expire-date-edit">
               <div class="input-group-addon">
                 <span class="glyphicon glyphicon-th"></span>
               </div>

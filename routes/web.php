@@ -17,6 +17,7 @@ Route::post('login', 'LoginController@login');
 Route::get('logout', 'LoginController@logout')->name('logout');
 
 Route::get('/product', 'ProductController@show');
+Route::get('/product/data', 'ProductController@data')->name('product.data');
 Route::post('/product/add', 'ProductController@store');
 Route::get('/product/delete', 'ProductController@destroy');
 Route::post('/product/update', 'ProductController@update');
