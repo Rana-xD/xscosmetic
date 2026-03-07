@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    @include('layouts.partials.theme-init')
 
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -15,9 +16,11 @@
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
+    <link href="{{ asset('css/font-awesome.min.css') }}" rel="stylesheet">
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/theme-overrides.css') }}" rel="stylesheet">
 </head>
 <body>
     <div id="app">
@@ -38,7 +41,11 @@
 
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ml-auto">
-                        <!-- Authentication Links -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link app-theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode">
+                                <i class="fa fa-moon-o" data-theme-toggle-icon></i><span data-theme-toggle-label>Dark Mode</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -48,5 +55,6 @@
             @yield('content')
         </main>
     </div>
+    <script src="{{ asset('js/theme-manager.js') }}"></script>
 </body>
 </html>

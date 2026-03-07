@@ -7,6 +7,7 @@
    <meta name="viewport" content="width=device-width, initial-scale=1">
    <meta name="description" content="">
    <meta name="author" content="">
+   @include('layouts.partials.theme-init')
    <script src="js/app.js"></script>
    <title>Tyche Xcosmetic</title>
    <!-- jQuery -->
@@ -44,7 +45,20 @@
    <!-- datepicker css -->
    <link rel="stylesheet" type="text/css" href="/css/bootstrap-datepicker.min.css">
    <!-- Custom CSS -->
-   <link href="/css/Style-Light.css" rel="stylesheet">
+   <script>
+      (function() {
+         var themeLink = document.createElement('link');
+         themeLink.id = 'app-theme-stylesheet';
+         themeLink.rel = 'stylesheet';
+         themeLink.href = window.__APP_THEME__ === 'dark' ? '/css/Style-Dark.css' : '/css/Style-Light.css';
+         themeLink.setAttribute('data-light-href', '/css/Style-Light.css');
+         themeLink.setAttribute('data-dark-href', '/css/Style-Dark.css');
+         document.head.appendChild(themeLink);
+      })();
+   </script>
+   <noscript>
+      <link id="app-theme-stylesheet" href="/css/Style-Light.css" data-light-href="/css/Style-Light.css" data-dark-href="/css/Style-Dark.css" rel="stylesheet">
+   </noscript>
 
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/css/bootstrap-select.min.css">
    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -55,6 +69,7 @@
       <![endif]-->
 
    @yield('head')
+   <link href="/css/theme-overrides.css" rel="stylesheet">
 </head>
 
 <body>
@@ -119,6 +134,11 @@
                {{-- <li class="flat-box"><a href="#"><i class="fa fa-line-chart"></i>Reports</a></li> --}}
             </ul>
             <ul class="nav navbar-nav navbar-right">
+               <li class="flat-box">
+                  <a href="#" class="app-theme-toggle" data-theme-toggle aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode">
+                     <i class="fa fa-moon-o" data-theme-toggle-icon></i><span data-theme-toggle-label>Dark Mode</span>
+                  </a>
+               </li>
                <li class="dropdown">
                   <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                      <i class="fa fa-language fa-lg"></i> {{ app()->getLocale() == 'en' ? 'English' : 'ខ្មែរ' }} <span class="caret"></span>
@@ -180,6 +200,7 @@
    <!-- custom script -->
 
    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.13.14/dist/js/bootstrap-select.min.js"></script>
+   <script src="/js/theme-manager.js"></script>
 </body>
 
 </html>
