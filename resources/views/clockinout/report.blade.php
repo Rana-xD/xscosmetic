@@ -64,7 +64,7 @@
     </div>
 
     <!-- Records Table -->
-    @if($records->count() > 0)
+    @if(($reportType === 'monthly' && count($monthlyData) > 0) || $records->count() > 0)
     @if($reportType === 'monthly')
     <!-- Monthly Report - Horizontal Scrollable Layout -->
     <div class="panel panel-default">
@@ -121,7 +121,7 @@
                                 </div>
                                 @endforeach
                                 @else
-                                <span style="color: #ccc;">-</span>
+                                <span style="color: #d9534f; font-weight: bold; text-transform: uppercase; letter-spacing: 0.03em;">Day OFF</span>
                                 @endif
                             </div>
                             @endforeach

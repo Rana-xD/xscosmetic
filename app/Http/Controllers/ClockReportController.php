@@ -114,14 +114,30 @@ class ClockReportController extends Controller
                 $currentDate->addDay();
             }
 
-            // Group records by user and date
+            $reportUsers = $userId === 'all'
+                ? $staffUsers
+                : $staffUsers->filter(function ($staffUser) use ($userId) {
+                    return (string) $staffUser->id === $userId;
+                })->values();
+
+            // Seed the monthly grid so days without records can still render explicitly.
             $userRecords = [];
+            foreach ($reportUsers as $reportUser) {
+                $userRecords[$reportUser->id] = [
+                    'user' => $reportUser,
+                    'dates' => [],
+                    'total_overtime_minutes' => 0,
+                    'total_late_minutes' => 0
+                ];
+            }
+
+            // Group records by user and date
             foreach ($records as $record) {
-                $userId = $record->user_id;
+                $recordUserId = $record->user_id;
                 $dateKey = $record->clock_in_time->format('Y-m-d');
 
-                if (!isset($userRecords[$userId])) {
-                    $userRecords[$userId] = [
+                if (!isset($userRecords[$recordUserId])) {
+                    $userRecords[$recordUserId] = [
                         'user' => $record->user,
                         'dates' => [],
                         'total_overtime_minutes' => 0,
@@ -129,22 +145,23 @@ class ClockReportController extends Controller
                     ];
                 }
 
-                if (!isset($userRecords[$userId]['dates'][$dateKey])) {
-                    $userRecords[$userId]['dates'][$dateKey] = [];
+                if (!isset($userRecords[$recordUserId]['dates'][$dateKey])) {
+                    $userRecords[$recordUserId]['dates'][$dateKey] = [];
                 }
 
-                $userRecords[$userId]['dates'][$dateKey][] = $record;
+                $userRecords[$recordUserId]['dates'][$dateKey][] = $record;
 
                 // Accumulate totals for each user
-                $userRecords[$userId]['total_overtime_minutes'] += $record->overtime_minutes;
-                $userRecords[$userId]['total_late_minutes'] += $record->late_minutes;
+                $userRecords[$recordUserId]['total_overtime_minutes'] += $record->overtime_minutes;
+                $userRecords[$recordUserId]['total_late_minutes'] += $record->late_minutes;
             }
 
             // Format the totals for each user
-            foreach ($userRecords as $userId => &$userData) {
+            foreach ($userRecords as &$userData) {
                 $userData['total_overtime_formatted'] = $this->formatMinutesToHoursMinutes($userData['total_overtime_minutes']);
                 $userData['total_late_formatted'] = $this->formatMinutesToHoursMinutes($userData['total_late_minutes']);
             }
+            unset($userData);
 
             $monthlyData = $userRecords;
         }
