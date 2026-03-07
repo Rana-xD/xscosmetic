@@ -1,9 +1,6 @@
 @extends('layouts.application')
 
 @section('content')
-@php
-    $today = \Carbon\Carbon::today();
-@endphp
 <div class="container-fluid" style="padding: 20px;">
     <!-- Header -->
     <div class="page-header" style="margin-top: 0; border-bottom: 2px solid #337ab7;">
@@ -101,7 +98,6 @@
                             @php
                             $dateKey = $date->format('Y-m-d');
                             $dayRecords = $userData['dates'][$dateKey] ?? [];
-                            $showDayOff = $date->lt($today);
                             @endphp
                             <div style="padding: 8px 5px; border-bottom: 1px solid #ddd; height: 90px; text-align: center; font-size: 0.85em; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
                                 @if(count($dayRecords) > 0)
@@ -124,16 +120,31 @@
                                     @endif
                                 </div>
                                 @endforeach
-                                @elseif($showDayOff)
-                                <span style="color: #d9534f; font-weight: bold; text-transform: uppercase; letter-spacing: 0.03em;">Day OFF</span>
                                 @endif
                             </div>
                             @endforeach
                         </div>
                         @endforeach
 
+                        <!-- Total Day Off Column -->
+                        <div style="flex-shrink: 0; width: 150px; border-right: 1px solid #ddd; border-left: 2px solid #f0ad4e;">
+                            <div style="padding: 10px 5px; background-color: #fff3cd; border-bottom: 2px solid #f0ad4e; text-align: center; font-weight: bold; height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8a6d3b;">
+                                <div style="font-size: 0.85em;"><i class="fa fa-calendar"></i></div>
+                                <div style="font-size: 0.95em;">Total Day Off</div>
+                            </div>
+                            @foreach($monthlyData as $userData)
+                            <div style="padding: 8px 5px; border-bottom: 1px solid #ddd; height: 90px; text-align: center; font-size: 0.85em; display: flex; align-items: center; justify-content: center; background-color: #fffaf0;">
+                                @if($userData['total_day_off_days'] > 0)
+                                <strong style="color: #f0ad4e; font-size: 1.0em;">{{ $userData['total_day_off_formatted'] }}</strong>
+                                @else
+                                <span style="color: #ccc;">-</span>
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+
                         <!-- Total Overtime Column -->
-                        <div style="flex-shrink: 0; width: 150px; border-right: 1px solid #ddd; border-left: 2px solid #5cb85c;">
+                        <div style="flex-shrink: 0; width: 150px; border-right: 1px solid #ddd;">
                             <div style="padding: 10px 5px; background-color: #d4edda; border-bottom: 2px solid #5cb85c; text-align: center; font-weight: bold; height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #155724;">
                                 <div style="font-size: 0.85em;"><i class="fa fa-hourglass-end"></i></div>
                                 <div style="font-size: 0.95em;">Total Overtime</div>
@@ -170,18 +181,21 @@
             </div>
         </div>
         <div class="panel-footer" style="background-color: #f5f5f5;">
-            <div class="row">
-                <div class="col-md-3">
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between;">
+                <div style="min-width: 180px;">
                     <p style="margin: 0;"><i class="fa fa-info-circle text-muted"></i> Showing <strong>{{ count($monthlyData) }}</strong> employees</p>
                 </div>
-                <div class="col-md-3 text-right">
+                <div style="min-width: 180px; text-align: right;">
                     <p style="margin: 0;"><i class="fa fa-clock-o text-muted"></i> Total Hours: <strong style="color: #337ab7; font-size: 1.1em;">{{ number_format($stats['total_hours'], 2) }}</strong> hrs</p>
                 </div>
-                <div class="col-md-3 text-right">
-                    <p style="margin: 0;"><i class="fa fa-hourglass-start text-muted"></i> Total Late: <strong style="color: #d9534f; font-size: 1.1em;">{{ $stats['total_late_formatted'] }}</strong></p>
+                <div style="min-width: 180px; text-align: right;">
+                    <p style="margin: 0;"><i class="fa fa-calendar text-muted"></i> Total Day Off: <strong style="color: #f0ad4e; font-size: 1.1em;">{{ $stats['total_day_off_formatted'] }}</strong></p>
                 </div>
-                <div class="col-md-3 text-right">
+                <div style="min-width: 180px; text-align: right;">
                     <p style="margin: 0;"><i class="fa fa-hourglass-end text-muted"></i> Total Overtime: <strong style="color: #5cb85c; font-size: 1.1em;">{{ $stats['total_overtime_formatted'] }}</strong></p>
+                </div>
+                <div style="min-width: 180px; text-align: right;">
+                    <p style="margin: 0;"><i class="fa fa-hourglass-start text-muted"></i> Total Late: <strong style="color: #d9534f; font-size: 1.1em;">{{ $stats['total_late_formatted'] }}</strong></p>
                 </div>
             </div>
         </div>

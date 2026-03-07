@@ -84,6 +84,7 @@ class ClockReportController extends Controller
             'total_hours' => $records->sum('total_hours'),
             'total_late_minutes' => $records->sum('late_minutes'),
             'total_overtime_minutes' => $records->sum('overtime_minutes'),
+            'total_day_off_days' => 0,
             'average_hours_per_employee' => 0,
             'clock_ins' => $records->count(),
             'active_sessions' => $records->where('status', 'active')->count()
@@ -106,6 +107,7 @@ class ClockReportController extends Controller
         if ($reportType === 'monthly') {
             $monthStart = Carbon::parse($date)->startOfMonth();
             $monthEnd = Carbon::parse($date)->endOfMonth();
+            $today = Carbon::today();
 
             // Generate all dates in the month
             $currentDate = $monthStart->copy();
@@ -127,7 +129,8 @@ class ClockReportController extends Controller
                     'user' => $reportUser,
                     'dates' => [],
                     'total_overtime_minutes' => 0,
-                    'total_late_minutes' => 0
+                    'total_late_minutes' => 0,
+                    'total_day_off_days' => 0
                 ];
             }
 
@@ -141,7 +144,8 @@ class ClockReportController extends Controller
                         'user' => $record->user,
                         'dates' => [],
                         'total_overtime_minutes' => 0,
-                        'total_late_minutes' => 0
+                        'total_late_minutes' => 0,
+                        'total_day_off_days' => 0
                     ];
                 }
 
@@ -158,13 +162,25 @@ class ClockReportController extends Controller
 
             // Format the totals for each user
             foreach ($userRecords as &$userData) {
+                foreach ($datesInMonth as $reportDate) {
+                    $dateKey = $reportDate->format('Y-m-d');
+
+                    if ($reportDate->lt($today) && empty($userData['dates'][$dateKey])) {
+                        $userData['total_day_off_days']++;
+                    }
+                }
+
                 $userData['total_overtime_formatted'] = $this->formatMinutesToHoursMinutes($userData['total_overtime_minutes']);
                 $userData['total_late_formatted'] = $this->formatMinutesToHoursMinutes($userData['total_late_minutes']);
+                $userData['total_day_off_formatted'] = $this->formatDaysCount($userData['total_day_off_days']);
+                $stats['total_day_off_days'] += $userData['total_day_off_days'];
             }
             unset($userData);
 
             $monthlyData = $userRecords;
         }
+
+        $stats['total_day_off_formatted'] = $this->formatDaysCount($stats['total_day_off_days']);
 
         return view('clockinout.report', compact('records', 'title', 'stats', 'reportType', 'date', 'userId', 'staffUsers', 'monthlyData', 'datesInMonth'));
     }
@@ -263,5 +279,10 @@ class ClockReportController extends Controller
             return $mins . ' minute' . ($mins > 1 ? 's' : '');
         }
         return '0 minutes';
+    }
+
+    private function formatDaysCount($days)
+    {
+        return $days . ' day' . ($days === 1 ? '' : 's');
     }
 }
