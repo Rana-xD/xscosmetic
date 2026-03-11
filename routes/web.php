@@ -22,6 +22,16 @@ Route::post('/product/add', 'ProductController@store');
 Route::get('/product/delete', 'ProductController@destroy');
 Route::post('/product/update', 'ProductController@update');
 
+Route::get('/incoming-products', 'IncomingProductController@index')->name('incoming-products.index');
+Route::get('/incoming-products/data', 'IncomingProductController@data')->name('incoming-products.data');
+Route::post('/incoming-products/add', 'IncomingProductController@store')->name('incoming-products.store');
+Route::post('/incoming-products/{id}/delete', 'IncomingProductController@destroy')->name('incoming-products.delete');
+Route::post('/incoming-products/{id}/confirm', 'IncomingProductController@confirm')->name('incoming-products.confirm');
+Route::post('/incoming-products/confirm-by-barcode', 'IncomingProductController@confirmByBarcode')->name('incoming-products.confirm-by-barcode');
+Route::get('/incoming-products/history', 'IncomingProductController@history')->name('incoming-products.history');
+Route::get('/incoming-products/history/data', 'IncomingProductController@historyData')->name('incoming-products.history.data');
+Route::get('/incoming-products/create', 'IncomingProductController@create')->name('incoming-products.create');
+
 
 Route::get('/income-report', 'SaleController@show');
 Route::get('/income-report/filter', 'SaleController@cusomterIncomeReport');

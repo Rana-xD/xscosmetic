@@ -124,6 +124,15 @@
                </li>
                <li class="flat-box"><a href="/attendance"><i class="fa fa-barcode"></i> Attendance</a></li>
                @endif
+               @if (Auth::user()->isSuperAdmin() || Auth::user()->isAdmin() || Auth::user()->isManager() || Auth::user()->isStaff())
+               <li class="dropdown">
+                  <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-truck"></i> Incoming <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                     <li class="flat-box"><a href="/incoming-products"><i class="fa fa-truck"></i> {{ __('messages.incoming_products') }}</a></li>
+                     <li class="flat-box"><a href="/incoming-products/history"><i class="fa fa-history"></i> {{ __('messages.incoming_history') }}</a></li>
+                  </ul>
+               </li>
+               @endif
                @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
                <li class="flat-box"><a href="/delivery"><i class="fa fa-motorcycle"></i> {{ __('messages.delivery') }}</a></li>
                <li class="flat-box"><a href="/user"><i class="fa fa-users"></i> {{ __('messages.user') }}</a></li>
