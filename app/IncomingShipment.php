@@ -8,6 +8,7 @@ class IncomingShipment extends Model
 {
     protected $fillable = [
         'reference_no',
+        'title',
         'status',
         'notes',
         'created_by',

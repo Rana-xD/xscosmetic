@@ -24,6 +24,8 @@ Route::post('/product/update', 'ProductController@update');
 
 Route::get('/incoming-products', 'IncomingProductController@index')->name('incoming-products.index');
 Route::get('/incoming-products/data', 'IncomingProductController@data')->name('incoming-products.data');
+Route::post('/incoming-products/batches/add', 'IncomingProductController@storeBatch')->name('incoming-products.batches.store');
+Route::post('/incoming-products/batches/{id}/close', 'IncomingProductController@closeBatch')->name('incoming-products.batches.close');
 Route::post('/incoming-products/add', 'IncomingProductController@store')->name('incoming-products.store');
 Route::post('/incoming-products/{id}/delete', 'IncomingProductController@destroy')->name('incoming-products.delete');
 Route::post('/incoming-products/{id}/confirm', 'IncomingProductController@confirm')->name('incoming-products.confirm');
