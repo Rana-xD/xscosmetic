@@ -22,6 +22,13 @@ Route::post('/product/add', 'ProductController@store');
 Route::get('/product/delete', 'ProductController@destroy');
 Route::post('/product/update', 'ProductController@update');
 
+Route::get('/membership', 'MembershipController@show');
+Route::get('/membership/data', 'MembershipController@data')->name('membership.data');
+Route::post('/membership/add', 'MembershipController@store');
+Route::get('/membership/delete', 'MembershipController@destroy');
+Route::post('/membership/update', 'MembershipController@update');
+Route::get('/membership/search', 'MembershipController@search')->name('membership.search');
+
 Route::get('/incoming-products', 'IncomingProductController@index')->name('incoming-products.index');
 Route::get('/incoming-products/data', 'IncomingProductController@data')->name('incoming-products.data');
 Route::post('/incoming-products/batches/add', 'IncomingProductController@storeBatch')->name('incoming-products.batches.store');

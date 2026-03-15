@@ -133,6 +133,124 @@
         width: 20.5%;
     }
 
+    .membership-panel {
+        margin-bottom: 15px;
+    }
+
+    .membership-panel__label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 700;
+        color: #334e68;
+    }
+
+    .membership-search-wrapper {
+        position: relative;
+    }
+
+    .membership-search-results {
+        display: none;
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        z-index: 30;
+        background: #fff;
+        border: 1px solid #d8e1eb;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+        max-height: 280px;
+        overflow-y: auto;
+    }
+
+    .membership-search-result,
+    .membership-search-empty {
+        width: 100%;
+        display: block;
+        padding: 12px 14px;
+        border: 0;
+        background: transparent;
+        text-align: left;
+    }
+
+    .membership-search-result + .membership-search-result,
+    .membership-search-empty {
+        border-top: 1px solid #edf2f7;
+    }
+
+    .membership-search-result:hover,
+    .membership-search-result:focus {
+        background: #f8fbff;
+        outline: 0;
+    }
+
+    .membership-search-result.is-expired {
+        opacity: 0.75;
+    }
+
+    .membership-search-result__title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .membership-search-result__meta {
+        display: block;
+        margin-top: 4px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .membership-status {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .membership-status.active {
+        background: rgba(31, 122, 69, 0.14);
+        color: #1f7a45;
+    }
+
+    .membership-status.expired {
+        background: rgba(198, 60, 45, 0.14);
+        color: #c63c2d;
+    }
+
+    .selected-membership-card {
+        display: none;
+        margin-top: 12px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid #cfe2f3;
+        background: linear-gradient(135deg, rgba(37, 176, 155, 0.12), rgba(39, 93, 150, 0.08));
+    }
+
+    .selected-membership-card__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 6px;
+        font-weight: 700;
+        color: #15395b;
+    }
+
+    .selected-membership-card__body {
+        line-height: 1.5;
+        color: #334155;
+    }
+
+    .selected-membership-card__body strong {
+        color: #0f172a;
+    }
+
     @keyframes l12 {
         100% {
             transform: rotate(.5turn)
@@ -167,6 +285,33 @@
 
             </div>
             <div class="footer-section">
+                <div class="col-sm-12 membership-panel">
+                    <label for="membershipSearch" class="membership-panel__label">{{ __('messages.search_membership') }}</label>
+                    <div class="membership-search-wrapper">
+                        <div class="input-group">
+                            <input type="text" id="membershipSearch" class="form-control" placeholder="{{ __('messages.search_membership_phone_name') }}" autocomplete="off">
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" id="clearMembershipBtn">{{ __('messages.clear_membership') }}</button>
+                            </span>
+                        </div>
+                        <div id="membershipSearchResults" class="membership-search-results"></div>
+                    </div>
+                    <div id="selectedMembershipCard" class="selected-membership-card">
+                        <div class="selected-membership-card__header">
+                            <span>{{ __('messages.selected_membership') }}</span>
+                            <span id="selectedMembershipStatus" class="membership-status active">{{ __('messages.active') }}</span>
+                        </div>
+                        <div class="selected-membership-card__body">
+                            <div><strong id="selectedMembershipName"></strong></div>
+                            <div id="selectedMembershipPhone"></div>
+                            <div>
+                                <span id="selectedMembershipRank"></span> ·
+                                <span id="selectedMembershipDiscount"></span> ·
+                                <span id="selectedMembershipExpiry"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="table-responsive col-sm-12 totalTab">
                     <table class="table cashier-section">
                         <tr>
@@ -250,8 +395,14 @@
     let barcodeMap = {}; // Cache for faster barcode lookup
     let lastScanTime = 0; // Prevent duplicate scans
     const SCAN_DEBOUNCE_MS = 500; // Minimum time between scans
+    let membershipSearchTimer = null;
+    let selectedMembership = null;
 
     $(document).ready(function() {
+        const membershipSearchUrl = @json(route('membership.search'));
+        const membershipExpiredMessage = @json(__('messages.membership_expired'));
+        const membershipNoResultMessage = @json(__('messages.membership_no_result'));
+        const expireDateLabel = @json(__('messages.expire_date'));
 
         // Build barcode map for O(1) lookup instead of O(n)
         buildBarcodeMap();
@@ -274,6 +425,159 @@
 
         // Initialize payment type section
         $('#payment-type').trigger('change');
+
+        function escapeMembershipHtml(value) {
+            return $('<div>').text(value || '').html();
+        }
+
+        function hideMembershipSearchResults() {
+            $('#membershipSearchResults').hide().empty();
+        }
+
+        function renderMembershipResults(results) {
+            const $results = $('#membershipSearchResults');
+            $results.empty();
+
+            if (!results.length) {
+                $results
+                    .append(`<div class="membership-search-empty">${membershipNoResultMessage}</div>`)
+                    .show();
+                return;
+            }
+
+            results.forEach(function(member) {
+                const $button = $('<button type="button" class="membership-search-result"></button>');
+                const statusClass = member.is_expired ? 'expired' : 'active';
+                const phone = escapeMembershipHtml(member.phone);
+                const name = escapeMembershipHtml(member.name);
+                const rank = escapeMembershipHtml(member.rank);
+                const expiredAt = escapeMembershipHtml(member.expired_at || '-');
+
+                if (member.is_expired) {
+                    $button.addClass('is-expired');
+                }
+
+                $button.html(
+                    `<span class="membership-search-result__title">${name}<span class="membership-status ${statusClass}">${escapeMembershipHtml(member.status_label)}</span></span>` +
+                    `<span class="membership-search-result__meta">${phone} · ${rank} · ${member.discount_percent}% · ${expireDateLabel}: ${expiredAt}</span>`
+                );
+                $button.data('membership', member);
+                $results.append($button);
+            });
+
+            $results.show();
+        }
+
+        function updateSelectedMembershipCard() {
+            if (!selectedMembership) {
+                $('#selectedMembershipCard').hide();
+                $('#selectedMembershipName, #selectedMembershipPhone, #selectedMembershipRank, #selectedMembershipDiscount, #selectedMembershipExpiry').text('');
+                return;
+            }
+
+            const statusClass = selectedMembership.is_expired ? 'expired' : 'active';
+            $('#selectedMembershipStatus')
+                .removeClass('active expired')
+                .addClass(statusClass)
+                .text(selectedMembership.status_label);
+            $('#selectedMembershipName').text(selectedMembership.name);
+            $('#selectedMembershipPhone').text(selectedMembership.phone);
+            $('#selectedMembershipRank').text(selectedMembership.rank);
+            $('#selectedMembershipDiscount').text(`${selectedMembership.discount_percent}%`);
+            $('#selectedMembershipExpiry').text(`${expireDateLabel}: ${selectedMembership.expired_at || '-'}`);
+            $('#selectedMembershipCard').show();
+        }
+
+        function clearSelectedMembership(options) {
+            const shouldClearInput = !options || options.clearInput !== false;
+
+            selectedMembership = null;
+            updateSelectedMembershipCard();
+            hideMembershipSearchResults();
+
+            if (shouldClearInput) {
+                $('#membershipSearch').val('');
+            }
+
+            $('.overall-discount').val('');
+            handleProductOverallDiscount($('.overall-discount')[0]);
+        }
+
+        function applyMembership(member) {
+            if (member.is_expired) {
+                swal({
+                    title: '{{ __('messages.warning') }}',
+                    text: membershipExpiredMessage,
+                    type: 'warning'
+                });
+                return;
+            }
+
+            selectedMembership = member;
+            $('#membershipSearch').val(member.phone);
+            $('.overall-discount').val(member.discount_percent);
+            updateSelectedMembershipCard();
+            hideMembershipSearchResults();
+            handleProductOverallDiscount($('.overall-discount')[0]);
+        }
+
+        function searchMembership(query) {
+            $.ajax({
+                url: membershipSearchUrl,
+                type: 'GET',
+                data: { q: query },
+                success: function(response) {
+                    renderMembershipResults(response.data || []);
+                },
+                error: function() {
+                    hideMembershipSearchResults();
+                }
+            });
+        }
+
+        $('#membershipSearch').on('input', function() {
+            const query = $(this).val().trim();
+
+            if (membershipSearchTimer) {
+                clearTimeout(membershipSearchTimer);
+            }
+
+            if (query.length < 2) {
+                hideMembershipSearchResults();
+                return;
+            }
+
+            membershipSearchTimer = setTimeout(function() {
+                searchMembership(query);
+            }, 250);
+        });
+
+        $('#membershipSearch').on('focus', function() {
+            const query = $(this).val().trim();
+
+            if (query.length >= 2) {
+                searchMembership(query);
+            }
+        });
+
+        $('#membershipSearchResults').on('click', '.membership-search-result', function() {
+            const member = $(this).data('membership');
+            if (!member) {
+                return;
+            }
+
+            applyMembership(member);
+        });
+
+        $('#clearMembershipBtn').on('click', function() {
+            clearSelectedMembership();
+        });
+
+        $(document).on('click', function(e) {
+            if (!$(e.target).closest('.membership-search-wrapper').length) {
+                hideMembershipSearchResults();
+            }
+        });
 
         $('.addPct').on('click', (e) => {
             let self = e.target,
@@ -905,7 +1209,13 @@
                     received_in_riel: $('#received-cash-in-riel').val() === '' ? 0 : $('#received-cash-in-riel').val(),
                     change_in_usd: $('#change-in-usd').val() === '' ? 0 : $('#change-in-usd').val(),
                     change_in_riel: $('#change-in-riel').val() === '' ? 0 : $('#change-in-riel').val(),
-                    selected_change_currency: $('input[name="change-currency"]:checked').val() || ''
+                    selected_change_currency: $('input[name="change-currency"]:checked').val() || '',
+                    membership_id: selectedMembership ? selectedMembership.id : null,
+                    membership_phone: selectedMembership ? selectedMembership.phone : null,
+                    membership_name: selectedMembership ? selectedMembership.name : null,
+                    membership_rank: selectedMembership ? selectedMembership.rank : null,
+                    membership_discount: selectedMembership ? selectedMembership.discount_percent : null,
+                    membership_expired_at: selectedMembership ? selectedMembership.expired_at : null
                 }
             };
 
@@ -1107,16 +1417,12 @@
 
     function totalCash() {
         let total = 0;
-        let totalRiel = 0;
         let cards = $('#productList').children();
         for (let i = 0; i < cards.length; i++) {
             total += parseFloat($(cards[i]).find('.subtotal').text().replace('$', ''));
         }
-        totalRiel = handleExchangeToRielCurrency(total);
-        $('#total-usd').text(`$ ${total.toFixed(2)}`)
-        $('#total-usd').attr('total-usd-data', total.toFixed(2));
-        $('#total-riel').text(`៛ ${totalRiel}`);
-        $('#total-riel').attr('total-riel-data', totalRiel);
+        $('#total-usd').attr('original-total-data', total.toFixed(2));
+        handleProductOverallDiscount($('.overall-discount')[0]);
 
     }
 
@@ -1124,6 +1430,13 @@
         let cards = $('#productList').children();
         $(cards).remove();
         items = [];
+        $('#unifiedSearch').val('');
+        $('#membershipSearch').val('');
+        selectedMembership = null;
+        $('#membershipSearchResults').hide().empty();
+        $('#selectedMembershipName, #selectedMembershipPhone, #selectedMembershipRank, #selectedMembershipDiscount, #selectedMembershipExpiry').text('');
+        $('#selectedMembershipCard').hide();
+        $('.overall-discount').val('');
         totalItem();
         totalCash();
     }
@@ -1210,35 +1523,15 @@
     }
 
     function handleProductOverallDiscount(e) {
-        // Get the original total from data attribute
         let originalTotal = parseFloat($('#total-usd').attr('original-total-data'));
-        if (!originalTotal || isNaN(originalTotal)) {
-            // If original total is not set, get it from current total and store it
-            originalTotal = parseFloat($('#total-usd').attr('total-usd-data'));
-            if (!originalTotal || isNaN(originalTotal)) {
-                return;
-            }
-            $('#total-usd').attr('original-total-data', originalTotal);
+        if (isNaN(originalTotal)) {
+            originalTotal = 0;
         }
 
-        // Get discount value
         let input = $('.overall-discount').val();
-        if (!input || input === '') {
-            $('#total-usd').text(`$ ${originalTotal.toFixed(2)}`);
-            $('#total-usd').attr('total-usd-data', originalTotal.toFixed(2));
-            let totalRielPrice = handleExchangeToRielCurrency(originalTotal.toFixed(2));
-            $('#total-riel').text(`៛ ${totalRielPrice}`);
-            $('#total-riel').attr('total-riel-data', totalRielPrice);
-            return;
-        }
-
         let totalDiscount = parseFloat(input);
-        if (isNaN(totalDiscount)) {
-            return;
-        }
 
-        // Handle invalid discount values
-        if (totalDiscount <= 0) {
+        if (!input || input === '' || isNaN(totalDiscount) || totalDiscount <= 0) {
             $('#total-usd').text(`$ ${originalTotal.toFixed(2)}`);
             $('#total-usd').attr('total-usd-data', originalTotal.toFixed(2));
             let totalRielPrice = handleExchangeToRielCurrency(originalTotal.toFixed(2));
@@ -1252,12 +1545,10 @@
             totalDiscount = 100;
         }
 
-        // Calculate discounted price using original total
         let discountAmount = (originalTotal * totalDiscount) / 100;
         let totalDiscountPrice = (originalTotal - discountAmount).toFixed(2);
         let totalRielDiscountPrice = handleExchangeToRielCurrency(totalDiscountPrice);
 
-        // Update display
         $('#total-usd').text(`$ ${totalDiscountPrice}`);
         $('#total-usd').attr('total-usd-data', totalDiscountPrice);
         $('#total-riel').text(`៛ ${totalRielDiscountPrice}`);

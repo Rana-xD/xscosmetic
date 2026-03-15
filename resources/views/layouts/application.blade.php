@@ -135,8 +135,18 @@
                @endif
                @if (Auth::user()->role == "ADMIN" || Auth::user()->role == "SUPERADMIN")
                <li class="flat-box"><a href="/delivery"><i class="fa fa-motorcycle"></i> {{ __('messages.delivery') }}</a></li>
-               <li class="flat-box"><a href="/user"><i class="fa fa-users"></i> {{ __('messages.user') }}</a></li>
                <li class="flat-box"><a href="/exchange-rate"><i class="fa fa-cogs"></i> {{ __('messages.exchange_rate') }}</a></li>
+               @endif
+               @if (Auth::user()->isSuperAdmin() || Auth::user()->isAdmin() || Auth::user()->isManager())
+               <li class="dropdown">
+                  <a href="#" class="dropdown-toggle flat-box" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-users"></i> {{ __('messages.user') }} <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                     @if (Auth::user()->isSuperAdmin() || Auth::user()->isAdmin())
+                     <li class="flat-box"><a href="/user"><i class="fa fa-users"></i> {{ __('messages.user') }}</a></li>
+                     @endif
+                     <li class="flat-box"><a href="/membership"><i class="fa fa-star"></i> {{ __('messages.membership') }}</a></li>
+                  </ul>
+               </li>
                @endif
 
 
