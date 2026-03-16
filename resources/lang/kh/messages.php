@@ -70,6 +70,8 @@ return [
     'membership_expired' => 'សមាជិកភាពនេះផុតកំណត់ហើយ មិនអាចអនុវត្តបានទេ។',
     'membership_no_result' => 'រកមិនឃើញសមាជិកភាពទេ។',
     'membership_search_hint' => 'ស្វែងរកសមាជិកតាមលេខទូរស័ព្ទ ឬ ឈ្មោះ',
+    'receipt_sent_to_printer' => 'បង្កាន់ដៃត្រូវបានផ្ញើទៅម៉ាស៊ីនបោះពុម្ព',
+    'order_saved_without_printing' => 'ការបញ្ជាទិញត្រូវបានរក្សាទុកដោយមិនបោះពុម្ពនៅក្នុងម៉ូដ local។',
 
     // Order Modal
     'invoice_no' => 'លេខវិក្កយបត្រ',
@@ -81,6 +83,7 @@ return [
     'delivery_type' => 'ប្រភេទដឹកជញ្ជូន',
     'later' => 'ពេលក្រោយ',
     'cash_amount_usd' => 'ចំនួនសាច់ប្រាក់ (ដុល្លារ)',
+    'cash_amount_riel' => 'ចំនួនសាច់ប្រាក់ (រៀល)',
     'aba_amount_usd' => 'ចំនួន ABA (ដុល្លារ)',
     'cash_percentage' => 'ភាគរយសាច់ប្រាក់ (%)',
     'aba_percentage' => 'ភាគរយ ABA (%)',

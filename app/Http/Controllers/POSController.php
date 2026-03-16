@@ -54,6 +54,7 @@ class POSController extends Controller
     public function store(Request $request)
     {
         $additional_info = $request->additional_info;
+        $currencyTracking = $this->extractCurrencyTracking($additional_info);
         
         $data = [
             "order_no" => $request->invoice_no,
@@ -68,36 +69,20 @@ class POSController extends Controller
         
         // Add received and change amounts for cash payments
         if ($request->payment_type === 'cash') {
-            // Clean and convert received values
-            $receivedUsd = isset($additional_info['received_in_usd']) ? $additional_info['received_in_usd'] : 0;
-            $receivedUsd = is_string($receivedUsd) ? (float) preg_replace('/[^0-9.]/', '', $receivedUsd) : (float) $receivedUsd;
-            
-            $receivedRiel = isset($additional_info['received_in_riel']) ? $additional_info['received_in_riel'] : 0;
-            $receivedRiel = is_string($receivedRiel) ? (int) preg_replace('/[^0-9]/', '', $receivedRiel) : (int) $receivedRiel;
-            
-            $data['received_in_usd'] = $receivedUsd;
-            $data['received_in_riel'] = $receivedRiel;
-            
-            // Clean and convert change values
-            $changeUsd = isset($additional_info['change_in_usd']) ? $additional_info['change_in_usd'] : 0;
-            $changeUsd = is_string($changeUsd) ? (float) preg_replace('/[^0-9.-]/', '', $changeUsd) : (float) $changeUsd;
-            
-            $changeRiel = isset($additional_info['change_in_riel']) ? $additional_info['change_in_riel'] : 0;
-            $changeRiel = is_string($changeRiel) ? (int) preg_replace('/[^0-9]/', '', $changeRiel) : (int) $changeRiel;
-            
-            // Store change based on which currency was selected for display
+            $data['received_in_usd'] = $currencyTracking['received_in_usd'];
+            $data['received_in_riel'] = $currencyTracking['received_in_riel'];
+
             if (isset($additional_info['selected_change_currency'])) {
                 if ($additional_info['selected_change_currency'] === 'usd') {
-                    $data['change_in_usd'] = $changeUsd;
+                    $data['change_in_usd'] = $currencyTracking['change_in_usd'];
                     $data['change_in_riel'] = 0;
                 } else {
                     $data['change_in_usd'] = 0;
-                    $data['change_in_riel'] = $changeRiel;
+                    $data['change_in_riel'] = $currencyTracking['change_in_riel'];
                 }
             } else {
-                // Default behavior if no currency is selected
-                $data['change_in_usd'] = $changeUsd;
-                $data['change_in_riel'] = $changeRiel;
+                $data['change_in_usd'] = $currencyTracking['change_in_usd'];
+                $data['change_in_riel'] = $currencyTracking['change_in_riel'];
             }
         }
 
@@ -107,6 +92,10 @@ class POSController extends Controller
             $data['aba_percentage'] = $request->abaPercentage;
             $data['cash_amount'] = $request->cashAmount;
             $data['aba_amount'] = $request->abaAmount;
+            $data['received_in_usd'] = $currencyTracking['received_in_usd'];
+            $data['received_in_riel'] = $currencyTracking['received_in_riel'];
+            $data['change_in_usd'] = $currencyTracking['change_in_usd'];
+            $data['change_in_riel'] = $currencyTracking['change_in_riel'];
         }
         
         // Add delivery_id if payment type is delivery
@@ -146,6 +135,15 @@ class POSController extends Controller
             "cashier" => Auth::user()->username,
             "time" => $this->getLocaleTime(),
             "payment_type" => $request->payment_type,
+            "received_in_usd" => $data['received_in_usd'] ?? 0,
+            "received_in_riel" => $data['received_in_riel'] ?? 0,
+            "change_in_usd" => $data['change_in_usd'] ?? 0,
+            "change_in_riel" => $data['change_in_riel'] ?? 0,
+            "cash_percentage" => $data['cash_percentage'] ?? null,
+            "aba_percentage" => $data['aba_percentage'] ?? null,
+            "cash_amount" => $data['cash_amount'] ?? null,
+            "aba_amount" => $data['aba_amount'] ?? null,
+            "additional_info" => $additional_info,
             'created_at' => $this->getLocaleTimestamp(),
             'updated_at' => $this->getLocaleTimestamp()
         ];
@@ -194,6 +192,28 @@ class POSController extends Controller
             ],
             'message' => 'Order is being processed'
         ]);
+    }
+
+    private function extractCurrencyTracking($additional_info)
+    {
+        $receivedUsd = isset($additional_info['received_in_usd']) ? $additional_info['received_in_usd'] : 0;
+        $receivedUsd = is_string($receivedUsd) ? (float) preg_replace('/[^0-9.]/', '', $receivedUsd) : (float) $receivedUsd;
+
+        $receivedRiel = isset($additional_info['received_in_riel']) ? $additional_info['received_in_riel'] : 0;
+        $receivedRiel = is_string($receivedRiel) ? (int) preg_replace('/[^0-9]/', '', $receivedRiel) : (int) $receivedRiel;
+
+        $changeUsd = isset($additional_info['change_in_usd']) ? $additional_info['change_in_usd'] : 0;
+        $changeUsd = is_string($changeUsd) ? (float) preg_replace('/[^0-9.-]/', '', $changeUsd) : (float) $changeUsd;
+
+        $changeRiel = isset($additional_info['change_in_riel']) ? $additional_info['change_in_riel'] : 0;
+        $changeRiel = is_string($changeRiel) ? (int) preg_replace('/[^0-9-]/', '', $changeRiel) : (int) $changeRiel;
+
+        return [
+            'received_in_usd' => $receivedUsd,
+            'received_in_riel' => $receivedRiel,
+            'change_in_usd' => $changeUsd,
+            'change_in_riel' => $changeRiel,
+        ];
     }
 
     public function getInvoiceNo()

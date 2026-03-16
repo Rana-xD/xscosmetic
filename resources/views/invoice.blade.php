@@ -331,7 +331,15 @@
         <span>{{ __('messages.payment_type') }}:</span>
         <span>
           @if($order->payment_type === 'custom')
-            {{ ucfirst($order->payment_type) }} (ABA ${{ isset($order->aba_amount) ? $order->aba_amount : '0' }} | Cash ${{ isset($order->cash_amount) ? $order->cash_amount : '0' }})
+            @php
+              $customCashCurrency = data_get($order->additional_info, 'custom_cash_currency', 'usd');
+              $customCashAmountRiel = (int) data_get($order->additional_info, 'custom_cash_amount_riel', 0);
+              $customCashAmountUsdInput = (float) data_get($order->additional_info, 'custom_cash_amount_usd_input', $order->cash_amount ?? 0);
+              $customCashDisplay = strtoupper($customCashCurrency) === 'RIEL'
+                  ? number_format($customCashAmountRiel, 0, '.', ',') . '៛'
+                  : '$' . number_format($customCashAmountUsdInput, 2, '.', '');
+            @endphp
+            {{ ucfirst($order->payment_type) }} (ABA ${{ isset($order->aba_amount) ? number_format((float) $order->aba_amount, 2, '.', '') : '0.00' }} | Cash {{ $customCashDisplay }})
           @elseif($order->payment_type === 'delivery')
             {{ ucfirst($order->payment_type) }} |
             @if($order->delivery_id)
@@ -365,6 +373,16 @@
           @endif
         </span>
       </span>
+      @if($order->payment_type === 'cash')
+      <span>
+        <span>{{ __('messages.received_cash_in_usd') }}:</span>
+        <span>${{ number_format((float) ($order->received_in_usd ?? 0), 2, '.', '') }} | {{ number_format((int) ($order->received_in_riel ?? 0), 0, '.', ',') }}៛</span>
+      </span>
+      <span>
+        <span>{{ __('messages.change_in_usd') }}:</span>
+        <span>${{ number_format((float) ($order->change_in_usd ?? 0), 2, '.', '') }} | {{ number_format((int) ($order->change_in_riel ?? 0), 0, '.', ',') }}៛</span>
+      </span>
+      @endif
       <span>
         <span>{{ __('messages.total') }}:</span>
         <span>${{$order->total}}</span>

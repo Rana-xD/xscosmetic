@@ -913,19 +913,85 @@
             }, 50); // 50ms debounce delay for faster response
         });
 
+        let customCashInputMode = 'usd';
+
+        const resetCustomSplitFields = window.resetCustomSplitFields = function() {
+            customCashInputMode = 'usd';
+            $('#cash-in-usd').val('').attr('data-exact-amount', '0');
+            $('#cash-in-riel-custom').val('').attr('data-exact-amount', '0');
+            $('#cash-in-usd').prop('disabled', false);
+            $('#cash-in-riel-custom').prop('disabled', false);
+            $('#aba-amount-usd').val('0').attr('data-exact-amount', '0');
+            $('#cash-percentage').val('0');
+            $('#aba-percentage').val('0');
+        };
+
+        function applyCustomSplitInputLock(inputMode, hasValue) {
+            if (!hasValue) {
+                $('#cash-in-usd').prop('disabled', false);
+                $('#cash-in-riel-custom').prop('disabled', false);
+                return;
+            }
+
+            if (inputMode === 'usd') {
+                $('#cash-in-usd').prop('disabled', false);
+                $('#cash-in-riel-custom').prop('disabled', true).val('');
+            } else {
+                $('#cash-in-riel-custom').prop('disabled', false);
+                $('#cash-in-usd').prop('disabled', true).val('');
+            }
+        }
+
+        function updateCustomSplitFromUsd(cashAmountUsd, inputMode, activeDisplayValue) {
+            let totalAmount = parseFloat($('#total-in-usd-final').val()) || parseFloat($('#total-usd').attr('total-usd-data')) || 0;
+            let exchangeRate = parseFloat($('#exchange_rate').val()) || 0;
+
+            cashAmountUsd = isNaN(cashAmountUsd) ? 0 : cashAmountUsd;
+            cashAmountUsd = Math.max(0, cashAmountUsd);
+
+            if (totalAmount > 0) {
+                cashAmountUsd = Math.min(cashAmountUsd, totalAmount);
+            } else {
+                cashAmountUsd = 0;
+            }
+
+            let cashAmountRiel = exchangeRate > 0 ? Math.round(cashAmountUsd * exchangeRate) : 0;
+            let abaAmount = totalAmount > 0 ? Math.max(totalAmount - cashAmountUsd, 0) : 0;
+            let cashPercentage = totalAmount > 0 ? (cashAmountUsd / totalAmount) * 100 : 0;
+            let abaPercentage = totalAmount > 0 ? (abaAmount / totalAmount) * 100 : 0;
+            let hasCashValue = cashAmountUsd > 0;
+
+            customCashInputMode = inputMode;
+            $('#cash-in-usd').attr('data-exact-amount', cashAmountUsd.toFixed(2));
+            $('#cash-in-riel-custom').attr('data-exact-amount', cashAmountRiel.toString());
+
+            if (inputMode === 'usd') {
+                $('#cash-in-usd').val(activeDisplayValue !== undefined ? activeDisplayValue : (hasCashValue ? cashAmountUsd.toFixed(2) : ''));
+                $('#cash-in-riel-custom').val('');
+            } else {
+                $('#cash-in-riel-custom').val(activeDisplayValue !== undefined ? activeDisplayValue : (hasCashValue ? cashAmountRiel : ''));
+                $('#cash-in-usd').val('');
+            }
+
+            applyCustomSplitInputLock(inputMode, hasCashValue);
+            $('#aba-amount-usd').val(totalAmount > 0 ? abaAmount.toFixed(2) : '0');
+            $('#aba-amount-usd').attr('data-exact-amount', abaAmount.toFixed(2));
+            $('#cash-percentage').val(totalAmount > 0 ? Number(cashPercentage.toFixed(6)).toString() : '0');
+            $('#aba-percentage').val(totalAmount > 0 ? Number(abaPercentage.toFixed(6)).toString() : '0');
+        }
+
         $('#payment-type').on('change', function() {
             let type = $(this).val();
             resetReceivedCashAndChange();
+
             if (type === 'aba' || type === 'acleda' || type === 'delivery') {
                 $('.payment-type-cash').css('display', 'none');
                 $('.custom-split').css('display', 'none');
             } else if (type === 'custom') {
                 $('.custom-split').css('display', 'block');
+                $('.payment-type-cash').css('display', 'none');
                 $('.delivery').css('display', 'none');
-                // Reset the cash input and percentages
-                $('#cash-in-usd').val('');
-                $('#cash-percentage').val('0');
-                $('#aba-percentage').val('0');
+                resetCustomSplitFields();
             } else {
                 $('.custom-split').css('display', 'none');
                 $('.delivery').css('display', 'none');
@@ -951,60 +1017,26 @@
         });
 
         $('#cash-in-usd').on('input', function() {
-            let cashAmount = parseFloat($(this).val()) || 0;
-            let totalAmount = parseFloat($('#total-in-usd-final').val()) || 0;
-            
-            if (totalAmount > 0 && cashAmount >= 0) {
-                // Ensure cash amount doesn't exceed total
-                cashAmount = Math.min(cashAmount, totalAmount);
-                
-                // Calculate ABA amount directly
-                let abaAmount = totalAmount - cashAmount;
-                
-                // Calculate percentages for display
-                let cashPercentage = (cashAmount / totalAmount) * 100;
-                let abaPercentage = (abaAmount / totalAmount) * 100;
-                
-                // Format with up to 6 decimal places, removing trailing zeros
-                $('#cash-percentage').val(Number(cashPercentage.toFixed(6)).toString());
-                $('#aba-percentage').val(Number(abaPercentage.toFixed(6)).toString());
-                
-                // Set ABA amount directly without percentage calculation
-                $('#aba-amount-usd').val(abaAmount.toFixed(2));
-                
-                // Store the exact amounts for form submission
-                $('#cash-in-usd').attr('data-exact-amount', cashAmount.toFixed(2));
-                $('#aba-amount-usd').attr('data-exact-amount', abaAmount.toFixed(2));
-            } else {
-                $('#cash-percentage').val('0');
-                $('#aba-percentage').val('0');
-                $('#aba-amount-usd').val('0');
-                $('#cash-in-usd').attr('data-exact-amount', '0');
-                $('#aba-amount-usd').attr('data-exact-amount', '0');
-            }
+            const rawValue = $(this).val();
+            updateCustomSplitFromUsd(parseFloat(rawValue) || 0, 'usd', rawValue);
         });
 
-        function handleCashPercentage(value) {
-            let cashPercentage = parseInt(value) || 0;
-            if (cashPercentage > 100) {
-                $('#cash-percentage').val(100);
-                cashPercentage = 100;
-            }
-            if (cashPercentage < 0) {
-                $('#cash-percentage').val(0);
-                cashPercentage = 0;
-            }
-            $('#aba-percentage').val(100 - cashPercentage);
+        $('#cash-in-riel-custom').on('input', function() {
+            const rawValue = $(this).val();
+            let cashAmountRiel = parseInt(rawValue, 10) || 0;
+            let exchangeRate = parseFloat($('#exchange_rate').val()) || 0;
+            let cashAmountUsd = exchangeRate > 0 ? cashAmountRiel / exchangeRate : 0;
+            updateCustomSplitFromUsd(cashAmountUsd, 'riel', rawValue);
+        });
 
-            if (cashPercentage > 0) {
-                $('.payment-type-cash').css('display', 'block');
-            } else {
-                $('.payment-type-cash').css('display', 'none');
-            }
-        }
+        $('#cash-in-usd').on('blur', function() {
+            const exactAmount = parseFloat($(this).attr('data-exact-amount') || '0');
+            $(this).val(exactAmount > 0 ? exactAmount.toFixed(2) : '');
+        });
 
-        $('#cash-percentage').on('input', function() {
-            handleCashPercentage($(this).val());
+        $('#cash-in-riel-custom').on('blur', function() {
+            const exactAmount = parseInt($(this).attr('data-exact-amount') || '0', 10);
+            $(this).val(exactAmount > 0 ? exactAmount : '');
         });
 
         $('#received-cash-in-usd').on('input', function(e) {
@@ -1221,13 +1253,20 @@
 
             // Add percentage data for custom split payment
             if ($('#payment-type').val() === 'custom') {
+                let customCashAmountUsd = parseFloat($('#cash-in-usd').attr('data-exact-amount') || '0');
+                let customCashAmountRiel = parseInt($('#cash-in-riel-custom').attr('data-exact-amount') || '0', 10);
                 formData.cashPercentage = cashPercentage;
                 formData.abaPercentage = abaPercentage;
 
-                // Calculate the actual amounts for each payment method
-                let totalAmount = parseFloat($('#total-usd').attr('total-usd-data').replace('$', ''));
-                formData.cashAmount = (totalAmount * (cashPercentage / 100)).toFixed(2);
-                formData.abaAmount = (totalAmount * ((100 - cashPercentage) / 100)).toFixed(2);
+                formData.cashAmount = customCashAmountUsd.toFixed(2);
+                formData.abaAmount = $('#aba-amount-usd').attr('data-exact-amount') || '0';
+                formData.additional_info.custom_cash_currency = customCashInputMode;
+                formData.additional_info.custom_cash_amount_usd_input = customCashAmountUsd.toFixed(2);
+                formData.additional_info.custom_cash_amount_riel = customCashAmountRiel;
+                formData.additional_info.received_in_usd = customCashInputMode === 'usd' ? customCashAmountUsd.toFixed(2) : 0;
+                formData.additional_info.received_in_riel = customCashInputMode === 'riel' ? customCashAmountRiel : 0;
+                formData.additional_info.change_in_usd = 0;
+                formData.additional_info.change_in_riel = 0;
             }
 
             // Prepare invoice data for printing BEFORE saving to database
@@ -1248,10 +1287,8 @@
             };
 
             showSpinner();
-            
-            // Try to print FIRST, only save order if print succeeds
-            thermalPrinter.print(invoiceDataForPrint).then(function(success) {
-                // Print succeeded, now save the order to database
+
+            function saveOrder(successMessage) {
                 $.ajax({
                     url: '/pos/add',
                     type: "GET",
@@ -1263,10 +1300,10 @@
                         totalItem();
                         totalCash();
                         hideSpinner();
-                        
+
                         swal({
                             title: 'Order Complete!',
-                            text: 'Receipt sent to printer',
+                            text: successMessage,
                             type: "success",
                             timer: 1500,
                             showConfirmButton: false
@@ -1284,6 +1321,16 @@
                         });
                     }
                 });
+            }
+
+            if (window.skipPosPrinter) {
+                saveOrder(@json(__('messages.order_saved_without_printing')));
+                return;
+            }
+
+            // Try to print FIRST, only save order if print succeeds
+            thermalPrinter.print(invoiceDataForPrint).then(function(success) {
+                saveOrder(@json(__('messages.receipt_sent_to_printer')));
             }).catch(function(error) {
                 // Print failed or user cancelled - DO NOT save order
                 console.error('Print error:', error);
@@ -1717,11 +1764,9 @@
         if (selectedType === 'custom') {
             $('.custom-split').show();
             $('.delivery').hide();
-            // Reset the cash input and percentages
-            $('#cash-in-usd').val('');
-            $('#cash-percentage').val('0');
-            $('#aba-percentage').val('0');
-            $('#aba-amount-usd').val('0');
+            if (typeof window.resetCustomSplitFields === 'function') {
+                window.resetCustomSplitFields();
+            }
         } else if (selectedType === 'delivery') {
             $('.delivery').show();
             $('.custom-split').hide();
@@ -1756,11 +1801,17 @@
         // Add event handler for modal close to reset form state
         $('#OrderModal').on('hidden.bs.modal', function () {
             resetReceivedCashAndChange();
+            if (typeof window.resetCustomSplitFields === 'function') {
+                window.resetCustomSplitFields();
+            }
         });
         
         // Also reset when the close button is clicked
         $('.cancel-pos').on('click', function() {
             resetReceivedCashAndChange();
+            if (typeof window.resetCustomSplitFields === 'function') {
+                window.resetCustomSplitFields();
+            }
         });
     });
     // Function to calculate change when both USD and Riel inputs are provided
@@ -1882,6 +1933,10 @@
                         <input type="number" name="cash-in-usd" class="form-control" id="cash-in-usd" min="0" step="0.01">
                     </div>
                     <div class="form-group form-group-flex">
+                        <label for="cash-in-riel-custom">{{ __('messages.cash_amount_riel') }}</label>
+                        <input type="number" name="cash-in-riel-custom" class="form-control" id="cash-in-riel-custom" min="0" step="1">
+                    </div>
+                    <div class="form-group form-group-flex">
                         <label for="aba-amount-usd">{{ __('messages.aba_amount_usd') }}</label>
                         <input type="number" name="aba-amount-usd" class="form-control" id="aba-amount-usd" readonly>
                     </div>
@@ -1941,5 +1996,6 @@
 <script>
     // Initialize thermal printer for POS
     const thermalPrinter = new ThermalPrinter();
+    window.skipPosPrinter = @json(config('pos.skip_printer'));
 </script>
 @endsection

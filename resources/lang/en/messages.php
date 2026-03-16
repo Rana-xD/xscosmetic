@@ -70,6 +70,8 @@ return [
     'membership_expired' => 'This membership is expired and cannot be applied.',
     'membership_no_result' => 'No membership found.',
     'membership_search_hint' => 'Search member by phone or name',
+    'receipt_sent_to_printer' => 'Receipt sent to printer',
+    'order_saved_without_printing' => 'Order saved without printer in local mode.',
 
     // Order Modal
     'invoice_no' => 'Invoice No',
@@ -81,6 +83,7 @@ return [
     'delivery_type' => 'Delivery Type',
     'later' => 'Later',
     'cash_amount_usd' => 'Cash Amount (USD)',
+    'cash_amount_riel' => 'Cash Amount (Riel)',
     'aba_amount_usd' => 'ABA Amount (USD)',
     'cash_percentage' => 'Cash Percentage (%)',
     'aba_percentage' => 'ABA Percentage (%)',

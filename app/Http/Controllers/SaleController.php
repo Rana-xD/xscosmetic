@@ -36,7 +36,7 @@ class SaleController extends Controller
             $orders = POS::whereBetween('created_at', [$start_date, $end_date])
                 ->get();
         }
-        $data = $this->generateIncomeData($orders);
+        $data = $this->generateIncomeData($orders, Carbon::now()->format('Y-m-d'));
         return view('sale', [
             'data' => $data,
             'date' => Carbon::now()->format('Y-m-d')
@@ -233,7 +233,8 @@ class SaleController extends Controller
 
         // Only use the new multi-currency tracking for dates from 2025-04-25 onwards
         $new_system_start_date = '2025-04-25';
-        $is_new_system = empty($date) ? false : $date >= $new_system_start_date;
+        $effective_date = empty($date) ? Carbon::now()->format('Y-m-d') : $date;
+        $is_new_system = $effective_date >= $new_system_start_date;
 
         if ($is_new_system) {
             // For future dates - use the new multi-currency tracking
@@ -344,7 +345,8 @@ class SaleController extends Controller
 
         // Only use the new multi-currency tracking for dates from 2025-04-25 onwards
         $new_system_start_date = '2025-04-25';
-        $is_new_system = empty($date) ? false : $date >= $new_system_start_date;
+        $effective_date = empty($date) ? Carbon::now()->format('Y-m-d') : $date;
+        $is_new_system = $effective_date >= $new_system_start_date;
 
         if ($is_new_system) {
             // For future dates - use the new multi-currency tracking
