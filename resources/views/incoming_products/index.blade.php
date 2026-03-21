@@ -82,6 +82,7 @@
         display: inline-flex;
         gap: 8px;
         align-items: center;
+        flex-wrap: wrap;
     }
 
     .incoming-action-btn {
@@ -225,8 +226,8 @@
                                    placeholder="{{ __('messages.search_product_barcode') }}"
                                    autocomplete="off">
                             <span class="input-group-btn">
-                                <button type="button" id="scanConfirmBtn" class="btn btn-primary btn-lg">
-                                    <i class="fa fa-barcode"></i> {{ __('messages.confirm_arrival') }}
+                                <button type="button" id="barcodeSearchBtn" class="btn btn-primary btn-lg">
+                                    <i class="fa fa-search"></i> {{ __('messages.search') }}
                                 </button>
                             </span>
                         </div>
@@ -240,7 +241,7 @@
                         </button>
                         @endif
                     </div>
-                    <small style="display: block; margin-bottom: 10px; color: #777;">{{ __('messages.scan_and_confirm') }}</small>
+                    <small style="display: block; margin-bottom: 10px; color: #777;">{{ __('messages.scan_and_search') }}</small>
 
                     <div class="table-responsive">
                         <table id="IncomingPendingTable" class="table table-striped table-bordered" cellspacing="0" width="100%">
@@ -310,9 +311,10 @@
             <form id="addIncomingItemForm">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">{{ __('messages.add_incoming_item') }}</h4>
+                    <h4 class="modal-title" id="incomingItemModalTitle">{{ __('messages.add_incoming_item') }}</h4>
                 </div>
                 <div class="modal-body">
+                    <input type="hidden" id="incoming-item-id" value="">
                     <input type="hidden" id="incoming-shipment-id" value="{{ $selectedShipmentId }}">
                     @if($selectedBatch)
                     <div class="alert alert-info" style="padding: 10px 12px;">
@@ -377,7 +379,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">{{ __('messages.close') }}</button>
-                    <button type="submit" class="btn btn-success">{{ __('messages.submit') }}</button>
+                    <button type="submit" class="btn btn-success" id="incomingItemSubmitBtn">{{ __('messages.submit') }}</button>
                 </div>
             </form>
         </div>
@@ -392,6 +394,7 @@ $(document).ready(function () {
     const canManageIncoming = @json($canManageIncoming);
     const canSeeCost = @json($canSeeCost);
     const selectedShipmentId = @json($selectedShipmentId);
+    let barcodeFilter = '';
 
     function showSuccess(message) {
         swal({
@@ -436,6 +439,8 @@ $(document).ready(function () {
                     '<i class="fa fa-check"></i> {{ __("messages.confirm_arrival") }}</button>';
 
                 if (canManageIncoming) {
+                    buttons += '<button type="button" class="btn btn-primary btn-sm incoming-action-btn edit-incoming-btn" data-id="' + data.id + '">' +
+                        '<i class="fa fa-pencil"></i> {{ __("messages.edit") }}</button>';
                     buttons += '<button type="button" class="btn btn-danger btn-sm incoming-action-btn delete-incoming-btn" data-id="' + data.id + '">' +
                         '<i class="fa fa-trash"></i> {{ __("messages.delete") }}</button>';
                 }
@@ -457,6 +462,7 @@ $(document).ready(function () {
             type: 'GET',
             data: function (d) {
                 d.shipment_id = selectedShipmentId;
+                d.barcode_filter = barcodeFilter;
             }
         },
         order: [[0, 'desc']],
@@ -541,31 +547,17 @@ $(document).ready(function () {
         });
     }
 
-    function confirmByBarcode(barcodeValue) {
-        $.ajax({
-            url: '{{ route("incoming-products.confirm-by-barcode") }}',
-            type: 'POST',
-            data: {
-                _token: '{{ csrf_token() }}',
-                barcode: barcodeValue,
-                shipment_id: selectedShipmentId
-            },
-            success: function (response) {
-                if (response.success) {
-                    showSuccess(response.message);
-                    handlePendingActionSuccess(response);
-                } else {
-                    showError(response.message || '{{ __("messages.pending_item_not_found") }}');
-                }
-            },
-            error: function (xhr) {
-                const message = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : '{{ __("messages.pending_item_not_found") }}';
-                showError(message);
-            },
-            complete: function () {
-                $('#incomingBarcode').val('').focus();
-            }
-        });
+    function applyBarcodeFilter() {
+        if (!selectedShipmentId) {
+            showError('{{ __("messages.select_batch_first") }}');
+            return;
+        }
+
+        barcodeFilter = $.trim($('#incomingBarcode').val());
+
+        if (pendingTable) {
+            pendingTable.ajax.reload();
+        }
     }
 
     function deleteIncomingItem(itemId) {
@@ -616,32 +608,29 @@ $(document).ready(function () {
         });
     }
 
-    $('#scanConfirmBtn').on('click', function () {
-        if (!selectedShipmentId) {
-            showError('{{ __("messages.select_batch_first") }}');
-            return;
-        }
-
-        const barcodeValue = $.trim($('#incomingBarcode').val());
-        if (!barcodeValue) {
-            showError('Please scan or enter a barcode.');
-            return;
-        }
-
+    $('#barcodeSearchBtn').on('click', function () {
         const now = Date.now();
         if (now - lastScanTime < scanDebounceMs) {
-            $('#incomingBarcode').val('').focus();
             return;
         }
 
         lastScanTime = now;
-        confirmByBarcode(barcodeValue);
+        applyBarcodeFilter();
     });
 
     $('#incomingBarcode').on('keypress', function (event) {
         if (event.which === 13) {
             event.preventDefault();
-            $('#scanConfirmBtn').click();
+            $('#barcodeSearchBtn').click();
+        }
+    });
+
+    $('#incomingBarcode').on('input', function () {
+        if ($.trim($(this).val()) === '' && barcodeFilter !== '') {
+            barcodeFilter = '';
+            if (pendingTable) {
+                pendingTable.ajax.reload();
+            }
         }
     });
 
@@ -697,12 +686,19 @@ $(document).ready(function () {
     });
 
     @if($canManageIncoming)
+    function setIncomingItemModalMode(mode) {
+        const isEditMode = mode === 'edit';
+        $('#incomingItemModalTitle').text(isEditMode ? '{{ __("messages.edit_incoming_item") }}' : '{{ __("messages.add_incoming_item") }}');
+        $('#incomingItemSubmitBtn').text(isEditMode ? '{{ __("messages.update") }}' : '{{ __("messages.submit") }}');
+    }
+
     function resetCreateBatchForm() {
         $('#batch-title').val('');
         $('#batch-notes').val('');
     }
 
     function resetAddIncomingForm() {
+        $('#incoming-item-id').val('');
         $('#incoming-name').val('');
         $('#incoming-barcode').val('');
         $('#incoming-qty').val('');
@@ -710,6 +706,19 @@ $(document).ready(function () {
         $('#incoming-price').val('');
         $('#incoming-category').val('');
         $('#incoming-expire').val('');
+        setIncomingItemModalMode('create');
+    }
+
+    function fillIncomingEditForm(rowData) {
+        $('#incoming-item-id').val(rowData.id);
+        $('#incoming-name').val(rowData.name || '');
+        $('#incoming-barcode').val(rowData.barcode || '');
+        $('#incoming-qty').val(rowData.qty || '');
+        $('#incoming-cost').val(rowData.cost || '');
+        $('#incoming-price').val(rowData.price || '');
+        $('#incoming-category').val(rowData.category_id || '');
+        $('#incoming-expire').val(rowData.expire_date_raw || '');
+        setIncomingItemModalMode('edit');
     }
 
     $('#createBatchForm').on('submit', function (event) {
@@ -755,8 +764,13 @@ $(document).ready(function () {
             return;
         }
 
+        const itemId = $('#incoming-item-id').val();
+        const requestUrl = itemId
+            ? '/incoming-products/' + itemId + '/update'
+            : '{{ route("incoming-products.store") }}';
+
         $.ajax({
-            url: '{{ route("incoming-products.store") }}',
+            url: requestUrl,
             type: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
@@ -776,11 +790,11 @@ $(document).ready(function () {
                     showSuccess(response.message);
                     handlePendingActionSuccess(response);
                 } else {
-                    showError(response.message || 'Failed to add incoming item.');
+                    showError(response.message || 'Failed to save incoming item.');
                 }
             },
             error: function (xhr) {
-                let message = 'Failed to add incoming item.';
+                let message = 'Failed to save incoming item.';
                 if (xhr.responseJSON && xhr.responseJSON.errors) {
                     const firstKey = Object.keys(xhr.responseJSON.errors)[0];
                     if (firstKey && xhr.responseJSON.errors[firstKey].length > 0) {
@@ -792,6 +806,20 @@ $(document).ready(function () {
                 showError(message);
             }
         });
+    });
+
+    $('#IncomingPendingTable tbody').on('click', '.edit-incoming-btn', function () {
+        const rowData = pendingTable.row($(this).closest('tr')).data();
+        if (!rowData) {
+            return;
+        }
+
+        fillIncomingEditForm(rowData);
+        $('#AddIncomingItem').modal('show');
+    });
+
+    $('#AddIncomingItem').on('hidden.bs.modal', function () {
+        resetAddIncomingForm();
     });
     @endif
 });

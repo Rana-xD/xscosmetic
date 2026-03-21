@@ -57,6 +57,7 @@ class IncomingProductController extends Controller
         $length = (int) $request->input('length', 25);
         $length = $length > 0 ? min($length, 100) : 25;
         $searchValue = trim((string) $request->input('search.value', ''));
+        $barcodeFilter = trim((string) $request->input('barcode_filter', ''));
         $canSeeCost = $this->canSeeCost($user);
 
         $query = IncomingShipmentItem::query()
@@ -71,9 +72,14 @@ class IncomingProductController extends Controller
                 'incoming_shipment_items.qty',
                 'incoming_shipment_items.cost',
                 'incoming_shipment_items.price',
+                'incoming_shipment_items.category_id',
                 'incoming_shipment_items.expire_date',
                 'categories.name as category_name',
             ]);
+
+        if ($barcodeFilter !== '') {
+            $query->where('incoming_shipment_items.barcode', 'like', '%' . $barcodeFilter . '%');
+        }
 
         if ($searchValue !== '') {
             $like = '%' . $searchValue . '%';
@@ -116,12 +122,16 @@ class IncomingProductController extends Controller
                 'name' => $item->name,
                 'barcode' => $item->barcode,
                 'qty' => $item->qty,
+                'price' => $item->price !== null ? (string) $item->price : '',
+                'category_id' => $item->category_id,
+                'expire_date_raw' => $item->expire_date ?: '',
                 'price_display' => $item->price !== null ? $this->formatMoney($item->price) : '-',
                 'category_name' => $item->category_name ?: '-',
                 'expire_date' => $item->expire_date ?: '-',
             ];
 
             if ($canSeeCost) {
+                $row['cost'] = $item->cost !== null ? (string) $item->cost : '';
                 $row['cost_display'] = $item->cost !== null ? $this->formatMoney($item->cost) : '-';
             }
 
@@ -174,16 +184,7 @@ class IncomingProductController extends Controller
             return $this->jsonUnauthorizedResponse();
         }
 
-        $validated = $request->validate([
-            'incoming_shipment_id' => 'required|integer|exists:incoming_shipments,id',
-            'name' => 'required|string|max:255',
-            'barcode' => 'required|string|max:255',
-            'qty' => 'required|integer|min:1',
-            'cost' => 'nullable|numeric|min:0',
-            'price' => 'nullable|numeric|min:0',
-            'category_id' => 'nullable|integer|exists:categories,id',
-            'expire_date' => 'nullable|date_format:Y-m-d',
-        ]);
+        $validated = $request->validate($this->incomingItemRules());
 
         $shipment = IncomingShipment::find($validated['incoming_shipment_id']);
 
@@ -220,6 +221,72 @@ class IncomingProductController extends Controller
             'message' => __('messages.incoming_item_created'),
             'batch' => $this->getShipmentSummary($shipment->id),
         ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $user = Auth::user();
+        if (!$this->canManageIncoming($user)) {
+            return $this->jsonUnauthorizedResponse();
+        }
+
+        $validated = $request->validate($this->incomingItemRules());
+
+        $result = DB::transaction(function () use ($id, $validated) {
+            $item = IncomingShipmentItem::where('id', (int) $id)->lockForUpdate()->first();
+
+            if (!$item || $item->status !== 'pending') {
+                return [
+                    'success' => false,
+                    'status' => 404,
+                    'message' => __('messages.pending_item_not_found'),
+                ];
+            }
+
+            if ((int) $item->incoming_shipment_id !== (int) $validated['incoming_shipment_id']) {
+                return [
+                    'success' => false,
+                    'status' => 422,
+                    'message' => __('messages.select_batch_first'),
+                ];
+            }
+
+            $shipment = IncomingShipment::where('id', (int) $validated['incoming_shipment_id'])->lockForUpdate()->first();
+
+            if (!$shipment) {
+                return [
+                    'success' => false,
+                    'status' => 404,
+                    'message' => __('messages.incoming_batch_not_found'),
+                ];
+            }
+
+            if ($shipment->status === 'completed') {
+                return [
+                    'success' => false,
+                    'status' => 422,
+                    'message' => __('messages.incoming_batch_closed'),
+                ];
+            }
+
+            $item->name = trim($validated['name']);
+            $item->barcode = trim($validated['barcode']);
+            $item->qty = (int) $validated['qty'];
+            $item->cost = array_key_exists('cost', $validated) && $validated['cost'] !== null ? $validated['cost'] : null;
+            $item->price = array_key_exists('price', $validated) && $validated['price'] !== null ? $validated['price'] : null;
+            $item->category_id = $validated['category_id'] ?? null;
+            $item->expire_date = $validated['expire_date'] ?? null;
+            $item->save();
+
+            return [
+                'success' => true,
+                'status' => 200,
+                'message' => __('messages.incoming_item_updated'),
+                'batch' => $this->getShipmentSummary($shipment->id),
+            ];
+        });
+
+        return response()->json($result, $result['status']);
     }
 
     public function destroy($id)
@@ -336,46 +403,6 @@ class IncomingProductController extends Controller
         $this->abortIfUnauthorized($user);
 
         $result = $this->confirmIncomingItem((int) $id, (int) $request->input('shipment_id'));
-
-        return response()->json($result, $result['status']);
-    }
-
-    public function confirmByBarcode(Request $request)
-    {
-        $user = Auth::user();
-        $this->abortIfUnauthorized($user);
-
-        $shipmentId = (int) $request->input('shipment_id');
-        $barcode = trim((string) $request->input('barcode'));
-
-        if ($shipmentId <= 0) {
-            return response()->json([
-                'success' => false,
-                'message' => __('messages.select_batch_first'),
-            ], 422);
-        }
-
-        if ($barcode === '') {
-            return response()->json([
-                'success' => false,
-                'message' => __('messages.pending_item_not_found'),
-            ], 422);
-        }
-
-        $itemId = IncomingShipmentItem::where('incoming_shipment_id', $shipmentId)
-            ->where('status', 'pending')
-            ->where('barcode', $barcode)
-            ->orderBy('id', 'asc')
-            ->value('id');
-
-        if (!$itemId) {
-            return response()->json([
-                'success' => false,
-                'message' => __('messages.pending_item_not_found'),
-            ], 404);
-        }
-
-        $result = $this->confirmIncomingItem((int) $itemId, $shipmentId);
 
         return response()->json($result, $result['status']);
     }
@@ -885,6 +912,20 @@ class IncomingProductController extends Controller
             'recordsFiltered' => 0,
             'data' => [],
         ]);
+    }
+
+    private function incomingItemRules()
+    {
+        return [
+            'incoming_shipment_id' => 'required|integer|exists:incoming_shipments,id',
+            'name' => 'required|string|max:255',
+            'barcode' => 'required|string|max:255',
+            'qty' => 'required|integer|min:1',
+            'cost' => 'nullable|numeric|min:0',
+            'price' => 'nullable|numeric|min:0',
+            'category_id' => 'nullable|integer|exists:categories,id',
+            'expire_date' => 'nullable|date_format:Y-m-d',
+        ];
     }
 
     private function createProductLog($product, $action, $stock, $barcode, $additionalAction = '')

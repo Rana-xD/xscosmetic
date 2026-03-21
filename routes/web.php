@@ -34,9 +34,9 @@ Route::get('/incoming-products/data', 'IncomingProductController@data')->name('i
 Route::post('/incoming-products/batches/add', 'IncomingProductController@storeBatch')->name('incoming-products.batches.store');
 Route::post('/incoming-products/batches/{id}/close', 'IncomingProductController@closeBatch')->name('incoming-products.batches.close');
 Route::post('/incoming-products/add', 'IncomingProductController@store')->name('incoming-products.store');
+Route::post('/incoming-products/{id}/update', 'IncomingProductController@update')->name('incoming-products.update');
 Route::post('/incoming-products/{id}/delete', 'IncomingProductController@destroy')->name('incoming-products.delete');
 Route::post('/incoming-products/{id}/confirm', 'IncomingProductController@confirm')->name('incoming-products.confirm');
-Route::post('/incoming-products/confirm-by-barcode', 'IncomingProductController@confirmByBarcode')->name('incoming-products.confirm-by-barcode');
 Route::get('/incoming-products/history', 'IncomingProductController@history')->name('incoming-products.history');
 Route::get('/incoming-products/history/data', 'IncomingProductController@historyData')->name('incoming-products.history.data');
 Route::get('/incoming-products/create', 'IncomingProductController@create')->name('incoming-products.create');
